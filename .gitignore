@@ -1,0 +1,24 @@
+# BMAD Framework (installed dependency, like node_modules)
+_bmad/
+
+# Config locale Claude Code
+.claude/
+
+# Code V9 de référence (repo Git séparé)
+calculateur-argos/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node.js (pour développement V10 futur)
+node_modules/
+dist/
+.env
+.env.local
+*.log
+
+# IDE
+.vscode/
+.idea/
