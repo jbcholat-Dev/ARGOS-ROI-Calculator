@@ -10,3 +10,16 @@ export const PFEIFFER_RED_DARK = '#A50000';
 // ROI Color Thresholds
 export const ROI_NEGATIVE_THRESHOLD = 0;
 export const ROI_WARNING_THRESHOLD = 15;
+
+// Application Routes
+export const ROUTES = {
+  DASHBOARD: '/',
+  FOCUS_MODE: '/analysis/:id',
+  FOCUS_MODE_BASE: '/analysis',
+  GLOBAL_ANALYSIS: '/global',
+  SOLUTIONS: '/solutions',
+} as const;
+
+// Helper to build focus mode route with ID
+export const buildFocusModeRoute = (id: string): string =>
+  `/analysis/${id}`;

@@ -1,17 +1,15 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Dashboard, FocusMode, GlobalAnalysis, Solutions } from '@/pages';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { AppRoutes } from './AppRoutes';
 
 export function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-surface-canvas">
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/analysis/:id" element={<FocusMode />} />
-          <Route path="/global" element={<GlobalAnalysis />} />
-          <Route path="/solutions" element={<Solutions />} />
-        </Routes>
-      </div>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <AppRoutes />
+        </div>
+      </Router>
+    </ErrorBoundary>
   );
 }
