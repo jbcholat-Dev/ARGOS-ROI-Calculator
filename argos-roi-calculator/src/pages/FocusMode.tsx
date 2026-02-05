@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
-import { useParams, Navigate, Link } from 'react-router-dom';
+import { useParams, Navigate } from 'react-router-dom';
 import { ROUTES } from '@/lib/constants';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { PlaceholderMessage } from '@/components/PlaceholderMessage';
 
 // Validate analysis ID format (alphanumeric, dashes, max 100 chars)
 const isValidAnalysisId = (id: string): boolean => {
@@ -24,19 +26,8 @@ export function FocusMode() {
   }
 
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold">Focus Mode</h1>
-      <p className="text-gray-600 mt-4">Analysis ID: {id}</p>
-      <p className="text-gray-500 mt-2">
-        Placeholder for InputPanel and ResultsPanel. Will be implemented in
-        Epic 2.
-      </p>
-      <Link
-        to={ROUTES.DASHBOARD}
-        className="inline-block mt-6 text-pfeiffer-red hover:text-pfeiffer-red-dark"
-      >
-        ← Back to Dashboard
-      </Link>
-    </main>
+    <AppLayout>
+      <PlaceholderMessage message={`Mode Focus pour l'analyse ${id}`} />
+    </AppLayout>
   );
 }

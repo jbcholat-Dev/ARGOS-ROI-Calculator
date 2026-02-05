@@ -1,16 +1,19 @@
 import { useEffect } from 'react';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { PlaceholderMessage } from '@/components/PlaceholderMessage';
 
 export function Dashboard() {
   useEffect(() => {
-    document.title = 'Dashboard - ARGOS ROI Calculator';
+    document.title = 'Analyses - ARGOS ROI Calculator';
   }, []);
 
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-      <p className="text-gray-600 mt-4">
-        Placeholder for analysis grid. Will be implemented in Epic 2.
-      </p>
-    </main>
+    <AppLayout>
+      <PlaceholderMessage
+        message="Créez votre première analyse"
+        actionText="Nouvelle Analyse"
+        onAction={() => {}}
+      />
+    </AppLayout>
   );
 }

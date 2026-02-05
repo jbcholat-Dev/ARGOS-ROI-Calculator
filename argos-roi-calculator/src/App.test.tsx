@@ -13,9 +13,13 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Dashboard')).toBeInTheDocument();
+        expect(screen.getByRole('navigation')).toBeInTheDocument();
+        expect(screen.getByRole('complementary')).toBeInTheDocument();
         expect(
-          screen.getByText(/Placeholder for analysis grid/)
+          screen.getByText(/Créez votre première analyse/)
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: 'Nouvelle Analyse' })
         ).toBeInTheDocument();
       });
     });
@@ -28,9 +32,10 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Global Analysis')).toBeInTheDocument();
+        expect(screen.getByRole('navigation')).toBeInTheDocument();
+        expect(screen.getByRole('complementary')).toBeInTheDocument();
         expect(
-          screen.getByText(/Placeholder for aggregated view/)
+          screen.getByText(/Aucune analyse - créez-en d'abord/)
         ).toBeInTheDocument();
       });
     });
@@ -43,9 +48,10 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Solutions')).toBeInTheDocument();
+        expect(screen.getByRole('navigation')).toBeInTheDocument();
+        expect(screen.getByRole('complementary')).toBeInTheDocument();
         expect(
-          screen.getByText(/Placeholder for V11 module/)
+          screen.getByText(/Complétez vos analyses ROI d'abord/)
         ).toBeInTheDocument();
       });
     });
@@ -58,8 +64,11 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Focus Mode')).toBeInTheDocument();
-        expect(screen.getByText(/Analysis ID: test-123/)).toBeInTheDocument();
+        expect(screen.getByRole('navigation')).toBeInTheDocument();
+        expect(screen.getByRole('complementary')).toBeInTheDocument();
+        expect(
+          screen.getByText(/Mode Focus pour l'analyse test-123/)
+        ).toBeInTheDocument();
       });
     });
 
@@ -87,8 +96,9 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Focus Mode')).toBeInTheDocument();
-        expect(screen.getByText(new RegExp(uuid))).toBeInTheDocument();
+        expect(
+          screen.getByText(new RegExp(`Mode Focus pour l'analyse ${uuid}`))
+        ).toBeInTheDocument();
       });
     });
 
@@ -100,8 +110,9 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Focus Mode')).toBeInTheDocument();
-        expect(screen.getByText(/Analysis ID: abc-123/)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Mode Focus pour l'analyse abc-123/)
+        ).toBeInTheDocument();
       });
     });
 
@@ -114,7 +125,9 @@ describe('[ROUTER] App Routing Integration Tests', () => {
 
       // Should redirect to Dashboard due to invalid ID
       await waitFor(() => {
-        expect(screen.getByText('Dashboard')).toBeInTheDocument();
+        expect(
+          screen.getByText(/Créez votre première analyse/)
+        ).toBeInTheDocument();
       });
     });
 
@@ -127,7 +140,9 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Dashboard')).toBeInTheDocument();
+        expect(
+          screen.getByText(/Créez votre première analyse/)
+        ).toBeInTheDocument();
       });
     });
   });
@@ -154,7 +169,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(document.title).toBe('Dashboard - ARGOS ROI Calculator');
+        expect(document.title).toBe('Analyses - ARGOS ROI Calculator');
       });
     });
 
@@ -184,7 +199,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
   });
 
   describe('Error Handling', () => {
-    it('should provide recovery link in FocusMode', async () => {
+    it('should render FocusMode placeholder for valid ID', async () => {
       render(
         <MemoryRouter initialEntries={['/analysis/valid-id']}>
           <AppRoutes />
@@ -192,7 +207,9 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/Back to Dashboard/)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Mode Focus pour l'analyse valid-id/)
+        ).toBeInTheDocument();
       });
     });
 
@@ -219,9 +236,12 @@ describe('[ROUTER] App Routing Integration Tests', () => {
         </MemoryRouter>
       );
 
-      // After lazy load completes, Dashboard should be visible
+      // After lazy load completes, Dashboard with NavigationBar should be visible
       await waitFor(() => {
-        expect(screen.getByText('Dashboard')).toBeInTheDocument();
+        expect(screen.getByRole('navigation')).toBeInTheDocument();
+        expect(
+          screen.getByText(/Créez votre première analyse/)
+        ).toBeInTheDocument();
       });
     });
   });

@@ -41,12 +41,12 @@ story_location: C:\Users\JBCHOLAT\ROI Calculator\_bmad-output\implementation-art
 
 development_status:
   # Epic 1: Foundation & UI Shell (5 stories)
-  epic-1: in-progress
+  epic-1: done
   1-1-project-initialization-with-vite-react-typescript: done
   1-2-zustand-store-and-typescript-types-setup: done
   1-3-react-router-configuration-with-route-structure: done
-  1-4-ui-primitive-components: review
-  1-5-application-shell-with-navigation-and-placeholder-pages: backlog
+  1-4-ui-primitive-components: done
+  1-5-application-shell-with-navigation-and-placeholder-pages: done
   epic-1-retrospective: optional
 
   # Epic 2: Single Analysis Creation & ROI Calculation (8 stories)

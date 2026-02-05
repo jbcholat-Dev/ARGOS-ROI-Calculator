@@ -1,4 +1,6 @@
 import { useEffect } from 'react';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { PlaceholderMessage } from '@/components/PlaceholderMessage';
 
 export function GlobalAnalysis() {
   useEffect(() => {
@@ -6,11 +8,8 @@ export function GlobalAnalysis() {
   }, []);
 
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold">Global Analysis</h1>
-      <p className="text-gray-600 mt-4">
-        Placeholder for aggregated view. Will be implemented in Epic 4.
-      </p>
-    </main>
+    <AppLayout>
+      <PlaceholderMessage message="Aucune analyse - créez-en d'abord" />
+    </AppLayout>
   );
 }
