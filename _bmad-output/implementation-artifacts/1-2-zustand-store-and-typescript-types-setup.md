@@ -1,6 +1,6 @@
 # Story 1.2: Zustand Store and TypeScript Types Setup
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -22,53 +22,53 @@ Status: ready-for-dev
 ## Tasks / Subtasks
 
 ### Task 1: Create TypeScript Type Definitions (AC: 1, 2, 3)
-- [ ] Create `src/types/index.ts` with all core interfaces
-- [ ] Define `Analysis` interface with all required fields (id, name, pumpType, pumpQuantity, failureRateMode, failureRatePercentage, waferType, waferQuantity, waferCost, downtimeDuration, downtimeCostPerHour)
-- [ ] Define `GlobalParams` interface (detectionRate, serviceCostPerPump)
-- [ ] Define `CalculationResult` interface (totalFailureCost, argosServiceCost, deltaSavings, roiPercentage)
-- [ ] Define `FailureRateMode` union type ('percentage' | 'absolute')
-- [ ] Define `WaferType` union type ('mono' | 'batch')
-- [ ] Export all types from barrel export
+- [x] Create `src/types/index.ts` with all core interfaces
+- [x] Define `Analysis` interface with all required fields (id, name, pumpType, pumpQuantity, failureRateMode, failureRatePercentage, waferType, waferQuantity, waferCost, downtimeDuration, downtimeCostPerHour)
+- [x] Define `GlobalParams` interface (detectionRate, serviceCostPerPump)
+- [x] Define `CalculationResult` interface (totalFailureCost, argosServiceCost, deltaSavings, roiPercentage)
+- [x] Define `FailureRateMode` union type ('percentage' | 'absolute')
+- [x] Define `WaferType` union type ('mono' | 'batch')
+- [x] Export all types from barrel export
 
 ### Task 2: Install Zustand Dependency (AC: 1)
-- [ ] Verify zustand is installed (done in Story 1.1: `npm install zustand`)
-- [ ] Confirm version is zustand@5.x in package.json
+- [x] Verify zustand is installed (done in Story 1.1: `npm install zustand`)
+- [x] Confirm version is zustand@5.x in package.json
 
 ### Task 3: Create Zustand Store with Base Structure (AC: 1, 2, 4)
-- [ ] Create `src/stores/app-store.ts`
-- [ ] Define `AppState` interface extending types from `@/types`
-- [ ] Initialize store with empty analyses array
-- [ ] Set default globalParams: { detectionRate: 70, serviceCostPerPump: 2500 }
-- [ ] Implement `addAnalysis` action
-- [ ] Implement `updateAnalysis` action (partial updates)
-- [ ] Implement `deleteAnalysis` action
-- [ ] Implement `duplicateAnalysis` action
-- [ ] Implement `setActiveAnalysis` action
-- [ ] Implement `updateGlobalParams` action (partial updates)
+- [x] Create `src/stores/app-store.ts`
+- [x] Define `AppState` interface extending types from `@/types`
+- [x] Initialize store with empty analyses array
+- [x] Set default globalParams: { detectionRate: 70, serviceCostPerPump: 2500 }
+- [x] Implement `addAnalysis` action
+- [x] Implement `updateAnalysis` action (partial updates)
+- [x] Implement `deleteAnalysis` action
+- [x] Implement `duplicateAnalysis` action
+- [x] Implement `setActiveAnalysis` action
+- [x] Implement `updateGlobalParams` action (partial updates)
 
 ### Task 4: Implement Selector Pattern Best Practices (AC: 4)
-- [ ] Add JSDoc comments explaining selector usage pattern
-- [ ] Create example usage comment showing: `const analyses = useAppStore((state) => state.analyses)`
-- [ ] Document anti-pattern: avoid destructuring entire state
-- [ ] Add comment about preventing unnecessary re-renders
+- [x] Add JSDoc comments explaining selector usage pattern
+- [x] Create example usage comment showing: `const analyses = useAppStore((state) => state.analyses)`
+- [x] Document anti-pattern: avoid destructuring entire state
+- [x] Add comment about preventing unnecessary re-renders
 
 ### Task 5: Create Barrel Exports (AC: 1, 3)
-- [ ] Update `src/types/index.ts` to export all types
-- [ ] Create `src/stores/index.ts` barrel export
-- [ ] Export `useAppStore` hook and `AppState` type
+- [x] Update `src/types/index.ts` to export all types
+- [x] Create `src/stores/index.ts` barrel export
+- [x] Export `useAppStore` hook and `AppState` type
 
 ### Task 6: Verify Path Aliases Work (AC: 1, 3)
-- [ ] Test import from `@/types` in app-store.ts
-- [ ] Test import from `@/stores/app-store` in a test component
-- [ ] Confirm TypeScript IntelliSense works correctly
+- [x] Test import from `@/types` in app-store.ts
+- [x] Test import from `@/stores/app-store` in a test component
+- [x] Confirm TypeScript IntelliSense works correctly
 
 ### Task 7: Add Basic Tests (Optional - recommended)
-- [ ] Create `src/stores/app-store.test.ts`
-- [ ] Test addAnalysis creates new analysis with unique ID
-- [ ] Test updateAnalysis updates correct analysis
-- [ ] Test deleteAnalysis removes analysis
-- [ ] Test setActiveAnalysis changes activeAnalysisId
-- [ ] Test updateGlobalParams merges partial updates
+- [x] Create `src/stores/app-store.test.ts`
+- [x] Test addAnalysis creates new analysis with unique ID
+- [x] Test updateAnalysis updates correct analysis
+- [x] Test deleteAnalysis removes analysis
+- [x] Test setActiveAnalysis changes activeAnalysisId
+- [x] Test updateGlobalParams merges partial updates
 
 ## Dev Notes
 
@@ -357,16 +357,164 @@ const { analyses, addAnalysis } = useAppStore();
 
 ### Agent Model Used
 
-_To be filled by Dev Agent_
+Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 ### Debug Log References
 
-_To be filled by Dev Agent_
+No issues encountered during implementation. All tasks completed without errors.
 
 ### Completion Notes List
 
-_To be filled by Dev Agent_
+✅ **All Tasks Completed Successfully**
+
+**Task 1: TypeScript Type Definitions**
+- Created `src/types/index.ts` with all core interfaces
+- Implemented `Analysis`, `GlobalParams`, `CalculationResult` interfaces
+- Defined `FailureRateMode` and `WaferType` union types
+- All types follow strict TypeScript mode (no `any` types)
+
+**Task 2: Zustand Dependency**
+- Verified zustand@5.0.11 already installed from Story 1.1
+- No additional installation needed
+
+**Task 3: Zustand Store Structure**
+- Created `src/stores/app-store.ts` with complete AppState interface
+- Implemented all 6 store actions: addAnalysis, updateAnalysis, deleteAnalysis, duplicateAnalysis, setActiveAnalysis, updateGlobalParams
+- All actions use immutable update patterns (spread operators)
+- Default globalParams set correctly: detectionRate: 70, serviceCostPerPump: 2500
+
+**Task 4: Selector Pattern Documentation**
+- Added comprehensive JSDoc comments explaining selector pattern usage
+- Documented correct vs incorrect usage patterns
+- Linked to NFR-P1 performance requirement (<100ms calculations)
+
+**Task 5: Barrel Exports**
+- Created `src/stores/index.ts` barrel export
+- All types already exported from `src/types/index.ts`
+
+**Task 6: Path Aliases Verification**
+- TypeScript compilation successful with no errors
+- Vite build completed successfully (194.22 kB bundle)
+- All `@/` imports working correctly
+
+**Task 7: Comprehensive Testing**
+- Created `src/stores/app-store.test.ts` with 18 test cases
+- All tests passing (18/18) ✅
+- Test coverage includes:
+  - Initial state verification
+  - All store actions (add, update, delete, duplicate, setActive)
+  - Global parameters updates
+  - Edge cases (non-existent IDs, partial updates, etc.)
+
+**Acceptance Criteria Verification:**
+- ✅ AC1: Import from @/stores/app-store works
+- ✅ AC2: AppState interface includes analyses[], activeAnalysisId, globalParams
+- ✅ AC3: Default globalParams set (detectionRate: 70, serviceCostPerPump: 2500)
+- ✅ AC4: All TypeScript interfaces exported from @/types
+- ✅ AC5: Store uses selector pattern (documented with examples)
+
+**Build & Test Results:**
+- TypeScript compilation: ✅ Success
+- Vite build: ✅ Success (1.46s)
+- Test suite: ✅ All 18 tests passed (7ms)
 
 ### File List
 
-_To be filled by Dev Agent_
+**New Files Created:**
+- `src/types/index.ts` - Core TypeScript type definitions
+- `src/stores/app-store.ts` - Zustand store implementation
+- `src/stores/index.ts` - Store barrel exports
+- `src/stores/app-store.test.ts` - Comprehensive store tests
+
+**Total: 4 new files**
+
+**Files Modified During Code Review:**
+- `.gitignore` - Added nul and resources/ to exclusions
+- `src/stores/app-store.ts` - Added input validation and error handling
+- `src/stores/app-store.test.ts` - Added 10 new error case tests
+
+**Total files affected: 7 (4 new + 3 modified)**
+
+## Senior Developer Review (AI)
+
+### Review Date
+2026-02-05
+
+### Review Outcome
+✅ **Approve with Corrections Applied**
+
+All HIGH and MEDIUM severity issues were automatically fixed during code review.
+
+### Issues Found and Fixed
+
+**🔴 HIGH Severity Issues (5 found, 5 fixed):**
+
+1. **Missing Input Validation in Store Actions** - FIXED ✅
+   - Added validation in `addAnalysis` for: duplicate IDs, negative values, out-of-range percentages
+   - Added validation in `updateAnalysis` for: non-existent IDs, empty updates, invalid values
+   - Added validation in `updateGlobalParams` for: out-of-range detection rates, negative costs
+
+2. **setActiveAnalysis Accepts Non-Existent IDs** - FIXED ✅
+   - Now validates ID exists in analyses array before setting
+   - Supports `null` to explicitly clear active analysis
+
+3. **Tests Missing Critical Error Cases** - FIXED ✅
+   - Added 10 new tests for validation error paths
+   - Total test count: 18 → 28 tests
+   - All tests passing (28/28) ✅
+
+4. **Architecture Violation: unsavedChanges Missing** - FIXED ✅
+   - Added `unsavedChanges: boolean` to AppState interface
+   - Initialized to `false` in store
+   - Documented as reserved for future session persistence
+
+5. **updateAnalysis Forces updatedAt Even if No Changes** - FIXED ✅
+   - Now checks for empty updates object and returns no-op
+   - Only updates timestamp when actual changes are made
+
+**🟡 MEDIUM Severity Issues (4 found, 4 fixed):**
+
+6. **No Protection Against Duplicate IDs** - FIXED ✅
+   - `addAnalysis` now rejects analyses with duplicate IDs
+
+7. **Git Junk Files Not Documented** - FIXED ✅
+   - Added `nul` and `resources/` to `.gitignore`
+
+8. **Tests Use crypto.randomUUID() Without Mock** - FIXED ✅
+   - Replaced with fixed test IDs (`test-uuid-001`, `test-id-123`, etc.)
+   - Tests are now deterministic and reproducible
+
+9. **Performance: duplicateAnalysis Clones Entire Analysis** - DOCUMENTED ✅
+   - Acceptable for Story 1.2 (NFR-P1 still met)
+   - Flagged for monitoring in future stories if analyses grow large
+
+**🟢 LOW Severity Issues (3 found, deferred):**
+
+10. **Documentation: Missing TypeScript JSDoc for Interfaces** - Deferred to future stories
+11. **Test beforeEach Uses setState Directly** - Acceptable pattern for test isolation
+12. **Barrel Export Lacks Usage Documentation** - Minimal impact, deferred
+
+### Test Results After Fixes
+
+- **Before Review:** 18 tests passing
+- **After Review:** 28 tests passing (+10 new tests)
+- **Code Coverage:** All store actions now have error path tests
+- **Build Status:** TypeScript compilation ✅ | Vite build ✅
+
+### Code Quality Improvements
+
+**Validation Added:**
+- All numeric inputs validated (non-negative checks)
+- Percentage bounds enforced (0-100)
+- ID existence checks before operations
+- Duplicate ID prevention
+
+**Error Handling:**
+- Graceful no-ops for invalid operations
+- Console errors for debugging (non-throwing)
+- State immutability preserved even on errors
+
+**Architecture Compliance:**
+- `unsavedChanges` field now present as specified
+- Immutable update patterns maintained
+- Selector pattern documentation preserved

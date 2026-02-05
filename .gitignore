@@ -22,3 +22,7 @@ dist/
 # IDE
 .vscode/
 .idea/
+
+# Temp/Debug files
+nul
+resources/
