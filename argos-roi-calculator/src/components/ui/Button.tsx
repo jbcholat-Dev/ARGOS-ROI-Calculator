@@ -25,26 +25,31 @@ export function Button({
   return (
     <button
       className={clsx(
-        // Layout & spacing
+        // Layout
         'inline-flex items-center justify-center',
-        'rounded font-medium transition-all duration-200',
+        'rounded',
+        // Spacing (size variants)
+        size === 'sm' && 'px-4 py-2',
+        size === 'md' && 'px-6 py-3',
+        size === 'lg' && 'px-8 py-4',
+        // Typography (size variants)
+        size === 'sm' && 'text-sm',
+        size === 'md' && 'text-base',
+        size === 'lg' && 'text-lg',
+        'font-medium',
+        // Colors (variant-based)
+        variant === 'primary' && 'bg-pfeiffer-red text-white',
+        variant === 'secondary' && 'bg-gray-200 text-gray-700',
+        variant === 'ghost' && 'bg-transparent text-pfeiffer-red',
+        variant === 'danger' && 'bg-pfeiffer-red text-white',
+        // Effects
+        'transition-all duration-200',
+        variant === 'primary' && 'hover:bg-pfeiffer-red-dark',
+        variant === 'secondary' && 'hover:bg-gray-300',
+        variant === 'ghost' && 'hover:bg-gray-100',
+        variant === 'danger' && 'hover:bg-pfeiffer-red-dark',
+        // States
         'focus:outline-none focus:ring-2 focus:ring-pfeiffer-red focus:ring-offset-2',
-
-        // Size variants
-        size === 'sm' && 'px-4 py-2 text-sm',
-        size === 'md' && 'px-6 py-3 text-base',
-        size === 'lg' && 'px-8 py-4 text-lg',
-
-        // Color variants
-        variant === 'primary' &&
-          'bg-pfeiffer-red text-white hover:bg-pfeiffer-red-dark',
-        variant === 'secondary' &&
-          'bg-gray-200 text-gray-700 hover:bg-gray-300',
-        variant === 'ghost' &&
-          'bg-transparent text-pfeiffer-red hover:bg-gray-100',
-        variant === 'danger' && 'bg-red-600 text-white hover:bg-red-700',
-
-        // Disabled/loading state
         isDisabled && 'opacity-50 cursor-not-allowed',
 
         className,

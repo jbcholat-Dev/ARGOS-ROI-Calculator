@@ -19,6 +19,9 @@ export default {
           card: '#FFFFFF',
           alternate: '#E7E6E6',
         },
+        toast: {
+          info: '#009DA5',
+        },
       },
       fontSize: {
         hero: ['40px', { lineHeight: '1.2' }],

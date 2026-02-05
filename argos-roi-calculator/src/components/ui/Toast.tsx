@@ -31,7 +31,7 @@ const variantConfig = {
     live: 'assertive' as const,
   },
   info: {
-    bg: 'bg-blue-500',
+    bg: 'bg-toast-info',
     icon: 'ℹ️',
     role: 'status' as const,
     live: 'polite' as const,
@@ -63,14 +63,17 @@ export function Toast({
       role={config.role}
       aria-live={config.live}
       className={clsx(
-        // Layout & spacing
-        'flex items-center justify-between gap-4',
-        'px-6 py-4',
+        // Layout
+        'flex items-center justify-between',
         'min-w-[320px] max-w-md',
         'rounded-lg',
+        // Spacing
+        'gap-4',
+        'px-6 py-4',
         // Colors
         config.bg,
         'text-white',
+        // Effects
         'shadow-lg',
         // Animation
         'animate-in slide-in-from-right duration-300',

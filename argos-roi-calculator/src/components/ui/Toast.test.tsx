@@ -55,7 +55,7 @@ describe('Toast', () => {
     );
 
     const toast = screen.getByRole('status');
-    expect(toast).toHaveClass('bg-blue-500', 'text-white');
+    expect(toast).toHaveClass('bg-toast-info', 'text-white');
     expect(screen.getByText('ℹ️')).toBeInTheDocument();
   });
 

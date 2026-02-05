@@ -15,6 +15,15 @@ export function Card({
 }: CardProps) {
   const isClickable = clickable || !!onClick;
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!isClickable || !onClick) return;
+
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+    }
+  };
+
   return (
     <div
       className={clsx(
@@ -32,6 +41,7 @@ export function Card({
         className,
       )}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
       {...rest}

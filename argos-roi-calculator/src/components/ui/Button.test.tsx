@@ -37,7 +37,7 @@ describe('Button', () => {
   it('renders danger variant with correct styles', () => {
     render(<Button variant="danger">Danger</Button>);
     const button = screen.getByText('Danger');
-    expect(button).toHaveClass('bg-red-600', 'text-white');
+    expect(button).toHaveClass('bg-pfeiffer-red', 'text-white');
   });
 
   it('renders small size correctly', () => {

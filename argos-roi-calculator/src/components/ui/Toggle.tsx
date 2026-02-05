@@ -6,7 +6,7 @@ export interface ToggleOption {
 }
 
 export interface ToggleProps {
-  options: [ToggleOption, ToggleOption];
+  options: readonly [ToggleOption, ToggleOption];
   value: string;
   onChange: (value: string) => void;
   label?: string;
@@ -32,12 +32,10 @@ export function Toggle({
       onChange(optionValue);
     } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
-      // Toggle to other option
+      // Toggle to the other option
       const currentIndex = options.findIndex((opt) => opt.value === value);
-      const nextIndex = e.key === 'ArrowLeft' ? 0 : 1;
-      if (nextIndex !== currentIndex) {
-        onChange(options[nextIndex].value);
-      }
+      const otherIndex = currentIndex === 0 ? 1 : 0;
+      onChange(options[otherIndex].value);
     }
   };
 
@@ -73,7 +71,9 @@ export function Toggle({
                 // Active state
                 isActive
                   ? 'bg-pfeiffer-red text-white shadow-sm'
-                  : 'bg-transparent text-gray-700 hover:bg-gray-200',
+                  : 'bg-transparent text-gray-700',
+                // Hover state (only when not disabled)
+                !disabled && !isActive && 'hover:bg-gray-200',
                 // Disabled state
                 disabled && 'opacity-50 cursor-not-allowed',
                 // Focus state
