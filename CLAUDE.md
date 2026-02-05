@@ -50,10 +50,10 @@ This project uses the BMAD (Business Model Agile Development) framework for stru
 |-------|----------|---------|--------|
 | 2-planning | Create Product Brief | `/bmad-bmm-create-product-brief` | DONE |
 | 2-planning | Create PRD | `/bmad-bmm-create-prd` | DONE |
-| 2-planning | Create UX Design | `/bmad-bmm-create-ux-design` | IN PROGRESS (Step 9/14 complete) |
-| 3-solutioning | Create Architecture | `/bmad-bmm-create-architecture` | Pending |
-| 3-solutioning | Create Epics & Stories | `/bmad-bmm-create-epics-and-stories` | Pending |
-| 3-solutioning | Implementation Readiness | `/bmad-bmm-check-implementation-readiness` | Pending |
+| 2-planning | Create UX Design | `/bmad-bmm-create-ux-design` | DONE |
+| 3-solutioning | Create Architecture | `/bmad-bmm-create-architecture` | DONE |
+| 3-solutioning | Create Epics & Stories | `/bmad-bmm-create-epics-and-stories` | DONE |
+| 3-solutioning | Implementation Readiness | `/bmad-bmm-check-implementation-readiness` | DONE |
 | 4-implementation | Sprint Planning | `/bmad-bmm-sprint-planning` | Pending |
 | 4-implementation | Create/Dev Stories | `/bmad-bmm-create-story` / `/bmad-bmm-dev-story` | Pending |
 
