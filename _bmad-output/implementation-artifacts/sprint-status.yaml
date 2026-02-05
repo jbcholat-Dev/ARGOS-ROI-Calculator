@@ -1,0 +1,94 @@
+# generated: 2026-02-05
+# project: ROI Calculator
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: C:\Users\JBCHOLAT\ROI Calculator\_bmad-output\implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-02-05
+project: ROI Calculator
+project_key: NOKEY
+tracking_system: file-system
+story_location: C:\Users\JBCHOLAT\ROI Calculator\_bmad-output\implementation-artifacts
+
+development_status:
+  # Epic 1: Foundation & UI Shell (5 stories)
+  epic-1: backlog
+  1-1-project-initialization-with-vite-react-typescript: backlog
+  1-2-zustand-store-and-typescript-types-setup: backlog
+  1-3-react-router-configuration-with-route-structure: backlog
+  1-4-ui-primitive-components: backlog
+  1-5-application-shell-with-navigation-and-placeholder-pages: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2: Single Analysis Creation & ROI Calculation (8 stories)
+  epic-2: backlog
+  2-1-analysis-creation-modal-and-store-integration: backlog
+  2-2-equipment-input-fields-pump-type-quantity: backlog
+  2-3-failure-rate-dual-mode-input: backlog
+  2-4-wafer-type-and-cost-inputs: backlog
+  2-5-downtime-input-fields: backlog
+  2-6-roi-calculation-engine: backlog
+  2-7-results-panel-with-real-time-display: backlog
+  2-8-analysis-rename-and-active-state-indicator: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Multi-Analysis Management (4 stories)
+  epic-3: backlog
+  3-1-dashboard-grid-with-analysis-cards: backlog
+  3-2-card-navigation-to-focus-mode: backlog
+  3-3-analysis-duplicate-and-delete-actions: backlog
+  3-4-global-parameters-adjustment-with-propagation: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Global Analysis & Comparison (3 stories)
+  epic-4: backlog
+  4-1-global-analysis-view-with-aggregated-metrics: backlog
+  4-2-comparison-table-side-by-side: backlog
+  4-3-navigation-links-and-session-stability: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: PDF Export & Reporting (4 stories)
+  epic-5: backlog
+  5-1-pdf-export-button-with-progress-state: backlog
+  5-2-pdf-template-with-pfeiffer-branding: backlog
+  5-3-pdf-content-structure-executive-summary-breakdown-assumptions: backlog
+  5-4-pdf-generation-error-handling: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Solutions Module (V11) (5 stories)
+  epic-6: backlog
+  6-1-solutions-navigation-from-global-analysis: backlog
+  6-2-pre-filled-context-from-roi-analyses: backlog
+  6-3-technical-specifications-form: backlog
+  6-4-argos-architecture-diagram: backlog
+  6-5-unified-pdf-export-v10-v11: backlog
+  epic-6-retrospective: optional
