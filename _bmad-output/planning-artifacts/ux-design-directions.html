@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARGOS ROI Calculator V10 - Design Directions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Pfeiffer Brand Colors */
+            --pfeiffer-red: #CC0000;
+            --pfeiffer-red-dark: #A50000;
+            --busch-orange: #FF5800;
+            --turquoise: #009DA5;
+            --roi-positive: #28A745;
+
+            /* Neutrals */
+            --black: #000000;
+            --dark-gray: #44546A;
+            --light-gray-1: #E7E6E6;
+            --light-gray-2: #D8DBDB;
+            --light-gray-3: #F1F2F2;
+            --white: #FFFFFF;
+
+            /* Typography */
+            --font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--dark-gray);
+            color: var(--white);
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        .nav-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--black);
+            border-bottom: 2px solid var(--pfeiffer-red);
+            z-index: 1000;
+            padding: var(--space-lg) var(--space-xl);
+        }
+
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .nav-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: -0.02em;
+        }
+
+        .nav-title .brand {
+            color: var(--pfeiffer-red);
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+        }
+
+        .direction-selector {
+            display: flex;
+            gap: var(--space-sm);
+            background: var(--dark-gray);
+            padding: var(--space-xs);
+            border-radius: 6px;
+            border: 1px solid var(--light-gray-2);
+        }
+
+        .direction-btn {
+            padding: var(--space-sm) var(--space-md);
+            background: transparent;
+            border: none;
+            color: var(--light-gray-1);
+            font-family: var(--font-family);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .direction-btn:hover {
+            background: var(--light-gray-2);
+            color: var(--black);
+        }
+
+        .direction-btn.active {
+            background: var(--pfeiffer-red);
+            color: var(--white);
+        }
+
+        .comparison-mode-btn {
+            padding: var(--space-sm) var(--space-lg);
+            background: var(--turquoise);
+            border: none;
+            color: var(--white);
+            font-family: var(--font-family);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .comparison-mode-btn:hover {
+            background: #007A82;
+            transform: translateY(-1px);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: var(--space-xl);
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .direction-container {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .direction-container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .direction-header {
+            margin-bottom: var(--space-xl);
+            padding: var(--space-lg);
+            background: var(--black);
+            border-left: 4px solid var(--pfeiffer-red);
+            border-radius: 4px;
+        }
+
+        .direction-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: var(--space-sm);
+        }
+
+        .direction-description {
+            font-size: 14px;
+            color: var(--light-gray-1);
+            line-height: 1.5;
+        }
+
+        /* Mockup Frame */
+        .mockup-frame {
+            background: var(--white);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            margin-bottom: var(--space-2xl);
+        }
+
+        /* Common Mockup Styles */
+        .mockup {
+            min-height: 800px;
+            font-family: var(--font-family);
+        }
+
+        .mockup-sidebar {
+            background: var(--light-gray-3);
+            border-right: 2px solid var(--light-gray-2);
+            padding: var(--space-lg);
+        }
+
+        .mockup-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-lg);
+            background: var(--white);
+            border-bottom: 2px solid var(--light-gray-1);
+        }
+
+        .logo-placeholder {
+            width: 40px;
+            height: 40px;
+            background: var(--pfeiffer-red);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .app-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        .global-params {
+            background: var(--white);
+            padding: var(--space-lg);
+            border-radius: 6px;
+            margin-bottom: var(--space-lg);
+        }
+
+        .param-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--black);
+            margin-bottom: var(--space-sm);
+        }
+
+        .param-input {
+            width: 100%;
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--light-gray-2);
+            border-radius: 4px;
+            font-family: var(--font-family);
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: var(--space-md);
+        }
+
+        .param-input:focus {
+            outline: 2px solid var(--pfeiffer-red);
+            border-color: var(--pfeiffer-red);
+        }
+
+        .analysis-card {
+            background: var(--white);
+            border: 2px solid var(--light-gray-1);
+            border-radius: 8px;
+            padding: var(--space-lg);
+            margin-bottom: var(--space-lg);
+            transition: all 0.2s ease;
+        }
+
+        .analysis-card:hover {
+            border-color: var(--pfeiffer-red);
+            box-shadow: 0 4px 12px rgba(204, 0, 0, 0.1);
+        }
+
+        .process-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--black);
+            margin-bottom: var(--space-md);
+        }
+
+        .process-meta {
+            display: flex;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+            font-size: 14px;
+            color: var(--dark-gray);
+        }
+
+        .results-section {
+            background: var(--light-gray-3);
+            padding: var(--space-lg);
+            border-radius: 6px;
+            margin-top: var(--space-lg);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-md) 0;
+            border-bottom: 1px solid var(--light-gray-2);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: var(--dark-gray);
+        }
+
+        .result-value {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .result-hero {
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .roi-negative { color: var(--pfeiffer-red); }
+        .roi-warning { color: var(--busch-orange); }
+        .roi-positive { color: var(--roi-positive); }
+
+        /* Direction 1: Classic Sidebar */
+        .direction-1 .mockup {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            height: 800px;
+        }
+
+        .direction-1 .content-area {
+            padding: var(--space-xl);
+            background: var(--light-gray-3);
+            overflow-y: auto;
+        }
+
+        /* Direction 2: Top Navigation */
+        .direction-2 .mockup {
+            display: flex;
+            flex-direction: column;
+            height: 800px;
+        }
+
+        .direction-2 .top-nav {
+            display: flex;
+            gap: var(--space-lg);
+            padding: var(--space-md) var(--space-xl);
+            background: var(--light-gray-3);
+            border-bottom: 2px solid var(--light-gray-2);
+        }
+
+        .direction-2 .nav-item {
+            padding: var(--space-sm) var(--space-lg);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark-gray);
+            text-decoration: none;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .direction-2 .nav-item.active {
+            color: var(--pfeiffer-red);
+            border-bottom-color: var(--pfeiffer-red);
+        }
+
+        .direction-2 .content-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .direction-2 .collapsible-sidebar {
+            width: 240px;
+            background: var(--white);
+            border-right: 2px solid var(--light-gray-1);
+            padding: var(--space-lg);
+            overflow-y: auto;
+        }
+
+        .direction-2 .main-area {
+            flex: 1;
+            padding: var(--space-xl);
+            background: var(--light-gray-3);
+            overflow-y: auto;
+        }
+
+        /* Direction 3: Minimal Single Panel */
+        .direction-3 .mockup {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-2xl);
+            background: var(--light-gray-3);
+            min-height: 800px;
+        }
+
+        .direction-3 .single-panel {
+            max-width: 900px;
+            width: 100%;
+            background: var(--white);
+            border-radius: 12px;
+            padding: var(--space-2xl);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        }
+
+        .direction-3 .panel-header {
+            text-align: center;
+            margin-bottom: var(--space-2xl);
+            padding-bottom: var(--space-xl);
+            border-bottom: 2px solid var(--light-gray-1);
+        }
+
+        .direction-3 .panel-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--black);
+            margin-bottom: var(--space-sm);
+        }
+
+        .direction-3 .panel-subtitle {
+            font-size: 14px;
+            color: var(--dark-gray);
+        }
+
+        /* Direction 4: Dashboard Grid */
+        .direction-4 .mockup {
+            padding: var(--space-xl);
+            background: var(--light-gray-3);
+            min-height: 800px;
+        }
+
+        .direction-4 .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        .direction-4 .card-compact {
+            background: var(--white);
+            border-radius: 8px;
+            padding: var(--space-lg);
+            border: 2px solid var(--light-gray-1);
+            transition: all 0.2s ease;
+        }
+
+        .direction-4 .card-compact:hover {
+            border-color: var(--pfeiffer-red);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(204, 0, 0, 0.15);
+        }
+
+        .direction-4 .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: var(--space-md);
+        }
+
+        .direction-4 .card-actions {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .direction-4 .icon-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            border: 1px solid var(--light-gray-2);
+            background: var(--white);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .direction-4 .icon-btn:hover {
+            background: var(--pfeiffer-red);
+            border-color: var(--pfeiffer-red);
+            color: var(--white);
+        }
+
+        .direction-4 .roi-badge {
+            display: inline-block;
+            padding: var(--space-xs) var(--space-md);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: var(--space-sm);
+        }
+
+        .direction-4 .roi-badge.positive {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--roi-positive);
+        }
+
+        .direction-4 .roi-badge.warning {
+            background: rgba(255, 88, 0, 0.1);
+            color: var(--busch-orange);
+        }
+
+        /* Direction 5: List Compact */
+        .direction-5 .mockup {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            height: 800px;
+        }
+
+        .direction-5 .list-sidebar {
+            background: var(--white);
+            border-right: 2px solid var(--light-gray-1);
+            padding: var(--space-lg);
+            overflow-y: auto;
+        }
+
+        .direction-5 .list-item {
+            padding: var(--space-md);
+            margin-bottom: var(--space-sm);
+            border-radius: 6px;
+            border: 1px solid var(--light-gray-2);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .direction-5 .list-item:hover {
+            background: var(--light-gray-3);
+            border-color: var(--pfeiffer-red);
+        }
+
+        .direction-5 .list-item.active {
+            background: var(--pfeiffer-red);
+            border-color: var(--pfeiffer-red);
+            color: var(--white);
+        }
+
+        .direction-5 .list-item-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+
+        .direction-5 .list-item-meta {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .direction-5 .detail-panel {
+            padding: var(--space-xl);
+            background: var(--light-gray-3);
+            overflow-y: auto;
+        }
+
+        /* Direction 6: Split Screen */
+        .direction-6 .mockup {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 800px;
+        }
+
+        .direction-6 .split-left {
+            padding: var(--space-xl);
+            background: var(--white);
+            border-right: 2px solid var(--light-gray-2);
+            overflow-y: auto;
+        }
+
+        .direction-6 .split-right {
+            padding: var(--space-xl);
+            background: var(--light-gray-3);
+            overflow-y: auto;
+        }
+
+        .direction-6 .split-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-md);
+            border-bottom: 2px solid var(--light-gray-2);
+        }
+
+        /* Comparison Mode */
+        .comparison-container {
+            display: none;
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--dark-gray);
+            z-index: 999;
+            padding: var(--space-xl);
+        }
+
+        .comparison-container.active {
+            display: block;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: var(--space-lg);
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .comparison-item {
+            background: var(--black);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--dark-gray);
+            transition: all 0.2s ease;
+        }
+
+        .comparison-item:hover {
+            border-color: var(--pfeiffer-red);
+        }
+
+        .comparison-label {
+            padding: var(--space-md);
+            background: var(--dark-gray);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--white);
+            border-bottom: 1px solid var(--light-gray-2);
+        }
+
+        .comparison-preview {
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .comparison-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Action Button */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md) var(--space-xl);
+            background: var(--pfeiffer-red);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            font-family: var(--font-family);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--pfeiffer-red-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(204, 0, 0, 0.3);
+        }
+
+        .action-btn-secondary {
+            background: var(--white);
+            color: var(--pfeiffer-red);
+            border: 2px solid var(--pfeiffer-red);
+        }
+
+        .action-btn-secondary:hover {
+            background: var(--pfeiffer-red);
+            color: var(--white);
+        }
+
+        /* Utilities */
+        .mb-lg { margin-bottom: var(--space-lg); }
+        .mb-xl { margin-bottom: var(--space-xl); }
+        .text-center { text-align: center; }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light-gray-3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--light-gray-2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--dark-gray);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="nav-container">
+        <div class="nav-header">
+            <div class="nav-title">
+                <span class="brand">ARGOS</span> ROI Calculator V10 — Design Directions
+            </div>
+            <div class="nav-controls">
+                <div class="direction-selector">
+                    <button class="direction-btn active" data-direction="1">D1</button>
+                    <button class="direction-btn" data-direction="2">D2</button>
+                    <button class="direction-btn" data-direction="3">D3</button>
+                    <button class="direction-btn" data-direction="4">D4</button>
+                    <button class="direction-btn" data-direction="5">D5</button>
+                    <button class="direction-btn" data-direction="6">D6</button>
+                </div>
+                <button class="comparison-mode-btn" id="comparisonBtn">Compare All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Direction 1: Classic Sidebar Layout -->
+        <div class="direction-container active direction-1">
+            <div class="direction-header">
+                <div class="direction-name">Direction 1: Classic Sidebar + Content</div>
+                <div class="direction-description">
+                    Persistent left sidebar with global parameters. Primary navigation in sidebar. Analysis cards in scrollable content area. Familiar enterprise SaaS pattern. Maximizes screen real estate for data. Global params always visible for quick adjustments during live sessions.
+                </div>
+            </div>
+            <div class="mockup-frame">
+                <div class="mockup">
+                    <div class="mockup-sidebar">
+                        <div class="mockup-header" style="background: transparent; border: none; padding: 0 0 var(--space-lg) 0;">
+                            <div class="logo-placeholder">A</div>
+                            <div class="app-title">ARGOS ROI</div>
+                        </div>
+
+                        <div class="global-params">
+                            <div style="font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--dark-gray); margin-bottom: var(--space-md);">Global Parameters</div>
+                            <div class="param-label">ARGOS Detection Rate (%)</div>
+                            <input type="text" class="param-input" value="70" readonly>
+
+                            <div class="param-label">Service Cost per Pump (€/year)</div>
+                            <input type="text" class="param-input" value="2,500" readonly>
+                        </div>
+
+                        <button class="action-btn" style="width: 100%;">+ New Analysis</button>
+                    </div>
+
+                    <div class="content-area">
+                        <h1 style="font-size: 28px; font-weight: 700; color: var(--black); margin-bottom: var(--space-xl);">Analyses</h1>
+
+                        <div class="analysis-card">
+                            <div class="process-name">Poly Etch — Chamber 04</div>
+                            <div class="process-meta">
+                                <span><strong>Pump:</strong> A3004XN</span>
+                                <span><strong>Qty:</strong> 12 pumps</span>
+                                <span><strong>Type:</strong> Batch</span>
+                            </div>
+
+                            <div class="results-section">
+                                <div class="result-item">
+                                    <span class="result-label">Total Failure Cost (without ARGOS)</span>
+                                    <span class="result-value roi-negative">€2,100,000</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">ARGOS Service Cost</span>
+                                    <span class="result-value">€30,000</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Savings with ARGOS</span>
+                                    <span class="result-hero roi-positive">€1,470,000</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">ROI Ratio</span>
+                                    <span class="result-hero roi-positive">180%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="analysis-card">
+                            <div class="process-name">Metal Deposition — Tool A</div>
+                            <div class="process-meta">
+                                <span><strong>Pump:</strong> HiPace 2300</span>
+                                <span><strong>Qty:</strong> 8 pumps</span>
+                                <span><strong>Type:</strong> Mono-wafer</span>
+                            </div>
+
+                            <div class="results-section">
+                                <div class="result-item">
+                                    <span class="result-label">Total Failure Cost (without ARGOS)</span>
+                                    <span class="result-value roi-negative">€850,000</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">ARGOS Service Cost</span>
+                                    <span class="result-value">€20,000</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Savings with ARGOS</span>
+                                    <span class="result-hero roi-warning">€175,000</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">ROI Ratio</span>
+                                    <span class="result-hero roi-warning">12%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direction 2: Top Navigation with Collapsible Sidebar -->
+        <div class="direction-container direction-2">
+            <div class="direction-header">
+                <div class="direction-name">Direction 2: Top Navigation + Collapsible Sidebar</div>
+                <div class="direction-description">
+                    Horizontal top navigation for primary views (Analyses / Global Analysis / Solutions). Collapsible left sidebar for secondary controls. Modern app pattern. Maximizes vertical space. Sidebar can collapse to icons-only for larger workspace. Good for users who prefer horizontal orientation.
+                </div>
+            </div>
+            <div class="mockup-frame">
+                <div class="mockup">
+                    <div class="mockup-header">
+                        <div class="logo-placeholder">A</div>
+                        <div class="app-title">ARGOS ROI Calculator</div>
+                    </div>
+
+                    <div class="top-nav">
+                        <a href="#" class="nav-item active">Analyses</a>
+                        <a href="#" class="nav-item">Global Analysis</a>
+                        <a href="#" class="nav-item">Solutions</a>
+                    </div>
+
+                    <div class="content-wrapper">
+                        <div class="collapsible-sidebar">
+                            <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--dark-gray); margin-bottom: var(--space-md);">Global Params</div>
+                            <div class="param-label">Detection Rate</div>
+                            <input type="text" class="param-input" value="70%" readonly style="margin-bottom: var(--space-lg);">
+
+                            <div class="param-label">Service Cost</div>
+                            <input type="text" class="param-input" value="€2,500" readonly style="margin-bottom: var(--space-lg);">
+
+                            <button class="action-btn" style="width: 100%; font-size: 13px;">+ New</button>
+                        </div>
+
+                        <div class="main-area">
+                            <div class="analysis-card">
+                                <div class="process-name">Poly Etch — Chamber 04</div>
+                                <div class="process-meta">
+                                    <span><strong>A3004XN</strong> • 12 pumps • Batch</span>
+                                </div>
+
+                                <div class="results-section">
+                                    <div class="result-item">
+                                        <span class="result-label">Failure Cost</span>
+                                        <span class="result-value roi-negative">€2.1M</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">Savings</span>
+                                        <span class="result-hero roi-positive">€1.47M</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">ROI</span>
+                                        <span class="result-hero roi-positive">180%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="analysis-card">
+                                <div class="process-name">CMP — Batch Line 2</div>
+                                <div class="process-meta">
+                                    <span><strong>OnTool Booster</strong> • 6 pumps • Batch</span>
+                                </div>
+
+                                <div class="results-section">
+                                    <div class="result-item">
+                                        <span class="result-label">Failure Cost</span>
+                                        <span class="result-value roi-negative">€1.2M</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">Savings</span>
+                                        <span class="result-hero roi-positive">€840K</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">ROI</span>
+                                        <span class="result-hero roi-positive">145%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direction 3: Minimal Single Panel Focus -->
+        <div class="direction-container direction-3">
+            <div class="direction-header">
+                <div class="direction-name">Direction 3: Minimal Single-Panel Focus</div>
+                <div class="direction-description">
+                    Centered single-panel design. One analysis at a time in maximum detail. Clean, distraction-free. Perfect for screen-sharing and projected displays. Navigation via breadcrumbs or tabs within panel. Emphasizes the "conversational calculation" workflow. Forces focus on one process at a time.
+                </div>
+            </div>
+            <div class="mockup-frame">
+                <div class="mockup">
+                    <div class="single-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Poly Etch — Chamber 04</div>
+                            <div class="panel-subtitle">Analysis 1 of 3</div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-xl);">
+                            <div>
+                                <div class="param-label">Pump Model</div>
+                                <input type="text" class="param-input" value="A3004XN — 3000 m³/h" readonly>
+                            </div>
+                            <div>
+                                <div class="param-label">Quantity</div>
+                                <input type="text" class="param-input" value="12 pumps" readonly>
+                            </div>
+                            <div>
+                                <div class="param-label">Wafer Type</div>
+                                <input type="text" class="param-input" value="Batch (125 wafers)" readonly>
+                            </div>
+                            <div>
+                                <div class="param-label">Failure Rate</div>
+                                <input type="text" class="param-input" value="3.0%" readonly>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--light-gray-3); padding: var(--space-2xl); border-radius: 8px; text-align: center;">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-xl);">
+                                <div>
+                                    <div style="font-size: 12px; font-weight: 600; color: var(--dark-gray); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-sm);">Act 1: The Risk</div>
+                                    <div class="result-hero roi-negative">€2.1M</div>
+                                    <div style="font-size: 14px; color: var(--dark-gray); margin-top: var(--space-xs);">Failure Cost</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 12px; font-weight: 600; color: var(--dark-gray); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-sm);">Act 2: The Value</div>
+                                    <div class="result-hero roi-positive">€1.47M</div>
+                                    <div style="font-size: 14px; color: var(--dark-gray); margin-top: var(--space-xs);">Savings</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 12px; font-weight: 600; color: var(--dark-gray); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-sm);">Act 3: The Proof</div>
+                                    <div class="result-hero roi-positive">180%</div>
+                                    <div style="font-size: 14px; color: var(--dark-gray); margin-top: var(--space-xs);">ROI Ratio</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: var(--space-md); margin-top: var(--space-xl); justify-content: center;">
+                            <button class="action-btn action-btn-secondary">← Previous</button>
+                            <button class="action-btn">Next Analysis →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direction 4: Dashboard Card Grid -->
+        <div class="direction-container direction-4">
+            <div class="direction-header">
+                <div class="direction-name">Direction 4: Dashboard Card Grid</div>
+                <div class="direction-description">
+                    Multi-column card grid. Overview-first approach. All analyses visible at once. Each card shows summary with expand-to-detail interaction. Quick visual comparison. Scalable to 5+ analyses. Hover states reveal actions. Good for power users managing multiple scenarios simultaneously.
+                </div>
+            </div>
+            <div class="mockup-frame">
+                <div class="mockup">
+                    <div class="mockup-header">
+                        <div class="logo-placeholder">A</div>
+                        <div class="app-title">ARGOS ROI Calculator</div>
+                        <div style="margin-left: auto;">
+                            <button class="action-btn">+ New Analysis</button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="card-compact">
+                            <div class="card-header">
+                                <div>
+                                    <div class="process-name" style="font-size: 16px; margin-bottom: var(--space-xs);">Poly Etch — Chamber 04</div>
+                                    <div style="font-size: 12px; color: var(--dark-gray);">A3004XN • 12 pumps • Batch</div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="icon-btn">⋮</button>
+                                </div>
+                            </div>
+
+                            <div style="background: var(--light-gray-3); padding: var(--space-md); border-radius: 6px; margin-bottom: var(--space-md);">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                                    <span style="font-size: 12px; color: var(--dark-gray);">Savings</span>
+                                    <span style="font-size: 20px; font-weight: 700; color: var(--roi-positive);">€1.47M</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-size: 12px; color: var(--dark-gray);">ROI</span>
+                                    <span style="font-size: 20px; font-weight: 700; color: var(--roi-positive);">180%</span>
+                                </div>
+                            </div>
+
+                            <div class="roi-badge positive">High ROI — Excellent Candidate</div>
+                        </div>
+
+                        <div class="card-compact">
+                            <div class="card-header">
+                                <div>
+                                    <div class="process-name" style="font-size: 16px; margin-bottom: var(--space-xs);">Metal Deposition — Tool A</div>
+                                    <div style="font-size: 12px; color: var(--dark-gray);">HiPace 2300 • 8 pumps • Mono</div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="icon-btn">⋮</button>
+                                </div>
+                            </div>
+
+                            <div style="background: var(--light-gray-3); padding: var(--space-md); border-radius: 6px; margin-bottom: var(--space-md);">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                                    <span style="font-size: 12px; color: var(--dark-gray);">Savings</span>
+                                    <span style="font-size: 20px; font-weight: 700; color: var(--busch-orange);">€175K</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-size: 12px; color: var(--dark-gray);">ROI</span>
+                                    <span style="font-size: 20px; font-weight: 700; color: var(--busch-orange);">12%</span>
+                                </div>
+                            </div>
+
+                            <div class="roi-badge warning">Moderate ROI — Review Scope</div>
+                        </div>
+
+                        <div class="card-compact">
+                            <div class="card-header">
+                                <div>
+                                    <div class="process-name" style="font-size: 16px; margin-bottom: var(--space-xs);">CMP — Batch Line 2</div>
+                                    <div style="font-size: 12px; color: var(--dark-gray);">OnTool Booster • 6 pumps • Batch</div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="icon-btn">⋮</button>
+                                </div>
+                            </div>
+
+                            <div style="background: var(--light-gray-3); padding: var(--space-md); border-radius: 6px; margin-bottom: var(--space-md);">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                                    <span style="font-size: 12px; color: var(--dark-gray);">Savings</span>
+                                    <span style="font-size: 20px; font-weight: 700; color: var(--roi-positive);">€840K</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-size: 12px; color: var(--dark-gray);">ROI</span>
+                                    <span style="font-size: 20px; font-weight: 700; color: var(--roi-positive);">145%</span>
+                                </div>
+                            </div>
+
+                            <div class="roi-badge positive">High ROI — Excellent Candidate</div>
+                        </div>
+
+                        <div class="card-compact" style="border: 2px dashed var(--light-gray-2); display: flex; align-items: center; justify-content: center; min-height: 200px; cursor: pointer;">
+                            <div style="text-align: center; color: var(--dark-gray);">
+                                <div style="font-size: 48px; margin-bottom: var(--space-md); opacity: 0.3;">+</div>
+                                <div style="font-size: 14px; font-weight: 600;">Add New Analysis</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direction 5: List + Detail Compact -->
+        <div class="direction-container direction-5">
+            <div class="direction-header">
+                <div class="direction-name">Direction 5: List-Based Compact View</div>
+                <div class="direction-description">
+                    Master-detail pattern. Compact list on left, full detail on right. Efficient use of space. Fast switching between analyses. List shows process name + quick ROI indicator. Selected analysis expands in detail panel. Traditional desktop app pattern. Familiar to technical users.
+                </div>
+            </div>
+            <div class="mockup-frame">
+                <div class="mockup">
+                    <div class="list-sidebar">
+                        <div style="margin-bottom: var(--space-lg);">
+                            <button class="action-btn" style="width: 100%; font-size: 13px;">+ New Analysis</button>
+                        </div>
+
+                        <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--dark-gray); margin-bottom: var(--space-md);">Analyses (3)</div>
+
+                        <div class="list-item active">
+                            <div class="list-item-name">Poly Etch — Chamber 04</div>
+                            <div class="list-item-meta">ROI: 180% • €1.47M</div>
+                        </div>
+
+                        <div class="list-item">
+                            <div class="list-item-name">Metal Deposition — Tool A</div>
+                            <div class="list-item-meta" style="color: var(--busch-orange);">ROI: 12% • €175K</div>
+                        </div>
+
+                        <div class="list-item">
+                            <div class="list-item-name">CMP — Batch Line 2</div>
+                            <div class="list-item-meta">ROI: 145% • €840K</div>
+                        </div>
+
+                        <div style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--light-gray-2);">
+                            <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--dark-gray); margin-bottom: var(--space-md);">Global Params</div>
+                            <div style="font-size: 12px; color: var(--dark-gray); margin-bottom: var(--space-xs);">Detection: <strong>70%</strong></div>
+                            <div style="font-size: 12px; color: var(--dark-gray);">Service: <strong>€2,500/pump</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="detail-panel">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-xl);">
+                            <div>
+                                <h1 style="font-size: 24px; font-weight: 700; color: var(--black); margin-bottom: var(--space-sm);">Poly Etch — Chamber 04</h1>
+                                <div style="font-size: 14px; color: var(--dark-gray);">A3004XN — 3000 m³/h • 12 pumps • Batch (125 wafers)</div>
+                            </div>
+                            <button class="action-btn action-btn-secondary">Edit</button>
+                        </div>
+
+                        <div class="analysis-card" style="margin-bottom: 0;">
+                            <div style="font-size: 14px; font-weight: 600; color: var(--dark-gray); margin-bottom: var(--space-lg);">Input Parameters</div>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-lg); margin-bottom: var(--space-xl);">
+                                <div>
+                                    <div style="font-size: 12px; color: var(--dark-gray); margin-bottom: var(--space-xs);">Failure Rate</div>
+                                    <div style="font-size: 16px; font-weight: 600;">3.0%</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 12px; color: var(--dark-gray); margin-bottom: var(--space-xs);">Wafer Cost</div>
+                                    <div style="font-size: 16px; font-weight: 600;">€8,000</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 12px; color: var(--dark-gray); margin-bottom: var(--space-xs);">Downtime Duration</div>
+                                    <div style="font-size: 16px; font-weight: 600;">6 hours</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 12px; color: var(--dark-gray); margin-bottom: var(--space-xs);">Downtime Cost</div>
+                                    <div style="font-size: 16px; font-weight: 600;">€15,000/hr</div>
+                                </div>
+                            </div>
+
+                            <div style="font-size: 14px; font-weight: 600; color: var(--dark-gray); margin-bottom: var(--space-lg);">ROI Results</div>
+                            <div class="results-section" style="margin-top: 0;">
+                                <div class="result-item">
+                                    <span class="result-label">Total Failure Cost (without ARGOS)</span>
+                                    <span class="result-value roi-negative">€2,100,000</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">ARGOS Service Cost</span>
+                                    <span class="result-value">€30,000</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Savings with ARGOS</span>
+                                    <span class="result-hero roi-positive">€1,470,000</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">ROI Ratio</span>
+                                    <span class="result-hero roi-positive">180%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direction 6: Split-Screen Comparison -->
+        <div class="direction-container direction-6">
+            <div class="direction-header">
+                <div class="direction-name">Direction 6: Split-Screen Comparison Mode</div>
+                <div class="direction-description">
+                    Side-by-side split screen. Left: input editing. Right: live results. Perfect for what-if scenarios. Real-time parameter adjustment with instant visual feedback. Change input on left, watch results update on right. Optimized for the "challenge assumptions" workflow. Natural for comparative analysis.
+                </div>
+            </div>
+            <div class="mockup-frame">
+                <div class="mockup">
+                    <div class="split-left">
+                        <div class="split-header">Input Parameters</div>
+
+                        <div style="margin-bottom: var(--space-xl);">
+                            <h2 style="font-size: 20px; font-weight: 600; color: var(--black); margin-bottom: var(--space-md);">Poly Etch — Chamber 04</h2>
+
+                            <div style="margin-bottom: var(--space-lg);">
+                                <div class="param-label">Pump Model</div>
+                                <input type="text" class="param-input" value="A3004XN — 3000 m³/h" readonly>
+                            </div>
+
+                            <div style="margin-bottom: var(--space-lg);">
+                                <div class="param-label">Number of Pumps</div>
+                                <input type="text" class="param-input" value="12" readonly>
+                            </div>
+
+                            <div style="margin-bottom: var(--space-lg);">
+                                <div class="param-label">Failure Rate (%)</div>
+                                <input type="text" class="param-input" value="3.0" readonly style="border-color: var(--pfeiffer-red); outline: 2px solid var(--pfeiffer-red);">
+                            </div>
+
+                            <div style="margin-bottom: var(--space-lg);">
+                                <div class="param-label">Wafer Type</div>
+                                <div style="display: flex; gap: var(--space-md);">
+                                    <button style="flex: 1; padding: var(--space-md); background: var(--pfeiffer-red); color: var(--white); border: none; border-radius: 4px; font-family: var(--font-family); font-weight: 600; cursor: pointer;">Batch</button>
+                                    <button style="flex: 1; padding: var(--space-md); background: var(--white); color: var(--dark-gray); border: 1px solid var(--light-gray-2); border-radius: 4px; font-family: var(--font-family); font-weight: 600; cursor: pointer;">Mono</button>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: var(--space-lg);">
+                                <div class="param-label">Wafer Cost (€)</div>
+                                <input type="text" class="param-input" value="8,000" readonly>
+                            </div>
+
+                            <div style="margin-bottom: var(--space-lg);">
+                                <div class="param-label">Downtime Duration (hours)</div>
+                                <input type="text" class="param-input" value="6" readonly>
+                            </div>
+
+                            <div style="margin-bottom: var(--space-lg);">
+                                <div class="param-label">Downtime Cost (€/hour)</div>
+                                <input type="text" class="param-input" value="15,000" readonly>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--light-gray-3); padding: var(--space-md); border-radius: 6px;">
+                            <div style="font-size: 12px; font-weight: 600; color: var(--dark-gray); margin-bottom: var(--space-sm);">Global Parameters</div>
+                            <div style="font-size: 12px; color: var(--dark-gray); margin-bottom: var(--space-xs);">ARGOS Detection Rate: <strong>70%</strong></div>
+                            <div style="font-size: 12px; color: var(--dark-gray);">Service Cost: <strong>€2,500/pump/year</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="split-right">
+                        <div class="split-header">Live Results</div>
+
+                        <div style="background: var(--white); padding: var(--space-xl); border-radius: 8px; margin-bottom: var(--space-lg);">
+                            <div style="text-align: center; margin-bottom: var(--space-xl);">
+                                <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--dark-gray); margin-bottom: var(--space-sm);">Act 1: The Risk</div>
+                                <div class="result-hero roi-negative">€2,100,000</div>
+                                <div style="font-size: 14px; color: var(--dark-gray); margin-top: var(--space-xs);">Total Failure Cost (without ARGOS)</div>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--white); padding: var(--space-xl); border-radius: 8px; margin-bottom: var(--space-lg);">
+                            <div style="text-align: center; margin-bottom: var(--space-xl);">
+                                <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--dark-gray); margin-bottom: var(--space-sm);">Act 2: The Value</div>
+                                <div class="result-hero roi-positive">€1,470,000</div>
+                                <div style="font-size: 14px; color: var(--dark-gray); margin-top: var(--space-xs);">Savings with ARGOS</div>
+                            </div>
+                            <div style="padding-top: var(--space-lg); border-top: 1px solid var(--light-gray-2);">
+                                <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: var(--space-sm);">
+                                    <span style="color: var(--dark-gray);">Service Cost:</span>
+                                    <span style="font-weight: 600;">€30,000</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                                    <span style="color: var(--dark-gray);">Cost Avoided:</span>
+                                    <span style="font-weight: 600; color: var(--roi-positive);">€1,500,000</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--white); padding: var(--space-xl); border-radius: 8px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--dark-gray); margin-bottom: var(--space-sm);">Act 3: The Proof</div>
+                                <div class="result-hero roi-positive">180%</div>
+                                <div style="font-size: 14px; color: var(--dark-gray); margin-top: var(--space-xs);">ROI Ratio</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Mode Overlay -->
+    <div class="comparison-container" id="comparisonContainer">
+        <div class="comparison-grid">
+            <div class="comparison-item">
+                <div class="comparison-label">Direction 1: Classic Sidebar</div>
+                <div class="comparison-preview" style="background: var(--light-gray-3); display: flex; align-items: center; justify-content: center; color: var(--dark-gray); font-size: 14px;">
+                    Persistent sidebar + content area
+                </div>
+            </div>
+            <div class="comparison-item">
+                <div class="comparison-label">Direction 2: Top Nav + Sidebar</div>
+                <div class="comparison-preview" style="background: var(--light-gray-3); display: flex; align-items: center; justify-content: center; color: var(--dark-gray); font-size: 14px;">
+                    Horizontal nav + collapsible sidebar
+                </div>
+            </div>
+            <div class="comparison-item">
+                <div class="comparison-label">Direction 3: Minimal Single Panel</div>
+                <div class="comparison-preview" style="background: var(--light-gray-3); display: flex; align-items: center; justify-content: center; color: var(--dark-gray); font-size: 14px;">
+                    Centered focus, one at a time
+                </div>
+            </div>
+            <div class="comparison-item">
+                <div class="comparison-label">Direction 4: Dashboard Grid</div>
+                <div class="comparison-preview" style="background: var(--light-gray-3); display: flex; align-items: center; justify-content: center; color: var(--dark-gray); font-size: 14px;">
+                    Multi-column card overview
+                </div>
+            </div>
+            <div class="comparison-item">
+                <div class="comparison-label">Direction 5: List + Detail</div>
+                <div class="comparison-preview" style="background: var(--light-gray-3); display: flex; align-items: center; justify-content: center; color: var(--dark-gray); font-size: 14px;">
+                    Master-detail compact view
+                </div>
+            </div>
+            <div class="comparison-item">
+                <div class="comparison-label">Direction 6: Split Screen</div>
+                <div class="comparison-preview" style="background: var(--light-gray-3); display: flex; align-items: center; justify-content: center; color: var(--dark-gray); font-size: 14px;">
+                    Input/output comparison mode
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Direction Navigation
+        const directionBtns = document.querySelectorAll('.direction-btn');
+        const directionContainers = document.querySelectorAll('.direction-container');
+
+        directionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const direction = btn.getAttribute('data-direction');
+
+                // Update button states
+                directionBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Update visible direction
+                directionContainers.forEach(container => {
+                    container.classList.remove('active');
+                });
+                document.querySelector(`.direction-${direction}`).classList.add('active');
+            });
+        });
+
+        // Comparison Mode Toggle
+        const comparisonBtn = document.getElementById('comparisonBtn');
+        const comparisonContainer = document.getElementById('comparisonContainer');
+        let comparisonMode = false;
+
+        comparisonBtn.addEventListener('click', () => {
+            comparisonMode = !comparisonMode;
+
+            if (comparisonMode) {
+                comparisonContainer.classList.add('active');
+                comparisonBtn.textContent = 'Exit Comparison';
+                comparisonBtn.style.background = 'var(--pfeiffer-red)';
+            } else {
+                comparisonContainer.classList.remove('active');
+                comparisonBtn.textContent = 'Compare All';
+                comparisonBtn.style.background = 'var(--turquoise)';
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '1' && e.key <= '6') {
+                const btn = document.querySelector(`[data-direction="${e.key}"]`);
+                if (btn && !comparisonMode) btn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                comparisonBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
