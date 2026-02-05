@@ -33,6 +33,11 @@ C:\Users\JBCHOLAT\ROI Calculator\
 
 This project uses the BMAD (Business Model Agile Development) framework for structured planning.
 
+### BMAD UX Design Tools
+- `frontend-design` skill - Create interactive HTML design mockups and direction showcases
+- UX workflows use A/P/C menus (Advanced Elicitation / Party Mode / Continue) at each step
+- Frontmatter `stepsCompleted` array tracks progress, enables workflow resumption
+
 ### Continuity Protocol — Start of Every Session
 
 1. Run `/bmad-help` to see which artifacts are completed and which workflow to run next
@@ -44,8 +49,8 @@ This project uses the BMAD (Business Model Agile Development) framework for stru
 | Phase | Workflow | Command | Status |
 |-------|----------|---------|--------|
 | 2-planning | Create Product Brief | `/bmad-bmm-create-product-brief` | DONE |
-| 2-planning | Create PRD | `/bmad-bmm-create-prd` | Next |
-| 2-planning | Create UX Design | `/bmad-bmm-create-ux-design` | Pending |
+| 2-planning | Create PRD | `/bmad-bmm-create-prd` | DONE |
+| 2-planning | Create UX Design | `/bmad-bmm-create-ux-design` | IN PROGRESS (Step 9/14 complete) |
 | 3-solutioning | Create Architecture | `/bmad-bmm-create-architecture` | Pending |
 | 3-solutioning | Create Epics & Stories | `/bmad-bmm-create-epics-and-stories` | Pending |
 | 3-solutioning | Implementation Readiness | `/bmad-bmm-check-implementation-readiness` | Pending |
@@ -73,6 +78,7 @@ Do NOT modify V9 code. It has its own git history (11 commits, V7 through V9).
 - **Language**: Project documentation is in French or English depending on context. Code and comments should be in English.
 - **Git**: Commit messages in English. Always commit `_bmad-output/` changes at end of session.
 - **GitHub**: Repository at https://github.com/jbcholat-Dev/ARGOS-ROI-Calculator.git
+- **File Editing**: For appending large content to BMAD artifacts, use `cat temp.md >> file.md && rm temp.md` instead of Edit tool (avoids character encoding issues with `—` and `€`)
 
 ## Key Business Context
 
