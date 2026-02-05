@@ -13,9 +13,9 @@ V10 replaces V9 (single-page HTML calculator with 3 fixed categories) with a mul
 
 ## Tech Stack
 
-- **Framework**: React 18+ with TypeScript 5.x
-- **Build Tool**: Vite 5.x
-- **Styling**: Tailwind CSS 3.4+ with Pfeiffer brand colors
+- **Framework**: React 19 with TypeScript 5.x
+- **Build Tool**: Vite 7.x
+- **Styling**: Tailwind CSS 4.x with Pfeiffer brand colors
 - **State Management**: Zustand (ultra-lightweight)
 - **Routing**: React Router 6
 - **Validation**: Zod

@@ -1,6 +1,6 @@
 # Story 1.1: Project Initialization with Vite + React + TypeScript
 
-Status: review
+Status: done
 
 ## Story
 
@@ -432,6 +432,24 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 ✅ Verified HMR, build, and lint all working correctly
 ✅ Initialized Git repository with initial commit
 
+### Code Review Fixes Applied (2026-02-05)
+
+**Issues Fixed (11 total: 6 HIGH, 5 MEDIUM):**
+
+1. ✅ Created missing `src/pages/` directory with .gitkeep
+2. ✅ Fixed `src/index.css` with proper Tailwind v4 base styles
+3. ✅ Corrected README.md versions (React 19, Vite 7.x, Tailwind 4.x)
+4. ✅ Resolved ESLint config conflict (migrated to eslint.config.js flat config for ESLint 9)
+5. ✅ Removed unnecessary postcss.config.js (redundant with @tailwindcss/vite)
+6. ✅ Verified `src/stores/` directory exists
+7. ✅ Created `src/lib/utils.ts` and added path alias test in App.tsx
+8. ✅ Updated File List to reflect all changes
+
+**Validation Results:**
+- ✅ `npm run lint` — No errors (ESLint 9 flat config)
+- ✅ `npm run build` — Success! (194 KB bundle + 7 KB CSS = 201 KB total, well under 500 KB limit per NFR-P5)
+- ✅ Path aliases working correctly (`@/lib/utils` import in App.tsx compiles)
+
 ### File List
 
 _Final list of files created/modified:_
@@ -440,16 +458,14 @@ _Final list of files created/modified:_
 - argos-roi-calculator/package.json
 - argos-roi-calculator/vite.config.ts
 - argos-roi-calculator/tailwind.config.ts
-- argos-roi-calculator/postcss.config.js
 - argos-roi-calculator/tsconfig.json
 - argos-roi-calculator/tsconfig.app.json
 - argos-roi-calculator/tsconfig.node.json
-- argos-roi-calculator/.eslintrc.cjs
+- argos-roi-calculator/eslint.config.js (ESLint 9 flat config)
 - argos-roi-calculator/.prettierrc
 - argos-roi-calculator/.gitignore
 - argos-roi-calculator/README.md
 - argos-roi-calculator/index.html
-- argos-roi-calculator/eslint.config.js
 - argos-roi-calculator/public/vite.svg
 - argos-roi-calculator/src/main.tsx
 - argos-roi-calculator/src/App.tsx
@@ -465,10 +481,18 @@ _Final list of files created/modified:_
 - argos-roi-calculator/src/components/ui/index.ts
 - argos-roi-calculator/src/hooks/index.ts
 - argos-roi-calculator/src/lib/constants.ts
+- argos-roi-calculator/src/lib/utils.ts (path alias test)
+- argos-roi-calculator/src/pages/.gitkeep
 - argos-roi-calculator/src/types/index.ts
 
-**Modified:**
-- None (initial setup)
+**Modified (Code Review Fixes):**
+- argos-roi-calculator/src/App.tsx (added @/lib/utils import to test path aliases)
+- argos-roi-calculator/src/index.css (added base styles for Tailwind v4)
+- argos-roi-calculator/README.md (corrected versions: React 19, Vite 7.x, Tailwind 4.x)
+
+**Removed (Code Review Cleanup):**
+- argos-roi-calculator/postcss.config.js (unnecessary with @tailwindcss/vite)
+- argos-roi-calculator/.eslintrc.cjs (replaced with eslint.config.js for ESLint 9)
 
 ---
 
