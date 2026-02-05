@@ -43,7 +43,7 @@ development_status:
   # Epic 1: Foundation & UI Shell (5 stories)
   epic-1: in-progress
   1-1-project-initialization-with-vite-react-typescript: done
-  1-2-zustand-store-and-typescript-types-setup: backlog
+  1-2-zustand-store-and-typescript-types-setup: ready-for-dev
   1-3-react-router-configuration-with-route-structure: backlog
   1-4-ui-primitive-components: backlog
   1-5-application-shell-with-navigation-and-placeholder-pages: backlog
