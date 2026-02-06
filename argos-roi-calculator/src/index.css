@@ -1,5 +1,17 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-pfeiffer-red: #CC0000;
+  --color-pfeiffer-red-dark: #A50000;
+  --color-roi-negative: #CC0000;
+  --color-roi-warning: #FF8C00;
+  --color-roi-positive: #28A745;
+  --color-surface-canvas: #F1F2F2;
+  --color-surface-card: #FFFFFF;
+  --color-surface-alternate: #E7E6E6;
+  --color-toast-info: #009DA5;
+}
+
 body {
   background-color: #F1F2F2;
   color: #1f2937;
