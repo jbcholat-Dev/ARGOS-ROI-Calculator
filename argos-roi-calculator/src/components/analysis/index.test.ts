@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EquipmentInputs, WaferInputs } from './index';
+import { EquipmentInputs, WaferInputs, ResultsPanel } from './index';
 
 describe('Analysis Barrel Export', () => {
   it('exports EquipmentInputs component', () => {
@@ -19,5 +19,14 @@ describe('Analysis Barrel Export', () => {
 
   it('WaferInputs is accessible via barrel import', () => {
     expect(WaferInputs.name).toBe('WaferInputs');
+  });
+
+  it('exports ResultsPanel component', () => {
+    expect(ResultsPanel).toBeDefined();
+    expect(typeof ResultsPanel).toBe('function');
+  });
+
+  it('ResultsPanel is accessible via barrel import', () => {
+    expect(ResultsPanel.name).toBe('ResultsPanel');
   });
 });

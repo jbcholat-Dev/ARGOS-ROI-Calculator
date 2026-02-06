@@ -32,6 +32,13 @@ vi.mock('@/components/analysis/DowntimeInputs', () => ({
   ),
 }));
 
+// Mock ResultsPanel
+vi.mock('@/components/analysis/ResultsPanel', () => ({
+  ResultsPanel: ({ analysisId }: { analysisId: string }) => (
+    <div data-testid="results-panel">{analysisId}</div>
+  ),
+}));
+
 const createTestAnalysis = (overrides: Partial<Analysis> = {}): Analysis => ({
   id: 'test-id-1',
   name: 'Poly Etch - Chamber 04',
@@ -151,5 +158,37 @@ describe('FocusMode - WaferInputs Integration', () => {
 
     const failureRatePos = failureRate.compareDocumentPosition(wafer);
     expect(failureRatePos & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
+
+describe('FocusMode - ResultsPanel Integration', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAppStore.setState({
+      analyses: [createTestAnalysis()],
+      activeAnalysisId: null,
+      globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+      unsavedChanges: false,
+    });
+  });
+
+  it('renders ResultsPanel component in FocusMode', () => {
+    renderFocusMode('test-id-1');
+    expect(screen.getByTestId('results-panel')).toBeInTheDocument();
+  });
+
+  it('passes analysisId to ResultsPanel', () => {
+    renderFocusMode('test-id-1');
+    expect(screen.getByTestId('results-panel')).toHaveTextContent('test-id-1');
+  });
+
+  it('renders ResultsPanel after all input sections', () => {
+    renderFocusMode('test-id-1');
+    const downtime = screen.getByTestId('downtime-inputs');
+    const results = screen.getByTestId('results-panel');
+
+    // Results should come after downtime inputs
+    const position = downtime.compareDocumentPosition(results);
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });

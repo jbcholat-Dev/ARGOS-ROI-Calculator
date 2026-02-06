@@ -58,7 +58,7 @@ development_status:
   2-4-wafer-type-and-cost-inputs: done
   2-5-downtime-input-fields: done
   2-6-roi-calculation-engine: done
-  2-7-results-panel-with-real-time-display: backlog
+  2-7-results-panel-with-real-time-display: done
   2-8-analysis-rename-and-active-state-indicator: done
   epic-2-retrospective: optional
 

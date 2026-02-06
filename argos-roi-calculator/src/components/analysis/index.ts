@@ -24,3 +24,6 @@ export type { WaferInputsProps } from './WaferInputs';
 
 export { DowntimeInputs } from './DowntimeInputs';
 export type { DowntimeInputsProps } from './DowntimeInputs';
+
+export { ResultsPanel } from './ResultsPanel';
+export type { ResultsPanelProps } from './ResultsPanel';
