@@ -133,6 +133,108 @@ Each workflow auto-discovers artifacts from previous phases as input context.
 - Session at 80%+ usage - MUST start fresh context or apply aggressive compression
 - Messages category is largest consumer (~30% typical) - prime target for compression
 
+## Parallel Development Workflow (Epic 2 Proven Pattern)
+
+### Orchestration Context Pattern
+- Use ONE context for orchestration: create stories, coordinate, merge commits
+- Keep orchestration context lean: delegate dev work to separate windows
+- Orchestration context stays <70% tokens even after 7 stories (proven Epic 2)
+- Do NOT pollute orchestration with implementation details
+
+### Autonomous Dev Prompts Structure
+- Format: "ÉTAPE 1: DÉVELOPPEMENT" + "ÉTAPE 2: CODE REVIEW (AUTOMATIQUE)"
+- Include: "NE PAS PUSHER - Attendre coordination" at end
+- Agents execute: dev → review → fix HIGH/MEDIUM → commit → wait
+- No supervision needed during execution (2h avg per story)
+
+### Batch Creation Strategy
+- Create 5 stories at once in orchestration context (Story 2.2-2.5 + 2.8 pattern)
+- Each story file: 30KB comprehensive context (architecture, previous learnings, V9 refs)
+- Dev agents find everything in story file (zero ambiguity, zero questions)
+- Story creation: 30min for 5 stories, Dev execution: 2h parallel (vs 9.5h sequential = 79% gain)
+
+### Merge Coordination Protocol
+- After all windows complete: verify in orchestration context
+- Check: git log, sprint-status.yaml, npm test, file presence
+- Push all commits together (atomic epic progress)
+- Celebrate before next batch
+
+## Parallel Development Anti-Patterns (Epic 2 Lessons)
+
+### Commit Merging Risk
+- ISSUE: Story 2.3 committed inside Story 2.8 commit (agent confusion)
+- CAUSE: Prompt not explicit about "ONLY this story, NOT others"
+- FIX: Add to prompts: "Commit ONLY Story X.Y files, verify git diff before commit"
+- CHECK: After parallel batch, verify each story has separate commit (git log --oneline)
+
+### No Intermediate Checkpoints
+- ISSUE: Wait for all 5 windows to complete before any verification
+- RISK: If 1 window fails, only discover at end (wasted time on other 4)
+- FIX: For >3 parallel windows, check first completion before launching others
+- PATTERN: Launch 2-3 windows → verify first done → launch remaining
+
+### Non-Sequential Commit Order
+- ISSUE: Commits created in arbitrary order (2.8, 2.4, 2.2, 2.5 instead of 2.2-2.5, 2.8)
+- IMPACT: Git log difficult to read, story flow unclear
+- FIX: Specify commit order in prompts OR reorder with git rebase interactive after
+- BETTER: Launch windows in story ID order (2.2 → 2.3 → 2.4 → 2.5 → 2.8)
+
+### Incomplete Verification Commands
+- ISSUE: "git status" shows clean even if stories missing
+- NEED: Multi-step verification: git log + sprint-status.yaml + npm test + glob src/
+- PATTERN: Check sprint-status.yaml "done" count matches expected
+- PATTERN: Verify test count increase matches estimate (Story 2.2: +40 tests, etc.)
+
+## Test Execution Patterns
+
+### Intermittent Test Failures
+- Some tests fail in full suite but pass in isolation (e.g., App.test.tsx)
+- Likely cause: race conditions, test order dependencies, or shared state
+- WORKAROUND: Re-run full suite (`npm test -- --run`) to confirm real failure
+- PATTERN: If test passes on re-run, likely timing issue (not code bug)
+- FIX: Add explicit waitFor() or cleanup between tests if pattern recurs
+
+### Test Count Verification
+- After parallel dev batch, verify test count matches estimate
+- Epic 1: 191 tests → Epic 2 Stories 2.1-2.8: +412 tests = 603 total
+- Pattern: Each story estimates test count in story file (use as checkpoint)
+- Red flag: Test count significantly lower than estimate = tests missing
+
+## Sprint Status Verification Protocol
+
+### Post-Parallel Verification Steps
+- Step 1: Check sprint-status.yaml for all stories marked "done"
+- Step 2: Git log --oneline to verify commit per story (or merged commits)
+- Step 3: Glob pattern check for expected files (e.g., **/FailureRate*.tsx)
+- Step 4: npm test to verify test count matches estimates
+- If sprint-status "done" but no commit: code developed but not committed (Story 2.3 case)
+
+### Git Status Limitations
+- "working tree clean" does NOT mean all stories committed
+- Need cross-reference: sprint-status.yaml + git log + file presence
+- Pattern: sprint-status.yaml is source of truth for story completion
+
+## Optimal Parallel Batch Sizing
+
+### Batch Size Guidelines
+- 2 windows: SAFE (proven Stories 2.1 + 2.6, easy coordination)
+- 3-5 windows: EFFICIENT (proven Stories 2.2-2.5 + 2.8, 79% gain but needs careful merge)
+- 6+ windows: RISKY (not tested, likely coordination overhead > gains)
+- Rule: If >3 windows, launch first 2-3, verify, then launch remaining
+
+### When to Parallelize
+- Stories are INDEPENDENT (no shared files except store types)
+- Stories are UNBLOCKED (all dependencies done)
+- Stories are SAME EPIC (architectural patterns consistent)
+- Dev estimates are SIMILAR (avoid 1 long story blocking others)
+- DO NOT parallelize if stories touch same components
+
+### When NOT to Parallelize
+- Story has complex architecture decisions (needs discussion)
+- Story blocks many others (do first, then parallelize dependents)
+- Story requires V9 formula research (uncertainty in scope)
+- Team unfamiliar with parallel pattern (start with 2 windows max)
+
 ## V9 Reference (calculateur-argos/)
 
 The V9 codebase in `calculateur-argos/` is a **read-only reference** for:
