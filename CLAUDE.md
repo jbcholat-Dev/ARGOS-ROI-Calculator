@@ -64,6 +64,40 @@ Each workflow auto-discovers artifacts from previous phases as input context.
 - The product brief is the foundation document; all subsequent artifacts reference it
 - BMAD artifacts are the source of truth for project requirements, not this file
 
+## BMAD Implementation Learnings
+
+### Post-Retrospective Stories
+- Stories can be created post-retro if identified as blockers before next Epic
+- Pattern: Retro → Identify blocker → `/bmad-bmm-create-story` → `/bmad-bmm-dev-story` → Update retro doc
+- Story 1.6 (Modal) created after Epic 1 retro as blocker for Epic 2 Story 2.1
+
+### Code Review Issue Standards (Epic 1 Established)
+- **100% HIGH issues** MUST be fixed before marking story "done"
+- **100% MEDIUM issues** MUST be fixed before marking story "done"
+- **LOW issues** are optional, can be deferred to future stories
+- BMAD code-review workflow is ADVERSARIAL - must find minimum 3-10 issues (never "looks good")
+
+### Accessibility - WCAG AA Compliance
+- `aria-describedby` is MANDATORY for modals/dialogs, not optional
+- Modal pattern: `aria-labelledby` (title) + `aria-describedby` (body content)
+- Focus trap testing MUST include Shift+Tab (backward navigation), not just Tab forward
+- Missing aria-describedby = HIGH severity accessibility violation
+
+### Tailwind CSS v4 Patterns
+- `animate-in fade-in-0 zoom-in-95` require `tailwindcss-animate` plugin (NOT in dependencies)
+- Prefer standard Tailwind: `transition-all duration-200 opacity-100 scale-100`
+- Check `tailwind.config.ts` plugins array before using non-standard animation classes
+
+### React Patterns
+- Modal Portal: Use `createPortal(content, document.body)` for overlay layering
+- Test pattern: Portal target in tests MUST match production code (no unused `modal-root` divs)
+- If Modal uses `document.body`, tests should NOT create separate portal container
+
+### Performance Patterns
+- Avoid multiple `useEffect` hooks with separate event listeners for same event type
+- Consolidate keyboard handlers: Single `handleKeyDown` function > multiple keydown listeners
+- Story 1.6: Consolidated Escape + Tab listeners from 3 to 1 (better performance)
+
 ## V9 Reference (calculateur-argos/)
 
 The V9 codebase in `calculateur-argos/` is a **read-only reference** for:
