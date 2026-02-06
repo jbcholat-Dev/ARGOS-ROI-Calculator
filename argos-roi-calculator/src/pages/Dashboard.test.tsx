@@ -198,7 +198,7 @@ describe('Dashboard', () => {
       expect(analysis.pumpType).toBe('');
       expect(analysis.pumpQuantity).toBe(0);
       expect(analysis.failureRateMode).toBe('percentage');
-      expect(analysis.failureRatePercentage).toBe(0);
+      expect(analysis.failureRatePercentage).toBe(10);
       expect(analysis.waferType).toBe('mono');
       expect(analysis.waferQuantity).toBe(1);
       expect(analysis.waferCost).toBe(0);

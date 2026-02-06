@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { ROUTES } from '@/lib/constants';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { PlaceholderMessage } from '@/components/PlaceholderMessage';
+import { EditableAnalysisName, EquipmentInputs, FailureRateInput, WaferInputs, DowntimeInputs } from '@/components/analysis';
+import { useAppStore } from '@/stores/app-store';
 
 // Validate analysis ID format (alphanumeric, dashes, max 100 chars)
 const isValidAnalysisId = (id: string): boolean => {
@@ -13,21 +14,79 @@ const isValidAnalysisId = (id: string): boolean => {
 
 export function FocusMode() {
   const { id } = useParams<{ id: string }>();
+  const analysis = useAppStore((state) =>
+    state.analyses.find((a) => a.id === id)
+  );
+  const activeAnalysisId = useAppStore((state) => state.activeAnalysisId);
+  const updateAnalysis = useAppStore((state) => state.updateAnalysis);
+  const setActiveAnalysis = useAppStore((state) => state.setActiveAnalysis);
+  const analyses = useAppStore((state) => state.analyses);
+  const allAnalysisNames = useMemo(
+    () => analyses.map((a) => a.name),
+    [analyses]
+  );
+
+  const analysisExists = !!analysis;
+
+  // Set active analysis on mount (only if analysis exists in store)
+  useEffect(() => {
+    if (id && analysisExists) {
+      setActiveAnalysis(id);
+    }
+  }, [id, analysisExists, setActiveAnalysis]);
 
   useEffect(() => {
-    if (id && isValidAnalysisId(id)) {
+    if (analysis) {
+      document.title = `${analysis.name} - ARGOS ROI Calculator`;
+    } else if (id && isValidAnalysisId(id)) {
       document.title = `Analysis ${id} - ARGOS ROI Calculator`;
     }
-  }, [id]);
+  }, [id, analysis]);
 
   // Redirect to dashboard if ID is missing or invalid
   if (!id || !isValidAnalysisId(id)) {
     return <Navigate to={ROUTES.DASHBOARD} replace />;
   }
 
+  // Redirect to dashboard if analysis doesn't exist in store
+  if (!analysis) {
+    return <Navigate to={ROUTES.DASHBOARD} replace />;
+  }
+
+  const handleNameUpdate = useCallback(
+    (newName: string) => {
+      updateAnalysis(analysis.id, { name: newName });
+    },
+    [analysis.id, updateAnalysis]
+  );
+
   return (
     <AppLayout>
-      <PlaceholderMessage message={`Mode Focus pour l'analyse ${id}`} />
+      <div className="mx-auto max-w-3xl p-6">
+        <div className="mb-6">
+          <EditableAnalysisName
+            analysisId={analysis.id}
+            currentName={analysis.name}
+            onUpdate={handleNameUpdate}
+            showActiveBadge={activeAnalysisId === analysis.id}
+            existingNames={allAnalysisNames}
+          />
+        </div>
+        <div className="flex flex-col gap-6">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <EquipmentInputs analysisId={id} />
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <FailureRateInput analysisId={id} />
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <WaferInputs analysisId={id} />
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <DowntimeInputs analysisId={id} />
+          </div>
+        </div>
+      </div>
     </AppLayout>
   );
 }

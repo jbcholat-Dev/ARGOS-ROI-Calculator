@@ -1,9 +1,37 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AppRoutes } from './AppRoutes';
+import { useAppStore } from '@/stores/app-store';
+import type { Analysis } from '@/types';
+
+const createTestAnalysis = (overrides?: Partial<Analysis>): Analysis => ({
+  id: 'test-123',
+  name: 'Test Analysis',
+  pumpType: '',
+  pumpQuantity: 0,
+  failureRateMode: 'percentage',
+  failureRatePercentage: 0,
+  waferType: 'mono',
+  waferQuantity: 1,
+  waferCost: 0,
+  downtimeDuration: 0,
+  downtimeCostPerHour: 0,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  ...overrides,
+});
 
 describe('[ROUTER] App Routing Integration Tests', () => {
+  beforeEach(() => {
+    useAppStore.setState({
+      analyses: [],
+      activeAnalysisId: null,
+      globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+      unsavedChanges: false,
+    });
+  });
+
   describe('Route Navigation', () => {
     it('should render Dashboard on "/" route', async () => {
       render(
@@ -57,6 +85,10 @@ describe('[ROUTER] App Routing Integration Tests', () => {
     });
 
     it('should render FocusMode on "/analysis/:id" route with valid ID', async () => {
+      useAppStore.setState({
+        analyses: [createTestAnalysis()],
+      });
+
       render(
         <MemoryRouter initialEntries={['/analysis/test-123']}>
           <AppRoutes />
@@ -67,7 +99,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
         expect(screen.getByRole('navigation')).toBeInTheDocument();
         expect(screen.getByRole('complementary')).toBeInTheDocument();
         expect(
-          screen.getByText(/Mode Focus pour l'analyse test-123/)
+          screen.getByText('Test Analysis')
         ).toBeInTheDocument();
       });
     });
@@ -89,6 +121,10 @@ describe('[ROUTER] App Routing Integration Tests', () => {
   describe('Route Parameters', () => {
     it('should handle UUID format analysis IDs', async () => {
       const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ id: uuid, name: 'UUID Analysis' })],
+      });
+
       render(
         <MemoryRouter initialEntries={[`/analysis/${uuid}`]}>
           <AppRoutes />
@@ -96,13 +132,15 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(
-          screen.getByText(new RegExp(`Mode Focus pour l'analyse ${uuid}`))
-        ).toBeInTheDocument();
+        expect(screen.getByText('UUID Analysis')).toBeInTheDocument();
       });
     });
 
     it('should handle short alphanumeric IDs', async () => {
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ id: 'abc-123', name: 'Short ID Analysis' })],
+      });
+
       render(
         <MemoryRouter initialEntries={['/analysis/abc-123']}>
           <AppRoutes />
@@ -110,9 +148,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/Mode Focus pour l'analyse abc-123/)
-        ).toBeInTheDocument();
+        expect(screen.getByText('Short ID Analysis')).toBeInTheDocument();
       });
     });
 
@@ -186,6 +222,10 @@ describe('[ROUTER] App Routing Integration Tests', () => {
     });
 
     it('should update document title for FocusMode', async () => {
+      useAppStore.setState({
+        analyses: [createTestAnalysis()],
+      });
+
       render(
         <MemoryRouter initialEntries={['/analysis/test-123']}>
           <AppRoutes />
@@ -193,13 +233,14 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(document.title).toContain('Analysis test-123');
+        expect(document.title).toContain('Test Analysis');
       });
     });
   });
 
   describe('Error Handling', () => {
-    it('should render FocusMode placeholder for valid ID', async () => {
+    it('should redirect to Dashboard when analysis not in store', async () => {
+      // FocusMode redirects to Dashboard when analysis doesn't exist
       render(
         <MemoryRouter initialEntries={['/analysis/valid-id']}>
           <AppRoutes />
@@ -208,7 +249,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/Mode Focus pour l'analyse valid-id/)
+          screen.getByText(/Créez votre première analyse/)
         ).toBeInTheDocument();
       });
     });

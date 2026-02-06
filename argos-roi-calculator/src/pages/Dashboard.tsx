@@ -25,7 +25,7 @@ export function Dashboard() {
         pumpType: '',
         pumpQuantity: 0,
         failureRateMode: 'percentage',
-        failureRatePercentage: 0,
+        failureRatePercentage: 10,
         absoluteFailureCount: undefined,
         waferType: 'mono',
         waferQuantity: 1,

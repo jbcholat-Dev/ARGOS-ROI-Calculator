@@ -23,3 +23,11 @@ export const ROUTES = {
 // Helper to build focus mode route with ID
 export const buildFocusModeRoute = (id: string): string =>
   `/analysis/${id}`;
+
+// Pump Type Suggestions (from V9 reference categories)
+export const PUMP_TYPE_SUGGESTIONS = [
+  'HiPace (turbo)',
+  'HiScroll (dry scroll)',
+  'HiScrew (dry screw)',
+  'OnTool Roots (roots)',
+] as const;

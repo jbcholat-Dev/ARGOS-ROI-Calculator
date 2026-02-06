@@ -161,6 +161,10 @@ export const useAppStore = create<AppState>((set) => ({
         console.error('Cannot update analysis: downtimeCostPerHour must be non-negative');
         return state;
       }
+      if (updates.absoluteFailureCount !== undefined && updates.absoluteFailureCount < 0) {
+        console.error('Cannot update analysis: absoluteFailureCount must be non-negative');
+        return state;
+      }
 
       return {
         analyses: state.analyses.map((a) =>
