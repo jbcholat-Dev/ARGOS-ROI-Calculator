@@ -1,6 +1,6 @@
 # Story 2.2: Equipment Input Fields (Pump Type & Quantity)
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 

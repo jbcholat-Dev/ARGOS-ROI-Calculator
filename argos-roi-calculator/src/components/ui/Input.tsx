@@ -60,7 +60,7 @@ export function Input({
       {error && (
         <p
           id={errorId}
-          className="text-xs text-pfeiffer-red"
+          className="text-sm text-pfeiffer-red"
           role="alert"
         >
           <span aria-hidden="true">⚠️ </span>

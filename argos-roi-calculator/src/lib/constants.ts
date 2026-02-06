@@ -27,7 +27,6 @@ export const buildFocusModeRoute = (id: string): string =>
 // Pump Type Suggestions (from V9 reference categories)
 export const PUMP_TYPE_SUGGESTIONS = [
   'HiPace (turbo)',
-  'HiScroll (dry scroll)',
   'HiScrew (dry screw)',
   'OnTool Roots (roots)',
 ] as const;

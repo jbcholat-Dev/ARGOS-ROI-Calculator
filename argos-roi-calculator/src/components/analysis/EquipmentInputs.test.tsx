@@ -53,10 +53,10 @@ describe('EquipmentInputs', () => {
       expect(screen.getByLabelText('Nombre de pompes')).toBeInTheDocument();
     });
 
-    it('renders pump type placeholder', () => {
+    it('renders pump type placeholder from PUMP_TYPE_SUGGESTIONS', () => {
       renderComponent();
       expect(
-        screen.getByPlaceholderText('ex: HiPace 700, HiScrew, OnTool Roots'),
+        screen.getByPlaceholderText('ex: HiPace (turbo), HiScrew (dry screw), OnTool Roots (roots)'),
       ).toBeInTheDocument();
     });
 
@@ -309,6 +309,31 @@ describe('EquipmentInputs', () => {
 
       expect(end - start).toBeLessThan(100);
       expect(useAppStore.getState().analyses[0].pumpType).toBe('HiPace');
+    });
+
+    it('clears error state when analysisId changes', async () => {
+      const user = userEvent.setup();
+      const secondAnalysis = {
+        ...createTestAnalysis({ id: 'test-analysis-2', name: 'Second Analysis' }),
+      };
+      useAppStore.setState((state) => ({
+        analyses: [...state.analyses, secondAnalysis],
+      }));
+
+      const { rerender } = render(
+        <EquipmentInputs analysisId="test-analysis-1" />,
+      );
+
+      // Create error on first analysis
+      const input = screen.getByLabelText('Nombre de pompes');
+      await user.type(input, '-5');
+      expect(screen.getByText('Doit être un nombre positif')).toBeInTheDocument();
+
+      // Switch to second analysis
+      rerender(<EquipmentInputs analysisId="test-analysis-2" />);
+
+      // Error should be cleared
+      expect(screen.queryByText('Doit être un nombre positif')).not.toBeInTheDocument();
     });
   });
 });

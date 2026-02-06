@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/Input';
 import { useAppStore } from '@/stores/app-store';
 import { validatePumpQuantity } from '@/lib/validation/equipment-validation';
+import { PUMP_TYPE_SUGGESTIONS } from '@/lib/constants';
 
 export interface EquipmentInputsProps {
   analysisId: string;
@@ -20,6 +21,7 @@ export function EquipmentInputs({ analysisId }: EquipmentInputsProps) {
   useEffect(() => {
     if (analysis) {
       setQuantityValue(analysis.pumpQuantity === 0 ? '' : String(analysis.pumpQuantity));
+      setQuantityError(undefined); // Clear stale errors from previous analysis
     }
   }, [analysis?.id]); // Only on analysis ID change (mount/navigation)
 
@@ -60,7 +62,7 @@ export function EquipmentInputs({ analysisId }: EquipmentInputsProps) {
       <div className="flex flex-col gap-4">
         <Input
           label="Type de pompe"
-          placeholder="ex: HiPace 700, HiScrew, OnTool Roots"
+          placeholder={`ex: ${PUMP_TYPE_SUGGESTIONS.join(', ')}`}
           value={analysis.pumpType}
           onChange={handlePumpTypeChange}
         />
