@@ -15,3 +15,6 @@ export type { ToastProps, ToastVariant } from './Toast';
 
 export { Spinner } from './Spinner';
 export type { SpinnerProps, SpinnerSize } from './Spinner';
+
+export { Modal } from './Modal';
+export type { ModalProps } from './Modal';

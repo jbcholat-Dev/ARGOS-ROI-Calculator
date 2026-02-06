@@ -52,7 +52,7 @@ development_status:
 
   # Epic 2: Single Analysis Creation & ROI Calculation (8 stories)
   epic-2: in-progress
-  2-1-analysis-creation-modal-and-store-integration: ready-for-dev
+  2-1-analysis-creation-modal-and-store-integration: done
   2-2-equipment-input-fields-pump-type-quantity: backlog
   2-3-failure-rate-dual-mode-input: backlog
   2-4-wafer-type-and-cost-inputs: backlog

@@ -6,6 +6,7 @@ import {
   Toggle,
   Toast,
   Spinner,
+  Modal,
   type ButtonProps,
   type ButtonVariant,
   type ButtonSize,
@@ -17,6 +18,7 @@ import {
   type ToastVariant,
   type SpinnerProps,
   type SpinnerSize,
+  type ModalProps,
 } from './index';
 
 describe('UI Components Barrel Export', () => {
@@ -38,6 +40,9 @@ describe('UI Components Barrel Export', () => {
 
     expect(Spinner).toBeDefined();
     expect(typeof Spinner).toBe('function');
+
+    expect(Modal).toBeDefined();
+    expect(typeof Modal).toBe('function');
   });
 
   it('should export all TypeScript types without errors', () => {
@@ -90,6 +95,13 @@ describe('UI Components Barrel Export', () => {
 
     const spinnerProps: SpinnerProps = {};
     expect(spinnerProps).toBeDefined();
+
+    const modalProps: ModalProps = {
+      isOpen: true,
+      onClose: () => {},
+      children: null,
+    };
+    expect(modalProps).toBeDefined();
   });
 
   it('should allow destructured imports from @/components/ui', () => {
@@ -102,14 +114,16 @@ describe('UI Components Barrel Export', () => {
       Toggle,
       Toast,
       Spinner,
+      Modal,
     };
 
-    expect(Object.keys(components)).toHaveLength(6);
+    expect(Object.keys(components)).toHaveLength(7);
     expect(components.Button).toBe(Button);
     expect(components.Input).toBe(Input);
     expect(components.Card).toBe(Card);
     expect(components.Toggle).toBe(Toggle);
     expect(components.Toast).toBe(Toast);
     expect(components.Spinner).toBe(Spinner);
+    expect(components.Modal).toBe(Modal);
   });
 });
