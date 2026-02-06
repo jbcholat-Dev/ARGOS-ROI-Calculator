@@ -98,6 +98,41 @@ Each workflow auto-discovers artifacts from previous phases as input context.
 - Consolidate keyboard handlers: Single `handleKeyDown` function > multiple keydown listeners
 - Story 1.6: Consolidated Escape + Tab listeners from 3 to 1 (better performance)
 
+## Context Window Optimization Patterns
+
+### Parallel Subagents
+- For code review fixes: Spawn separate agents for HIGH vs MEDIUM issues (30-40% time reduction)
+- For epic planning: Divide story analysis across parallel agents (40% faster sprint planning)
+- For independent stories: Run create-story + dev-story for 2+ stories in parallel if team capacity allows
+- Pattern: Spawn multiple agents → Work in parallel → Merge results
+- Example: Epic 2 has 8 stories → Batch 1 (Stories 2.1 + 2.2 parallel), Batch 2 (2.3 + 2.4 parallel)
+
+### File Reading Efficiency
+- Read complete files when <2000 lines (avoid multiple offset reads)
+- Parallelize large file reads: Split offset ranges across agents if file >2000 lines
+- Group related reads in single message when possible
+- Story 1.6 lesson: 5 sequential Read calls with offset → Could be 1-2 Read calls (60% reduction)
+
+### Context Compression
+- After story completion: Replace full implementation details with 200-token summary
+- Summary format: Story ID, files changed, test count, issues fixed, status
+- Archive full details in story file markdown, not in conversation context
+- Target: Free 5-10k tokens per epic by compressing completed story details
+- Apply compression after code review completes and story marked "done"
+
+### Agent Resume Pattern
+- Save agentId from Task tool results for potential reuse with `resume` parameter
+- Resume agent maintains full context continuity across workflow steps
+- Reduces repeated information transfer between workflow stages
+- Example: create-story agent (ID: xyz) → dev-story resume(xyz) → code-review resume(xyz)
+- Note: Currently not heavily used in BMAD workflows, but available for complex multi-step tasks
+
+### Context Window Monitoring
+- Session at 40% usage (79k/200k tokens) is HEALTHY - continue same context
+- Session at 60%+ usage - consider compression or fresh context for next major workflow
+- Session at 80%+ usage - MUST start fresh context or apply aggressive compression
+- Messages category is largest consumer (~30% typical) - prime target for compression
+
 ## V9 Reference (calculateur-argos/)
 
 The V9 codebase in `calculateur-argos/` is a **read-only reference** for:
