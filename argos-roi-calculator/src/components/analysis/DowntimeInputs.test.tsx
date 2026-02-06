@@ -361,6 +361,44 @@ describe('DowntimeInputs', () => {
       expect(errorEl).toBeInTheDocument();
       expect(errorEl?.textContent).toContain('Doit être un nombre positif');
     });
+
+    it('warning message has role="status" for screen readers', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ downtimeDuration: 6 })],
+      });
+      renderComponent();
+
+      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      await user.clear(input);
+
+      const warning = screen.getByText('Requis pour le calcul ROI');
+      expect(warning).toHaveAttribute('role', 'status');
+    });
+  });
+
+  describe('Keyboard navigation', () => {
+    it('allows Tab to move from duration to cost', async () => {
+      const user = userEvent.setup();
+      renderComponent();
+      const durationInput = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const costInput = screen.getByLabelText(/Coût horaire d.arrêt/);
+
+      durationInput.focus();
+      await user.keyboard('{Tab}');
+      expect(costInput).toHaveFocus();
+    });
+
+    it('allows Shift+Tab to move from cost to duration', async () => {
+      const user = userEvent.setup();
+      renderComponent();
+      const durationInput = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const costInput = screen.getByLabelText(/Coût horaire d.arrêt/);
+
+      costInput.focus();
+      await user.keyboard('{Shift>}{Tab}{/Shift}');
+      expect(durationInput).toHaveFocus();
+    });
   });
 
   describe('Store integration', () => {

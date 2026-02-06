@@ -33,30 +33,33 @@ export function DowntimeInputs({ analysisId }: DowntimeInputsProps) {
   const costErrorId = `${costInputId}-error`;
   const costWarningId = `${costInputId}-warning`;
 
+  // Fix #7: Extract primitive dependency to avoid unnecessary effect triggers
+  const downtimeCostPerHour = analysis?.downtimeCostPerHour;
+
   // Sync local cost raw value from store when not focused (e.g., on mount or external update)
   useEffect(() => {
-    if (!isCostFocused && analysis) {
+    if (!isCostFocused && downtimeCostPerHour !== undefined) {
       setCostRawValue(
-        analysis.downtimeCostPerHour === 0 ? '' : String(analysis.downtimeCostPerHour)
+        downtimeCostPerHour === 0 ? '' : String(downtimeCostPerHour)
       );
     }
-  }, [isCostFocused, analysis?.downtimeCostPerHour]);
+  }, [isCostFocused, downtimeCostPerHour]);
 
   if (!analysis) {
     return null;
   }
 
+  // Fix #9: Always use validation function to get messages (DRY)
   const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    const result = validateDowntimeDuration(value);
 
     if (value.trim() === '') {
       setDurationError(undefined);
-      setDurationWarning('Requis pour le calcul ROI');
+      setDurationWarning(result.warning);
       updateAnalysis(analysisId, { downtimeDuration: 0 });
       return;
     }
-
-    const result = validateDowntimeDuration(value);
 
     if (result.isValid) {
       setDurationError(undefined);
@@ -70,18 +73,18 @@ export function DowntimeInputs({ analysisId }: DowntimeInputsProps) {
 
   const handleCostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawInput = e.target.value;
-    // Strip any French thousand separator spaces before validation
-    const cleanedValue = rawInput.replace(/[\s\u00A0\u202F]/g, '');
+    // Fix #6: Strip all common thousand separators (spaces, commas, apostrophes)
+    const cleanedValue = rawInput.replace(/[\s\u00A0\u202F,.']/g, '');
     setCostRawValue(cleanedValue);
+
+    const result = validateDowntimeCostPerHour(cleanedValue);
 
     if (cleanedValue.trim() === '') {
       setCostError(undefined);
-      setCostWarning('Requis pour le calcul ROI');
+      setCostWarning(result.warning);
       updateAnalysis(analysisId, { downtimeCostPerHour: 0 });
       return;
     }
-
-    const result = validateDowntimeCostPerHour(cleanedValue);
 
     if (result.isValid) {
       setCostError(undefined);
@@ -103,7 +106,7 @@ export function DowntimeInputs({ analysisId }: DowntimeInputsProps) {
 
   const handleCostBlur = () => {
     setIsCostFocused(false);
-    // Clear raw value so the formatted display takes over
+    // Sync raw value from store on blur
     setCostRawValue(
       analysis.downtimeCostPerHour === 0 ? '' : String(analysis.downtimeCostPerHour)
     );
@@ -181,10 +184,12 @@ export function DowntimeInputs({ analysisId }: DowntimeInputsProps) {
               {durationError}
             </p>
           )}
+          {/* Fix #5: Add role="status" for screen reader announcement */}
           {durationWarning && !durationError && (
             <p
               id={durationWarningId}
               className="text-xs text-amber-600"
+              role="status"
             >
               {durationWarning}
             </p>
@@ -237,10 +242,12 @@ export function DowntimeInputs({ analysisId }: DowntimeInputsProps) {
               {costError}
             </p>
           )}
+          {/* Fix #5: Add role="status" for screen reader announcement */}
           {costWarning && !costError && (
             <p
               id={costWarningId}
               className="text-xs text-amber-600"
+              role="status"
             >
               {costWarning}
             </p>

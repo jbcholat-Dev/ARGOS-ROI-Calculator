@@ -183,10 +183,14 @@ describe('DowntimeInputs Integration', () => {
       expect(useAppStore.getState().analyses[0].downtimeCostPerHour).toBe(25000);
     });
 
-    it('store rejects negative downtimeDuration', () => {
+    it('store rejects negative downtimeDuration and preserves previous value', () => {
+      // Set a valid value first
+      useAppStore.getState().updateAnalysis('test-analysis-1', { downtimeDuration: 6 });
+      expect(useAppStore.getState().analyses[0].downtimeDuration).toBe(6);
+
+      // Attempt negative update - store should preserve previous value
       useAppStore.getState().updateAnalysis('test-analysis-1', { downtimeDuration: -5 });
-      // Should remain 0 (default), not -5
-      expect(useAppStore.getState().analyses[0].downtimeDuration).toBe(0);
+      expect(useAppStore.getState().analyses[0].downtimeDuration).toBe(6);
     });
   });
 });
