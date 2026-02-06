@@ -1,4 +1,4 @@
-import { useState, useId } from 'react';
+import { useState } from 'react';
 import { clsx } from 'clsx';
 import { Input } from '@/components/ui/Input';
 import { useAppStore } from '@/stores/app-store';
@@ -23,8 +23,6 @@ export function WaferInputs({ analysisId }: WaferInputsProps) {
   const [costError, setCostError] = useState<string | undefined>();
   const [isCostFocused, setIsCostFocused] = useState(false);
   const [costInputValue, setCostInputValue] = useState<string>('');
-
-  const radioGroupId = useId();
 
   if (!analysis) {
     return null;
@@ -108,7 +106,7 @@ export function WaferInputs({ analysisId }: WaferInputsProps) {
           <legend className="mb-2 text-base font-medium text-gray-900">
             Type de wafer
           </legend>
-          <div className="flex gap-6" role="radiogroup" aria-labelledby={`${radioGroupId}-legend`}>
+          <div className="flex gap-6">
             <label
               className={clsx(
                 'flex cursor-pointer items-center gap-2',

@@ -1,6 +1,6 @@
 # Story 2.4: Wafer Type and Cost Inputs
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -691,16 +691,45 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
 ### Agent Model Used
 
-[To be filled by dev agent]
+Claude Opus 4.6 (claude-opus-4-6)
 
 ### Debug Log References
 
-[To be filled by dev agent]
+- Fixed controlled number input issue: `user.clear` on number input requires storing 0 to reflect empty state (matching EquipmentInputs pattern)
+- Fixed `toHaveValue(expect.stringMatching(...))` - `toHaveValue` does strict equality, not matcher-compatible. Used `formatEuroCurrency()` for exact expected values.
+- Fixed FocusMode test missing mock for DowntimeInputs (added by Story 2.5)
+- Intl.NumberFormat('fr-FR') uses narrow no-break space (U+202F) as thousands separator
+
+### Code Review Summary
+
+10 issues found (3 HIGH, 7 MEDIUM). Fixed:
+- **Issue 1 (HIGH)**: Removed invalid `role="radiogroup"` and broken `aria-labelledby` from div inside fieldset. Fieldset already provides proper semantic grouping.
+- **Issue 6 (MEDIUM)**: Added test for type switch with invalid quantity - verifies auto-fill of valid default when switching types clears error state.
+- Issue 2 (HIGH): False positive - existing `String(parsed) !== value.trim()` check already catches scientific notation
+- Issue 3 (HIGH): Rejected fix - storing 0 on cost clear creates worse state for ROI calculations. Preserving last valid value is correct.
+- Issues 4, 5, 7, 8, 9, 10: Analyzed and determined acceptable/by-design
 
 ### Completion Notes List
 
-[To be filled by dev agent]
+- 66 new tests added (exceeds 48 minimum requirement)
+- 599 total tests passing, 0 failures (zero regressions)
+- All 8 tasks from story implemented
+- Radio buttons use semantic HTML (fieldset/legend)
+- French number formatting with Intl.NumberFormat('fr-FR')
+- Auto-update wafer quantity on type change (mono=1, batch=125)
+- Real-time validation with French error messages
 
 ### File List
 
-[To be filled by dev agent]
+**New Files:**
+- `src/components/analysis/WaferInputs.tsx` - Main component
+- `src/components/analysis/WaferInputs.test.tsx` - 30 component tests
+- `src/components/analysis/WaferInputs.integration.test.tsx` - 3 E2E tests
+- `src/lib/validation/wafer-validation.ts` - Validation + formatting functions
+- `src/lib/validation/wafer-validation.test.ts` - 28 validation tests
+
+**Modified Files:**
+- `src/components/analysis/index.ts` - Added WaferInputs barrel export
+- `src/components/analysis/index.test.ts` - Added 2 barrel export tests
+- `src/pages/FocusMode.tsx` - Added WaferInputs below FailureRateInput
+- `src/pages/FocusMode.test.tsx` - Added WaferInputs mock + 3 integration tests

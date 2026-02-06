@@ -286,6 +286,26 @@ describe('WaferInputs', () => {
     expect(screen.queryByText(/Doit être un nombre positif/)).not.toBeInTheDocument();
   });
 
+  it('replaces invalid quantity with valid default when switching types', async () => {
+    const user = userEvent.setup();
+    useAppStore.setState({
+      analyses: [createTestAnalysis({ waferType: 'batch', waferQuantity: 125 })],
+    });
+    render(<WaferInputs analysisId="test-analysis-1" />);
+
+    // Enter invalid quantity
+    const quantityInput = screen.getByLabelText('Wafers par lot');
+    await user.clear(quantityInput);
+    await user.type(quantityInput, '0');
+    expect(screen.getByText(/Doit être un nombre positif/)).toBeInTheDocument();
+
+    // Switch to mono — should replace with valid default 1
+    await user.click(screen.getByLabelText('Mono-wafer'));
+    const analysis = useAppStore.getState().analyses[0];
+    expect(analysis.waferQuantity).toBe(1);
+    expect(screen.queryByText(/Doit être un nombre positif/)).not.toBeInTheDocument();
+  });
+
   // === Accessibility Tests ===
 
   it('uses fieldset element for radio group', () => {
