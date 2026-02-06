@@ -133,6 +133,17 @@ Each workflow auto-discovers artifacts from previous phases as input context.
 - Session at 80%+ usage - MUST start fresh context or apply aggressive compression
 - Messages category is largest consumer (~30% typical) - prime target for compression
 
+### Context Window Status Pattern (Communication)
+- ALWAYS provide context status after major operations (story completion, batch dev, etc.)
+- Format: "Actuel: Xk/200k tokens (Y%)" + "Après [action]: ~Zk/200k (~W%)" + "Verdict: [emoji] [status]"
+- Verdict thresholds:
+  * ✅ HEALTHY (<70%): Continue same context, no action needed
+  * ⚠️ CAUTION (70-85%): Consider compression or fresh context for next major workflow
+  * ❌ CRITICAL (>85%): MUST start fresh context or apply aggressive compression
+- Include recommendation: "Peut continuer", "Considérer fresh context", "DOIT commencer nouveau contexte"
+- Example: "Actuel: 126k/200k (63%) | Après Story 2.7: ~140k/200k (70%) | Verdict: ✅ HEALTHY - Peut créer et développer Story 2.7"
+- This pattern helps user make informed decisions about session continuation vs. starting fresh
+
 ## Parallel Development Workflow (Epic 2 Proven Pattern)
 
 ### Orchestration Context Pattern
