@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { NewAnalysisButton } from '@/components/analysis/NewAnalysisButton';
+import { NewAnalysisButton, AnalysisCard } from '@/components/analysis';
 import { AnalysisCreationModal } from '@/components/analysis/AnalysisCreationModal';
 import { useAppStore } from '@/stores/app-store';
 import { buildFocusModeRoute, DEFAULT_DETECTION_RATE } from '@/lib/constants';
@@ -10,6 +10,7 @@ import type { Analysis } from '@/types';
 export function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const analyses = useAppStore((state) => state.analyses);
+  const activeAnalysisId = useAppStore((state) => state.activeAnalysisId);
   const addAnalysis = useAppStore((state) => state.addAnalysis);
   const navigate = useNavigate();
 
@@ -54,11 +55,20 @@ export function Dashboard() {
   return (
     <AppLayout>
       {hasAnalyses ? (
-        <div>
+        <div className="p-6">
           <div className="flex justify-end mb-6">
             <NewAnalysisButton onClick={() => setIsModalOpen(true)} />
           </div>
           {/* Analysis grid — Story 3.1 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {analyses.map((analysis) => (
+              <AnalysisCard
+                key={analysis.id}
+                analysis={analysis}
+                isActive={analysis.id === activeAnalysisId}
+              />
+            ))}
+          </div>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center h-full gap-6">

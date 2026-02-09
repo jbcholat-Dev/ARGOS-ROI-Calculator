@@ -4,6 +4,9 @@ export type { NewAnalysisButtonProps } from './NewAnalysisButton';
 export { AnalysisCreationModal } from './AnalysisCreationModal';
 export type { AnalysisCreationModalProps } from './AnalysisCreationModal';
 
+export { AnalysisCard } from './AnalysisCard';
+export type { AnalysisCardProps } from './AnalysisCard';
+
 export { EquipmentInputs } from './EquipmentInputs';
 export type { EquipmentInputsProps } from './EquipmentInputs';
 

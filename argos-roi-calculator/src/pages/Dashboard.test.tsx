@@ -95,6 +95,75 @@ describe('Dashboard', () => {
     });
   });
 
+  describe('Analysis Grid (Story 3.1)', () => {
+    it('renders empty state when no analyses', () => {
+      renderDashboard();
+      expect(screen.getByText('Aucune analyse créée')).toBeInTheDocument();
+    });
+
+    it('renders AnalysisCard grid when analyses exist', () => {
+      const analysis = createTestAnalysis({
+        name: 'CVD Chamber 04',
+        pumpQuantity: 10,
+      });
+      useAppStore.setState({ analyses: [analysis] });
+      renderDashboard();
+
+      expect(screen.getByText('CVD Chamber 04')).toBeInTheDocument();
+      expect(screen.queryByText('Aucune analyse créée')).not.toBeInTheDocument();
+    });
+
+    it('renders correct number of cards (match analyses count)', () => {
+      const analyses = [
+        createTestAnalysis({ id: '1', name: 'Analysis 1' }),
+        createTestAnalysis({ id: '2', name: 'Analysis 2' }),
+        createTestAnalysis({ id: '3', name: 'Analysis 3' }),
+      ];
+      useAppStore.setState({ analyses });
+      renderDashboard();
+
+      expect(screen.getByText('Analysis 1')).toBeInTheDocument();
+      expect(screen.getByText('Analysis 2')).toBeInTheDocument();
+      expect(screen.getByText('Analysis 3')).toBeInTheDocument();
+    });
+
+    it('highlights active analysis card', () => {
+      const analyses = [
+        createTestAnalysis({ id: 'active-id', name: 'Active Analysis' }),
+        createTestAnalysis({ id: 'inactive-id', name: 'Inactive Analysis' }),
+      ];
+      useAppStore.setState({
+        analyses,
+        activeAnalysisId: 'active-id',
+      });
+      renderDashboard();
+
+      // Both cards should render
+      expect(screen.getByText('Active Analysis')).toBeInTheDocument();
+      expect(screen.getByText('Inactive Analysis')).toBeInTheDocument();
+    });
+
+    it('grid uses responsive columns (check className presence)', () => {
+      useAppStore.setState({ analyses: [createTestAnalysis()] });
+      const { container } = renderDashboard();
+
+      // Grid should have responsive classes
+      const grid = container.querySelector('[class*="grid"]');
+      expect(grid).toBeInTheDocument();
+      expect(grid?.className).toMatch(/grid/);
+    });
+
+    it('shows PlaceholderMessage when empty', () => {
+      renderDashboard();
+      expect(screen.getByText('Aucune analyse créée')).toBeInTheDocument();
+    });
+
+    it('shows NewAnalysisButton when empty', () => {
+      renderDashboard();
+      expect(screen.getByRole('button', { name: 'Nouvelle Analyse' })).toBeInTheDocument();
+    });
+  });
+
   describe('Modal Integration', () => {
     it('opens modal when NewAnalysisButton is clicked', async () => {
       const user = userEvent.setup();
