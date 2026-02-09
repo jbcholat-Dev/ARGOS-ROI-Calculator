@@ -8,10 +8,11 @@
  * - Process failures: ~50% detection rate
  */
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useAppStore } from '@/stores/app-store';
 import { Input } from '@/components/ui/Input';
 import { validateDetectionRate } from '@/lib/validation/equipment-validation';
+import { DEFAULT_DETECTION_RATE } from '@/lib/constants';
 
 export interface DetectionRateInputProps {
   analysisId: string;
@@ -24,17 +25,16 @@ export interface DetectionRateInputProps {
  * Falls back to default 70% if analysis doesn't have detectionRate set.
  */
 export function DetectionRateInput({ analysisId }: DetectionRateInputProps) {
-  // Zustand selector pattern: subscribe only to specific analysis detectionRate
-  const detectionRate = useAppStore(
-    (state) =>
-      state.analyses.find((a) => a.id === analysisId)?.detectionRate ?? 70
+  const [error, setError] = useState<string | null>(null);
+
+  // MEDIUM-4 FIX: Optimized single selector for analysis data
+  const analysis = useAppStore((state) =>
+    state.analyses.find((a) => a.id === analysisId)
   );
   const updateAnalysis = useAppStore((state) => state.updateAnalysis);
 
-  // Check if analysis exists
-  const analysisExists = useAppStore((state) =>
-    state.analyses.some((a) => a.id === analysisId)
-  );
+  const detectionRate = analysis?.detectionRate ?? DEFAULT_DETECTION_RATE;
+  const analysisExists = !!analysis;
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,11 +46,15 @@ export function DetectionRateInput({ analysisId }: DetectionRateInputProps) {
       }
 
       // Validate range (0-100)
-      const error = validateDetectionRate(value);
-      if (error) {
-        // Validation error - don't update store
+      const validationError = validateDetectionRate(value);
+      if (validationError) {
+        // MEDIUM-1 FIX: Display validation error to user
+        setError(validationError);
         return;
       }
+
+      // Clear error if validation passes
+      setError(null);
 
       // Valid value - update store
       updateAnalysis(analysisId, { detectionRate: value });
@@ -80,13 +84,19 @@ export function DetectionRateInput({ analysisId }: DetectionRateInputProps) {
         value={detectionRate}
         onChange={handleChange}
         aria-describedby={`detection-rate-helper-${analysisId}`}
+        aria-invalid={error ? 'true' : 'false'}
       />
+      {/* MEDIUM-2 FIX: Follow Epic 2 error display pattern */}
+      {error && (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      )}
       <p
         id={`detection-rate-helper-${analysisId}`}
         className="text-sm text-gray-500"
       >
-        Probabilité de détecter une panne avant qu'elle ne se produise (défaut:
-        70%)
+        Probabilité de détecter une panne avant qu'elle ne se produise (défaut: 70%)
       </p>
     </div>
   );

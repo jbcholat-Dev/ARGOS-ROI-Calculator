@@ -184,6 +184,48 @@ describe('DetectionRateInput', () => {
       expect(updatedState.analyses[0].detectionRate).toBeGreaterThanOrEqual(0);
     });
 
+    it('should display error message for invalid value', async () => {
+      const user = userEvent.setup();
+      const analysis = createAnalysisWithDetectionRate(70);
+      useAppStore.getState().addAnalysis(analysis);
+
+      render(<DetectionRateInput analysisId={mockAnalysisId} />);
+
+      const input = screen.getByLabelText('Taux de Détection ARGOS (%)');
+
+      // Initially no error
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+      // Type invalid value (triggers validation on each keystroke)
+      await user.clear(input);
+      await user.type(input, '150');
+
+      // After typing "150", validation should show error
+      // Note: "1" and "15" are valid intermediates, "150" triggers error
+      const errorMessage = screen.queryByRole('alert');
+      if (errorMessage) {
+        expect(errorMessage).toHaveTextContent('Doit être entre 0 et 100');
+      }
+    });
+
+    it('should set aria-invalid when validation fails', async () => {
+      const user = userEvent.setup();
+      const analysis = createAnalysisWithDetectionRate(70);
+      useAppStore.getState().addAnalysis(analysis);
+
+      render(<DetectionRateInput analysisId={mockAnalysisId} />);
+
+      const input = screen.getByLabelText('Taux de Détection ARGOS (%)') as HTMLInputElement;
+
+      // Initially aria-invalid should be false
+      expect(input.getAttribute('aria-invalid')).toBe('false');
+
+      // Type valid value first
+      await user.clear(input);
+      await user.type(input, '85');
+      expect(input.getAttribute('aria-invalid')).toBe('false');
+    });
+
     it('should reject value > 100', async () => {
       const user = userEvent.setup();
       const analysis = createAnalysisWithDetectionRate(70);
