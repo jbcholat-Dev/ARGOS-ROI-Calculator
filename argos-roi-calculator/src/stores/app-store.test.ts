@@ -195,6 +195,88 @@ describe('AppStore', () => {
       expect(updatedState.analyses[0].name).toBe('Updated Analysis 1');
       expect(updatedState.analyses[1].name).toBe('Analysis 2'); // Unchanged
     });
+
+    // Story 2.9: Per-analysis detection rate tests
+    it('should allow updating detectionRate field', () => {
+      const state = useAppStore.getState();
+      const analysis: Analysis = {
+        id: 'test-id-1',
+        name: 'Test',
+        pumpType: 'A3004XN',
+        pumpQuantity: 2,
+        failureRateMode: 'percentage',
+        failureRatePercentage: 10,
+        waferType: 'batch',
+        waferQuantity: 125,
+        waferCost: 5000,
+        downtimeDuration: 4,
+        downtimeCostPerHour: 1000,
+        detectionRate: 70,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      state.addAnalysis(analysis);
+      state.updateAnalysis('test-id-1', { detectionRate: 85 });
+
+      const updatedState = useAppStore.getState();
+      expect(updatedState.analyses[0].detectionRate).toBe(85);
+    });
+
+    it('should persist detectionRate after update', () => {
+      const state = useAppStore.getState();
+      const analysis: Analysis = {
+        id: 'test-id-1',
+        name: 'Test',
+        pumpType: 'A3004XN',
+        pumpQuantity: 2,
+        failureRateMode: 'percentage',
+        failureRatePercentage: 10,
+        waferType: 'batch',
+        waferQuantity: 125,
+        waferCost: 5000,
+        downtimeDuration: 4,
+        downtimeCostPerHour: 1000,
+        detectionRate: 70,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      state.addAnalysis(analysis);
+      state.updateAnalysis('test-id-1', { detectionRate: 50 });
+
+      const updatedState = useAppStore.getState();
+      expect(updatedState.analyses[0].detectionRate).toBe(50);
+
+      // Verify persistence - value should remain after another unrelated update
+      state.updateAnalysis('test-id-1', { name: 'Updated Name' });
+      const finalState = useAppStore.getState();
+      expect(finalState.analyses[0].detectionRate).toBe(50);
+    });
+
+    it('should allow detectionRate to be undefined (uses global fallback)', () => {
+      const state = useAppStore.getState();
+      const analysis: Analysis = {
+        id: 'test-id-1',
+        name: 'Test',
+        pumpType: 'A3004XN',
+        pumpQuantity: 2,
+        failureRateMode: 'percentage',
+        failureRatePercentage: 10,
+        waferType: 'batch',
+        waferQuantity: 125,
+        waferCost: 5000,
+        downtimeDuration: 4,
+        downtimeCostPerHour: 1000,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      state.addAnalysis(analysis);
+
+      const updatedState = useAppStore.getState();
+      expect(updatedState.analyses[0].detectionRate).toBeUndefined();
+    });
   });
 
   describe('deleteAnalysis', () => {

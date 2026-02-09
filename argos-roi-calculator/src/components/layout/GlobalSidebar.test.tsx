@@ -18,19 +18,15 @@ describe('GlobalSidebar', () => {
       expect(screen.getByText('Global Parameters')).toBeInTheDocument();
     });
 
-    it('should display default detection rate from store', () => {
+    // Story 2.9: Detection rate removed from GlobalSidebar (now per-analysis)
+    it('should display only service cost (not detection rate)', () => {
       render(<GlobalSidebar />);
 
-      expect(screen.getByText(/Detection Rate:/)).toBeInTheDocument();
-      expect(screen.getByText(/70%/)).toBeInTheDocument();
-    });
-
-    it('should display default service cost from store', () => {
-      render(<GlobalSidebar />);
-
-      expect(screen.getByText(/Service Cost:/)).toBeInTheDocument();
+      expect(screen.getByText(/Service Cost per Pump:/)).toBeInTheDocument();
       // French locale uses space separator: "2 500"
       expect(screen.getByText(/€2\s500/)).toBeInTheDocument();
+      // Detection rate should NOT be displayed
+      expect(screen.queryByText(/Detection Rate:/)).not.toBeInTheDocument();
     });
 
     it('should format service cost with French locale', () => {
@@ -43,15 +39,7 @@ describe('GlobalSidebar', () => {
   });
 
   describe('Zustand store integration', () => {
-    it('should read detection rate from store selector', () => {
-      const store = useAppStore.getState();
-      store.globalParams.detectionRate = 85;
-
-      render(<GlobalSidebar />);
-
-      expect(screen.getByText(/85%/)).toBeInTheDocument();
-    });
-
+    // Story 2.9: Detection rate tests removed (now per-analysis)
     it('should read service cost from store selector', () => {
       const store = useAppStore.getState();
       store.globalParams.serviceCostPerPump = 3000;
@@ -62,15 +50,15 @@ describe('GlobalSidebar', () => {
       expect(screen.getByText(/€3\s000/)).toBeInTheDocument();
     });
 
-    it('should update when store values change', () => {
+    it('should update when service cost changes', () => {
       const { rerender } = render(<GlobalSidebar />);
-      expect(screen.getByText(/70%/)).toBeInTheDocument();
+      expect(screen.getByText(/€2\s500/)).toBeInTheDocument();
 
       const store = useAppStore.getState();
-      store.globalParams.detectionRate = 90;
+      store.globalParams.serviceCostPerPump = 3500;
 
       rerender(<GlobalSidebar />);
-      expect(screen.getByText(/90%/)).toBeInTheDocument();
+      expect(screen.getByText(/€3\s500/)).toBeInTheDocument();
     });
   });
 

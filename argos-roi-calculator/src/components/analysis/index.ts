@@ -25,5 +25,8 @@ export type { WaferInputsProps } from './WaferInputs';
 export { DowntimeInputs } from './DowntimeInputs';
 export type { DowntimeInputsProps } from './DowntimeInputs';
 
+export { DetectionRateInput } from './DetectionRateInput';
+export type { DetectionRateInputProps } from './DetectionRateInput';
+
 export { ResultsPanel } from './ResultsPanel';
 export type { ResultsPanelProps } from './ResultsPanel';

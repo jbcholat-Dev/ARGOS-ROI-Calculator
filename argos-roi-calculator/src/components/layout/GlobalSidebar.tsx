@@ -3,7 +3,6 @@ import { useAppStore } from '@/stores/app-store';
 export interface GlobalSidebarProps {}
 
 export function GlobalSidebar(_props?: GlobalSidebarProps) {
-  const detectionRate = useAppStore((state) => state.globalParams.detectionRate);
   const serviceCost = useAppStore((state) => state.globalParams.serviceCostPerPump);
 
   return (
@@ -17,12 +16,7 @@ export function GlobalSidebar(_props?: GlobalSidebarProps) {
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <span className="text-sm text-gray-600">Detection Rate:</span>
-            <span className="text-base font-medium text-gray-900">{detectionRate}%</span>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <span className="text-sm text-gray-600">Service Cost:</span>
+            <span className="text-sm text-gray-600">Service Cost per Pump:</span>
             <span className="text-base font-medium text-gray-900">
               €{serviceCost.toLocaleString('fr-FR')}
             </span>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validatePumpQuantity } from './equipment-validation';
+import { validatePumpQuantity, validateDetectionRate } from './equipment-validation';
 
 describe('validatePumpQuantity', () => {
   describe('valid inputs', () => {
@@ -106,6 +106,48 @@ describe('validatePumpQuantity', () => {
     it('returns French error for exceeding max', () => {
       const result = validatePumpQuantity('2000');
       expect(result.error).toBe('Maximum 1000 pompes');
+    });
+  });
+});
+
+// Story 2.9: Per-analysis detection rate validation
+describe('validateDetectionRate', () => {
+  describe('valid inputs', () => {
+    it('accepts 0 (minimum boundary)', () => {
+      const error = validateDetectionRate(0);
+      expect(error).toBeNull();
+    });
+
+    it('accepts 50 (typical value)', () => {
+      const error = validateDetectionRate(50);
+      expect(error).toBeNull();
+    });
+
+    it('accepts 70 (default value)', () => {
+      const error = validateDetectionRate(70);
+      expect(error).toBeNull();
+    });
+
+    it('accepts 100 (maximum boundary)', () => {
+      const error = validateDetectionRate(100);
+      expect(error).toBeNull();
+    });
+  });
+
+  describe('invalid inputs', () => {
+    it('rejects negative value', () => {
+      const error = validateDetectionRate(-1);
+      expect(error).toBe('Doit être entre 0 et 100');
+    });
+
+    it('rejects value > 100', () => {
+      const error = validateDetectionRate(101);
+      expect(error).toBe('Doit être entre 0 et 100');
+    });
+
+    it('rejects large negative value', () => {
+      const error = validateDetectionRate(-50);
+      expect(error).toBe('Doit être entre 0 et 100');
     });
   });
 });

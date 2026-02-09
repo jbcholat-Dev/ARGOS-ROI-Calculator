@@ -4,7 +4,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { NewAnalysisButton } from '@/components/analysis/NewAnalysisButton';
 import { AnalysisCreationModal } from '@/components/analysis/AnalysisCreationModal';
 import { useAppStore } from '@/stores/app-store';
-import { buildFocusModeRoute } from '@/lib/constants';
+import { buildFocusModeRoute, DEFAULT_DETECTION_RATE } from '@/lib/constants';
 import type { Analysis } from '@/types';
 
 export function Dashboard() {
@@ -32,6 +32,7 @@ export function Dashboard() {
         waferCost: 0,
         downtimeDuration: 0,
         downtimeCostPerHour: 0,
+        detectionRate: DEFAULT_DETECTION_RATE, // Story 2.9: Per-analysis detection rate
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

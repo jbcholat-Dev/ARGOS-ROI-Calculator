@@ -103,9 +103,12 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
     ? calculateArgosServiceCost(analysis.pumpQuantity, globalParams.serviceCostPerPump)
     : null;
 
+  // Story 2.9: Use per-analysis detection rate, fallback to global if undefined
+  const detectionRate = analysis.detectionRate ?? globalParams.detectionRate;
+
   const savingsValue =
     totalFailureCost !== null && argosServiceCost !== null
-      ? calculateSavings(totalFailureCost, argosServiceCost, globalParams.detectionRate)
+      ? calculateSavings(totalFailureCost, argosServiceCost, detectionRate)
       : null;
 
   const roiValue =

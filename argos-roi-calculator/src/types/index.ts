@@ -44,6 +44,9 @@ export interface Analysis {
   downtimeDuration: number; // Hours of downtime per failure event
   downtimeCostPerHour: number; // EUR/hour downtime cost
 
+  // ARGOS detection rate percentage for this specific failure type (0-100). If undefined, uses globalParams.detectionRate (default: 70)
+  detectionRate?: number;
+
   // Metadata
   createdAt: string; // ISO 8601 timestamp
   updatedAt: string; // ISO 8601 timestamp

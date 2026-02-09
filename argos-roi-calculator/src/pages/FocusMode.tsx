@@ -2,7 +2,7 @@ import { useEffect, useMemo, useCallback } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { ROUTES } from '@/lib/constants';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { EditableAnalysisName, EquipmentInputs, FailureRateInput, WaferInputs, DowntimeInputs, ResultsPanel } from '@/components/analysis';
+import { EditableAnalysisName, EquipmentInputs, FailureRateInput, DetectionRateInput, WaferInputs, DowntimeInputs, ResultsPanel } from '@/components/analysis';
 import { useAppStore } from '@/stores/app-store';
 
 // Validate analysis ID format (alphanumeric, dashes, max 100 chars)
@@ -78,6 +78,9 @@ export function FocusMode() {
           </div>
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <FailureRateInput analysisId={id} />
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <DetectionRateInput analysisId={id} />
           </div>
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <WaferInputs analysisId={id} />

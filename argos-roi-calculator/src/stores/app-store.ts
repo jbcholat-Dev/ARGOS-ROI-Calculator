@@ -14,6 +14,7 @@
 
 import { create } from 'zustand';
 import type { Analysis, GlobalParams } from '@/types';
+import { DEFAULT_DETECTION_RATE } from '@/lib/constants';
 
 /**
  * Application state interface

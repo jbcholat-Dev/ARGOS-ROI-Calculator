@@ -60,7 +60,7 @@ development_status:
   2-6-roi-calculation-engine: done
   2-7-results-panel-with-real-time-display: done
   2-8-analysis-rename-and-active-state-indicator: done
-  2-9-detection-rate-per-analysis: ready-for-dev
+  2-9-detection-rate-per-analysis: review
   epic-2-retrospective: done
 
   # Epic 3: Multi-Analysis Management (4 stories)

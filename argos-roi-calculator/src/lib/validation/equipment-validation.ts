@@ -40,3 +40,23 @@ export function validatePumpQuantity(value: string): ValidationResult {
 
   return { isValid: true };
 }
+
+/**
+ * Validate detection rate percentage value
+ * Story 2.9: Per-analysis detection rate validation
+ *
+ * Rules:
+ * - Must be numeric (0-100)
+ * - Must be >= 0
+ * - Must be <= 100
+ *
+ * @param value - Detection rate as number (0-100)
+ * @returns Error message if invalid, null if valid
+ */
+export function validateDetectionRate(value: number): string | null {
+  if (value < 0 || value > 100) {
+    return 'Doit être entre 0 et 100';
+  }
+
+  return null;
+}
