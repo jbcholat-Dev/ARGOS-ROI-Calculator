@@ -98,6 +98,54 @@ Each workflow auto-discovers artifacts from previous phases as input context.
 - Consolidate keyboard handlers: Single `handleKeyDown` function > multiple keydown listeners
 - Story 1.6: Consolidated Escape + Tab listeners from 3 to 1 (better performance)
 
+## Design Feedback Workflow
+
+### Strategy: MVP-First, Design Polish Later
+- **Priority**: Functional MVP delivery (Epics 2-6) before comprehensive design refactor
+- **Rationale**: Need full product context and real user feedback before making design decisions
+- **Timing**: Batch design refactor in separate branch after Epic 6 completion
+
+### Workflow (After Each Retrospective)
+1. **Capture feedback** during retrospective in designated Epic section of `DESIGN_FEEDBACK.md`
+2. **Categorize** by type: Layout & Structure, Buttons & Interactions, Modernization, etc.
+3. **Document** as unchecked tasks with clear description, current state, proposed change, and impact
+4. **Defer** to post-Epic 6 processing (do NOT implement during functional epic development)
+5. **Mark resolved** items that get addressed by subsequent epic work (e.g., sidebar justified by Epic 3)
+
+### DESIGN_FEEDBACK.md Structure
+```markdown
+## Epic N Feedback (YYYY-MM-DD)
+
+### Category Name
+- [ ] **Issue Title** - Brief description
+  - Current: What exists now
+  - Proposed: What could be better
+  - Impact: Why it matters
+  - Estimated Effort: Time estimate (if known)
+```
+
+### Epic 2 Example Feedback Items
+- Grid 2x3 for InputPanel (reduce scrolling)
+- Sections too wide (50% unused width)
+- FAB (Floating Action Button) for "New Analysis"
+- Overall aesthetic: "Sortir de l'industrie" modern look
+- ResultsPanel positioning in new layout
+
+### Post-Epic 6 Design Refactor Plan
+1. Gather real user feedback from client demos (Epics 4-6)
+2. Review all accumulated feedback in DESIGN_FEEDBACK.md
+3. Audit Sally's initial mockups for design direction
+4. Prioritize changes by impact and effort
+5. Create branch: `feature/design-polish`
+6. Work through feedback systematically with comprehensive testing
+7. Review with JB before merge
+
+### Key Principles
+- **Don't prematurely optimize**: Wait for full product context before design decisions
+- **User feedback > assumptions**: Real client reactions should inform design
+- **Batch refactor > incremental**: Avoid refactoring same components 6 times across epics
+- **Design branch isolation**: Allows aggressive refactoring without disrupting feature velocity
+
 ## Context Window Optimization Patterns
 
 ### Parallel Subagents
