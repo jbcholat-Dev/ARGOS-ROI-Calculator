@@ -77,6 +77,13 @@ Each workflow auto-discovers artifacts from previous phases as input context.
 - **LOW issues** are optional, can be deferred to future stories
 - BMAD code-review workflow is ADVERSARIAL - must find minimum 3-10 issues (never "looks good")
 
+### Code Review Patterns (Story 3.2)
+- Launch 3 code-reviewer agents in parallel: simplicity, bugs, conventions
+- Each agent focuses on different aspect = comprehensive coverage in 2-3min
+- Common issues: console.log in production, role conflicts, test fragility
+- CRITICAL: Remove ALL console.log debug statements before commit (pollution in prod)
+- Pattern: Code review BEFORE final test run (catch issues early)
+
 ### Accessibility - WCAG AA Compliance
 - `aria-describedby` is MANDATORY for modals/dialogs, not optional
 - Modal pattern: `aria-labelledby` (title) + `aria-describedby` (body content)
@@ -92,6 +99,18 @@ Each workflow auto-discovers artifacts from previous phases as input context.
 - Modal Portal: Use `createPortal(content, document.body)` for overlay layering
 - Test pattern: Portal target in tests MUST match production code (no unused `modal-root` divs)
 - If Modal uses `document.body`, tests should NOT create separate portal container
+
+### Component Role Management (Story 3.2)
+- UI primitives should auto-manage ARIA attributes (role, tabIndex) based on state
+- Pattern: Card component `role={isClickable ? 'button' : undefined}` (conditional)
+- AVOID: Parent components overriding role (causes accessibility conflicts)
+- Example: AnalysisCard should NOT pass `role="article"` - let Card decide based on onClick
+
+### Navigation Patterns (Story 3.2 Clean Architecture)
+- Dashboard handler pattern: `setActiveAnalysis(id)` BEFORE `navigate(route)`
+- WHY: Active state updates immediately (UI more reactive), FocusMode confirms on mount
+- AVOID: Relying only on FocusMode useEffect (delayed visual feedback)
+- Pattern: Immediate store update + navigation = double-safety, not duplication
 
 ### Performance Patterns
 - Avoid multiple `useEffect` hooks with separate event listeners for same event type
@@ -218,6 +237,15 @@ Each workflow auto-discovers artifacts from previous phases as input context.
 - Push all commits together (atomic epic progress)
 - Celebrate before next batch
 
+### Single Story Development Pattern (Story 3.2 Proven)
+- For 1-2 stories (<2h each): Use Task tool with parallel agents, NOT TeamCreate
+- Phase 2 (Exploration): Launch 3 code-explorer agents in parallel (card, navigation, store)
+- Phase 4 (Architecture): Launch 3 code-architect agents (minimal, clean, pragmatic approaches)
+- Phase 6 (Review): Launch 3 code-reviewer agents (simplicity, bugs, conventions)
+- Pattern: Parallel research → Sequential implementation → Parallel review
+- Time savings: 30-40% vs sequential agent launches
+- When to use team: 3+ stories in parallel OR work >4h OR complex coordination needed
+
 ## Parallel Development Anti-Patterns (Epic 2 Lessons)
 
 ### Commit Merging Risk
@@ -252,6 +280,13 @@ Each workflow auto-discovers artifacts from previous phases as input context.
 - WORKAROUND: Re-run full suite (`npm test -- --run`) to confirm real failure
 - PATTERN: If test passes on re-run, likely timing issue (not code bug)
 - FIX: Add explicit waitFor() or cleanup between tests if pattern recurs
+
+### Accessibility Test Patterns (Story 3.2)
+- PREFER: `screen.getByLabelText('Analyse ${name}')` over `screen.getByRole('button')`
+- WHY: aria-label queries are robust to role changes (e.g., Card auto-managing role)
+- AVOID: Assuming fixed role in tests when component manages role conditionally
+- PATTERN: Query by semantic meaning (label) > implementation detail (role)
+- Keyboard navigation tests: Use `.focus()` directly, NOT `user.tab()` (tabs to first focusable)
 
 ### Test Count Verification
 - After parallel dev batch, verify test count matches estimate
