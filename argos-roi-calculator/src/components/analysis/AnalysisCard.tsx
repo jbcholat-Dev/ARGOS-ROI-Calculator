@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { Card } from '@/components/ui';
 import {
@@ -10,6 +11,8 @@ import {
 } from '@/lib/calculations';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { DEFAULT_DETECTION_RATE, DEFAULT_SERVICE_COST_PER_PUMP } from '@/lib/constants';
+import { useAppStore } from '@/stores/app-store';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 import type { Analysis } from '@/types';
 
 export interface AnalysisCardProps {
@@ -36,6 +39,17 @@ export interface AnalysisCardProps {
  * <AnalysisCard analysis={analysis} isActive={true} />
  */
 export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps) {
+  // State for context menu and delete confirmation modal (Story 3.3)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Store actions (Story 3.3: duplicate/delete)
+  const duplicateAnalysis = useAppStore((state) => state.duplicateAnalysis);
+  const deleteAnalysis = useAppStore((state) => state.deleteAnalysis);
+  const navigate = useNavigate();
+
   // Calculate wafer quantity based on type
   const waferQuantity = analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
 
@@ -80,19 +94,138 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
   // Traffic-light color for ROI
   const roiColorClass = getROIColorClass(roi);
 
+  // Click-outside handler to close menu (Story 3.3)
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      // Close if clicked outside both menu and button
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(target)
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMenuOpen]);
+
+  // Escape key handler to close menu (Story 3.3)
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMenuOpen(false);
+        menuButtonRef.current?.focus(); // Return focus to trigger button
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isMenuOpen]);
+
+  // Duplicate handler (Story 3.3 AC2)
+  const handleDuplicate = () => {
+    setIsMenuOpen(false);
+    duplicateAnalysis(analysis.id);
+    // Navigate to duplicate in Focus Mode
+    const newActiveId = useAppStore.getState().activeAnalysisId;
+    if (newActiveId) {
+      navigate(`/analysis/${newActiveId}`);
+    }
+  };
+
+  // Delete handler - opens confirmation modal (Story 3.3 AC3)
+  const handleDelete = () => {
+    setIsMenuOpen(false);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Delete confirmation handler (Story 3.3 AC4)
+  const handleDeleteConfirm = () => {
+    const currentAnalyses = useAppStore.getState().analyses;
+    const wasActive = useAppStore.getState().activeAnalysisId === analysis.id;
+
+    deleteAnalysis(analysis.id);
+    setIsDeleteModalOpen(false);
+
+    // Navigation after delete (AC4)
+    if (wasActive) {
+      const newActiveId = useAppStore.getState().activeAnalysisId;
+      if (newActiveId) {
+        navigate(`/analysis/${newActiveId}`);
+      } else {
+        navigate('/'); // No analyses remain, go to Dashboard empty state
+      }
+    }
+  };
+
   return (
-    <Card
-      aria-label={`Analyse ${analysis.name}`}
-      onClick={onClick}
-      className={clsx(
-        // Active state border
-        isActive && 'border-primary border-2',
-      )}
-    >
-      {/* Process Name */}
-      <h3 className="mb-3 text-xl font-semibold text-gray-900">
-        {analysis.name}
-      </h3>
+    <>
+      <Card
+        aria-label={`Analyse ${analysis.name}`}
+        onClick={onClick}
+        className={clsx(
+          // Active state border
+          isActive && 'border-primary border-2',
+          // Relative positioning for absolute menu
+          'relative',
+        )}
+      >
+        {/* Three-dot menu button (Story 3.3 AC1) */}
+        <button
+          ref={menuButtonRef}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent card onClick navigation
+            setIsMenuOpen(!isMenuOpen);
+          }}
+          className="absolute top-4 right-4 p-2 text-gray-500 hover:text-pfeiffer-red transition-colors rounded hover:bg-gray-100"
+          aria-label={`Actions pour l'analyse ${analysis.name}`}
+          aria-expanded={isMenuOpen}
+          aria-haspopup="menu"
+        >
+          <span className="text-xl leading-none" aria-hidden="true">
+            ⋮
+          </span>
+        </button>
+
+        {/* Context menu dropdown (Story 3.3 AC1) */}
+        {isMenuOpen && (
+          <div
+            ref={menuRef}
+            role="menu"
+            aria-label="Actions de l'analyse"
+            className="absolute top-12 right-4 bg-white shadow-lg border border-gray-200 rounded-lg py-1 z-10 min-w-[150px]"
+          >
+            <button
+              role="menuitem"
+              onClick={handleDuplicate}
+              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
+            >
+              <span aria-hidden="true">⎘</span>
+              Dupliquer
+            </button>
+            <button
+              role="menuitem"
+              onClick={handleDelete}
+              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+            >
+              <span aria-hidden="true">🗑</span>
+              Supprimer
+            </button>
+          </div>
+        )}
+
+        {/* Process Name */}
+        <h3 className="mb-3 text-xl font-semibold text-gray-900 pr-12">
+          {analysis.name}
+        </h3>
 
       {/* Pump Count */}
       <div className="mb-4 flex items-center gap-2">
@@ -115,6 +248,15 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
           {formatCurrency(savings)}
         </div>
       </div>
-    </Card>
+      </Card>
+
+      {/* Delete confirmation modal (Story 3.3 AC3) */}
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        analysisName={analysis.name}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setIsDeleteModalOpen(false)}
+      />
+    </>
   );
 }

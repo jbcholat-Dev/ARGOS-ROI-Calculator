@@ -14,7 +14,6 @@
 
 import { create } from 'zustand';
 import type { Analysis, GlobalParams } from '@/types';
-import { DEFAULT_DETECTION_RATE } from '@/lib/constants';
 
 /**
  * Application state interface
@@ -178,16 +177,26 @@ export const useAppStore = create<AppState>((set) => ({
 
   /**
    * Delete an analysis by ID
-   * If the deleted analysis was active, clears the activeAnalysisId
+   * If the deleted analysis was active, sets the first remaining analysis as active
+   * If no analyses remain, sets activeAnalysisId to null
    *
    * @param id - Analysis ID to delete
    */
   deleteAnalysis: (id) =>
-    set((state) => ({
-      analyses: state.analyses.filter((a) => a.id !== id),
-      activeAnalysisId:
-        state.activeAnalysisId === id ? null : state.activeAnalysisId,
-    })),
+    set((state) => {
+      const newAnalyses = state.analyses.filter((a) => a.id !== id);
+      let newActiveId = state.activeAnalysisId;
+
+      // If deleted analysis was active, set to first remaining (or null)
+      if (state.activeAnalysisId === id) {
+        newActiveId = newAnalyses.length > 0 ? newAnalyses[0].id : null;
+      }
+
+      return {
+        analyses: newAnalyses,
+        activeAnalysisId: newActiveId,
+      };
+    }),
 
   /**
    * Duplicate an existing analysis
@@ -204,7 +213,7 @@ export const useAppStore = create<AppState>((set) => ({
       const duplicate: Analysis = {
         ...original,
         id: crypto.randomUUID(), // Generate new unique ID
-        name: `${original.name} (Copy)`, // Append "(Copy)" to name
+        name: `${original.name} (copie)`, // Append "(copie)" to name (French)
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

@@ -305,7 +305,7 @@ describe('AppStore', () => {
       expect(updatedState.analyses).toHaveLength(0);
     });
 
-    it('should clear activeAnalysisId when deleting active analysis', () => {
+    it('should clear activeAnalysisId when deleting last remaining analysis', () => {
       const state = useAppStore.getState();
       const analysis: Analysis = {
         id: 'test-id-1',
@@ -326,8 +326,54 @@ describe('AppStore', () => {
       state.addAnalysis(analysis);
       expect(useAppStore.getState().activeAnalysisId).toBe('test-id-1');
 
+      // Story 3.3: Deleting last analysis should set activeAnalysisId to null
       state.deleteAnalysis('test-id-1');
       expect(useAppStore.getState().activeAnalysisId).toBeNull();
+    });
+
+    it('should set first remaining analysis as active when deleting active analysis (Story 3.3)', () => {
+      const state = useAppStore.getState();
+      const analysis1: Analysis = {
+        id: 'test-id-1',
+        name: 'Analysis 1',
+        pumpType: 'A3004XN',
+        pumpQuantity: 2,
+        failureRateMode: 'percentage',
+        failureRatePercentage: 10,
+        waferType: 'batch',
+        waferQuantity: 125,
+        waferCost: 5000,
+        downtimeDuration: 4,
+        downtimeCostPerHour: 1000,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const analysis2: Analysis = {
+        id: 'test-id-2',
+        name: 'Analysis 2',
+        pumpType: 'B5000',
+        pumpQuantity: 3,
+        failureRateMode: 'percentage',
+        failureRatePercentage: 15,
+        waferType: 'mono',
+        waferQuantity: 1,
+        waferCost: 8000,
+        downtimeDuration: 6,
+        downtimeCostPerHour: 1500,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      state.addAnalysis(analysis1);
+      state.addAnalysis(analysis2);
+      state.setActiveAnalysis('test-id-2'); // Set second as active
+
+      // Delete active analysis (second)
+      state.deleteAnalysis('test-id-2');
+
+      // Should set first remaining analysis as active
+      expect(useAppStore.getState().activeAnalysisId).toBe('test-id-1');
+      expect(useAppStore.getState().analyses).toHaveLength(1);
     });
 
     it('should preserve activeAnalysisId when deleting non-active analysis', () => {
@@ -397,7 +443,8 @@ describe('AppStore', () => {
       const updatedState = useAppStore.getState();
       expect(updatedState.analyses).toHaveLength(2);
       expect(updatedState.analyses[1].id).not.toBe('original-id');
-      expect(updatedState.analyses[1].name).toBe('Original Analysis (Copy)');
+      // Story 3.3: French naming "(copie)" instead of "(Copy)"
+      expect(updatedState.analyses[1].name).toBe('Original Analysis (copie)');
       expect(updatedState.analyses[1].pumpType).toBe('A3004XN'); // Other fields preserved
     });
 

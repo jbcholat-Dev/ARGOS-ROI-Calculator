@@ -1,8 +1,20 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
+import { useAppStore } from '@/stores/app-store';
 import { AnalysisCard } from './AnalysisCard';
 import type { Analysis } from '@/types';
+
+// Mock react-router-dom navigate
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 describe('AnalysisCard', () => {
   const baseAnalysis: Analysis = {
@@ -263,6 +275,372 @@ describe('AnalysisCard', () => {
 
       const card = container.firstChild as HTMLElement;
       expect(card.className).not.toMatch(/cursor-pointer/);
+    });
+  });
+
+  // Story 3.3: Duplicate and Delete Actions
+  describe('Context Menu (Story 3.3)', () => {
+    beforeEach(() => {
+      mockNavigate.mockClear();
+      // Reset store to clean state
+      useAppStore.setState({
+        analyses: [baseAnalysis],
+        activeAnalysisId: baseAnalysis.id,
+      });
+    });
+
+    afterEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('renders three-dot menu button', () => {
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      expect(menuButton).toBeInTheDocument();
+      expect(menuButton).toHaveAttribute('aria-haspopup', 'menu');
+    });
+
+    it('opens context menu when three-dot button is clicked', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      await user.click(menuButton);
+
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /Dupliquer/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /Supprimer/i })).toBeInTheDocument();
+    });
+
+    it('closes menu when clicking outside', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      // Open menu
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      await user.click(menuButton);
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+
+      // Click outside (on document body)
+      await user.click(document.body);
+
+      await waitFor(() => {
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      });
+    });
+
+    it('closes menu when Escape key is pressed', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      // Open menu
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      await user.click(menuButton);
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+
+      // Press Escape
+      await user.keyboard('{Escape}');
+
+      await waitFor(() => {
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      });
+    });
+
+    it('three-dot button click does not trigger card onClick', async () => {
+      const user = userEvent.setup();
+      const onClick = vi.fn();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} onClick={onClick} />
+        </MemoryRouter>,
+      );
+
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      await user.click(menuButton);
+
+      // Card onClick should NOT be called (stopPropagation)
+      expect(onClick).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Duplicate Action (Story 3.3 AC2)', () => {
+    beforeEach(() => {
+      mockNavigate.mockClear();
+      useAppStore.setState({
+        analyses: [baseAnalysis],
+        activeAnalysisId: baseAnalysis.id,
+      });
+    });
+
+    it('duplicates analysis when "Dupliquer" is clicked', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      // Open menu and click Dupliquer
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      await user.click(menuButton);
+
+      const duplicateButton = screen.getByRole('menuitem', { name: /Dupliquer/i });
+      await user.click(duplicateButton);
+
+      // Verify duplicate was created in store
+      const analyses = useAppStore.getState().analyses;
+      expect(analyses).toHaveLength(2);
+      expect(analyses[1].name).toBe('CVD Chamber 04 (copie)');
+      expect(analyses[1].pumpQuantity).toBe(baseAnalysis.pumpQuantity);
+      expect(analyses[1].id).not.toBe(baseAnalysis.id);
+    });
+
+    it('navigates to duplicate in Focus Mode after duplication', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      // Open menu and click Dupliquer
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      await user.click(menuButton);
+
+      const duplicateButton = screen.getByRole('menuitem', { name: /Dupliquer/i });
+      await user.click(duplicateButton);
+
+      // Verify navigation to duplicate
+      const newActiveId = useAppStore.getState().activeAnalysisId;
+      expect(mockNavigate).toHaveBeenCalledWith(`/analysis/${newActiveId}`);
+    });
+
+    it('duplicate has all values copied from original', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      // Open menu and click Dupliquer
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      await user.click(menuButton);
+
+      const duplicateButton = screen.getByRole('menuitem', { name: /Dupliquer/i });
+      await user.click(duplicateButton);
+
+      // Verify all fields copied
+      const duplicate = useAppStore.getState().analyses[1];
+      expect(duplicate.pumpType).toBe(baseAnalysis.pumpType);
+      expect(duplicate.failureRatePercentage).toBe(baseAnalysis.failureRatePercentage);
+      expect(duplicate.waferType).toBe(baseAnalysis.waferType);
+      expect(duplicate.waferCost).toBe(baseAnalysis.waferCost);
+      expect(duplicate.detectionRate).toBe(baseAnalysis.detectionRate);
+    });
+
+    it('closes menu after duplication', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      // Open menu and click Dupliquer
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      await user.click(menuButton);
+
+      const duplicateButton = screen.getByRole('menuitem', { name: /Dupliquer/i });
+      await user.click(duplicateButton);
+
+      // Menu should close
+      await waitFor(() => {
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Delete Action (Story 3.3 AC3-AC4)', () => {
+    beforeEach(() => {
+      mockNavigate.mockClear();
+      useAppStore.setState({
+        analyses: [baseAnalysis],
+        activeAnalysisId: baseAnalysis.id,
+      });
+    });
+
+    it('opens delete confirmation modal when "Supprimer" is clicked', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      // Open menu and click Supprimer
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      await user.click(menuButton);
+
+      const deleteButton = screen.getByRole('menuitem', { name: /Supprimer/i });
+      await user.click(deleteButton);
+
+      // Verify modal opened with title
+      expect(screen.getByText(/Supprimer l'analyse \?/i)).toBeInTheDocument();
+      // Verify modal contains the message with analysis name
+      expect(screen.getByText(/Cette action est irréversible/i)).toBeInTheDocument();
+    });
+
+    it('does not delete analysis when canceling confirmation', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      // Open menu and click Supprimer
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      await user.click(menuButton);
+      await user.click(screen.getByRole('menuitem', { name: /Supprimer/i }));
+
+      // Cancel deletion
+      const cancelButton = screen.getByRole('button', { name: /Annuler/i });
+      await user.click(cancelButton);
+
+      // Analysis should still exist
+      const analyses = useAppStore.getState().analyses;
+      expect(analyses).toHaveLength(1);
+      expect(analyses[0].id).toBe(baseAnalysis.id);
+    });
+
+    it('deletes analysis when confirming deletion', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      // Open menu and click Supprimer
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      await user.click(menuButton);
+      await user.click(screen.getByRole('menuitem', { name: /Supprimer/i }));
+
+      // Confirm deletion
+      const confirmButton = screen.getByRole('button', { name: /Supprimer/i });
+      await user.click(confirmButton);
+
+      // Analysis should be deleted
+      const analyses = useAppStore.getState().analyses;
+      expect(analyses).toHaveLength(0);
+    });
+
+    it('navigates to Dashboard when deleting last analysis', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={true} />
+        </MemoryRouter>,
+      );
+
+      // Open menu, delete, and confirm
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      await user.click(menuButton);
+      await user.click(screen.getByRole('menuitem', { name: /Supprimer/i }));
+
+      // Get all Supprimer buttons (menu + modal), click modal button
+      const suppressButtons = screen.getAllByRole('button', { name: /Supprimer/i });
+      const modalDeleteButton = suppressButtons.find(btn => btn.textContent === 'Supprimer' && btn.className.includes('pfeiffer-red'));
+      await user.click(modalDeleteButton!);
+
+      // Should navigate to Dashboard
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/');
+      });
+    });
+
+    it('navigates to first remaining analysis when deleting active analysis', async () => {
+      // Setup: 2 analyses, second is active
+      const secondAnalysis: Analysis = {
+        ...baseAnalysis,
+        id: 'second-id',
+        name: 'Process 2',
+      };
+      useAppStore.setState({
+        analyses: [baseAnalysis, secondAnalysis],
+        activeAnalysisId: secondAnalysis.id,
+      });
+
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={secondAnalysis} isActive={true} />
+        </MemoryRouter>,
+      );
+
+      // Delete second analysis
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse Process 2/i);
+      await user.click(menuButton);
+      await user.click(screen.getByRole('menuitem', { name: /Supprimer/i }));
+
+      // Click modal delete button
+      const suppressButtons = screen.getAllByRole('button', { name: /Supprimer/i });
+      const modalDeleteButton = suppressButtons.find(btn => btn.textContent === 'Supprimer' && btn.className.includes('pfeiffer-red'));
+      await user.click(modalDeleteButton!);
+
+      // Should navigate to first analysis (baseAnalysis)
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith(`/analysis/${baseAnalysis.id}`);
+      });
+      expect(useAppStore.getState().activeAnalysisId).toBe(baseAnalysis.id);
+    });
+
+    it('does not navigate when deleting non-active analysis', async () => {
+      // Setup: 2 analyses, first is active
+      const secondAnalysis: Analysis = {
+        ...baseAnalysis,
+        id: 'second-id',
+        name: 'Process 2',
+      };
+      useAppStore.setState({
+        analyses: [baseAnalysis, secondAnalysis],
+        activeAnalysisId: baseAnalysis.id,
+      });
+
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={secondAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      // Delete second analysis (not active)
+      const menuButton = screen.getByLabelText(/Actions pour l'analyse Process 2/i);
+      await user.click(menuButton);
+      await user.click(screen.getByRole('menuitem', { name: /Supprimer/i }));
+      await user.click(screen.getAllByRole('button', { name: /Supprimer/i })[1]);
+
+      // Should NOT navigate (active analysis unchanged)
+      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(useAppStore.getState().activeAnalysisId).toBe(baseAnalysis.id);
     });
   });
 });
