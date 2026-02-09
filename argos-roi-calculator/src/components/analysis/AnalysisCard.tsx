@@ -21,6 +21,10 @@ export interface AnalysisCardProps {
    * Whether this analysis is the active one (highlighted border)
    */
   isActive: boolean;
+  /**
+   * Optional click handler for navigation to Focus Mode (Story 3.2)
+   */
+  onClick?: () => void;
 }
 
 /**
@@ -31,7 +35,7 @@ export interface AnalysisCardProps {
  * @example
  * <AnalysisCard analysis={analysis} isActive={true} />
  */
-export function AnalysisCard({ analysis, isActive }: AnalysisCardProps) {
+export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps) {
   // Calculate wafer quantity based on type
   const waferQuantity = analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
 
@@ -78,8 +82,8 @@ export function AnalysisCard({ analysis, isActive }: AnalysisCardProps) {
 
   return (
     <Card
-      role="article"
       aria-label={`Analyse ${analysis.name}`}
+      onClick={onClick}
       className={clsx(
         // Active state border
         isActive && 'border-primary border-2',

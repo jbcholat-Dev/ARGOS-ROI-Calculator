@@ -194,6 +194,93 @@ describe('Dashboard', () => {
     });
   });
 
+  describe('Card Navigation (Story 3.2)', () => {
+    it('navigates to Focus Mode when card is clicked', async () => {
+      const analysis = createTestAnalysis({
+        id: 'test-123',
+        name: 'CVD Chamber',
+        pumpQuantity: 10,
+      });
+      useAppStore.setState({ analyses: [analysis], activeAnalysisId: null });
+      const user = userEvent.setup();
+      renderDashboard();
+
+      const card = screen.getByLabelText('Analyse CVD Chamber');
+      await user.click(card);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/analysis/test-123');
+    });
+
+    it('sets analysis as active when card is clicked', async () => {
+      const analysis = createTestAnalysis({
+        id: 'test-123',
+        name: 'Test Analysis',
+      });
+      useAppStore.setState({ analyses: [analysis], activeAnalysisId: null });
+      const user = userEvent.setup();
+      renderDashboard();
+
+      const card = screen.getByLabelText('Analyse Test Analysis');
+      await user.click(card);
+
+      const state = useAppStore.getState();
+      expect(state.activeAnalysisId).toBe('test-123');
+    });
+
+    it('navigates with correct ID for each card', async () => {
+      const analyses = [
+        createTestAnalysis({ id: 'id-1', name: 'Analysis 1' }),
+        createTestAnalysis({ id: 'id-2', name: 'Analysis 2' }),
+        createTestAnalysis({ id: 'id-3', name: 'Analysis 3' }),
+      ];
+      useAppStore.setState({ analyses, activeAnalysisId: null });
+      const user = userEvent.setup();
+      renderDashboard();
+
+      const card2 = screen.getByLabelText('Analyse Analysis 2');
+      await user.click(card2);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/analysis/id-2');
+      expect(useAppStore.getState().activeAnalysisId).toBe('id-2');
+    });
+
+    it('supports keyboard navigation (focus + Enter)', async () => {
+      const analysis = createTestAnalysis({
+        id: 'test-123',
+        name: 'Test Analysis',
+      });
+      useAppStore.setState({ analyses: [analysis], activeAnalysisId: null });
+      const user = userEvent.setup();
+      renderDashboard();
+
+      // Focus the card
+      const card = screen.getByLabelText('Analyse Test Analysis');
+      card.focus();
+      expect(document.activeElement).toBe(card);
+
+      // Press Enter
+      await user.keyboard('{Enter}');
+
+      expect(mockNavigate).toHaveBeenCalledWith('/analysis/test-123');
+    });
+
+    it('supports Space key navigation', async () => {
+      const analysis = createTestAnalysis({
+        id: 'test-123',
+        name: 'Test Analysis',
+      });
+      useAppStore.setState({ analyses: [analysis], activeAnalysisId: null });
+      const user = userEvent.setup();
+      renderDashboard();
+
+      const card = screen.getByLabelText('Analyse Test Analysis');
+      card.focus();
+      await user.keyboard(' ');
+
+      expect(mockNavigate).toHaveBeenCalledWith('/analysis/test-123');
+    });
+  });
+
   describe('Analysis Creation (handleCreateAnalysis)', () => {
     it('adds analysis to store with correct structure', async () => {
       const user = userEvent.setup();

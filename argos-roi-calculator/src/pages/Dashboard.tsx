@@ -12,6 +12,7 @@ export function Dashboard() {
   const analyses = useAppStore((state) => state.analyses);
   const activeAnalysisId = useAppStore((state) => state.activeAnalysisId);
   const addAnalysis = useAppStore((state) => state.addAnalysis);
+  const setActiveAnalysis = useAppStore((state) => state.setActiveAnalysis);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,6 +51,15 @@ export function Dashboard() {
     [addAnalysis, navigate],
   );
 
+  // Story 3.2: Card Navigation to Focus Mode
+  const handleCardClick = useCallback(
+    (analysisId: string) => {
+      setActiveAnalysis(analysisId);
+      navigate(buildFocusModeRoute(analysisId));
+    },
+    [setActiveAnalysis, navigate],
+  );
+
   // Note: Future enhancement - Add isLoading state for persistence (localStorage/API fetch)
   // Pattern: const [isLoading, setIsLoading] = useState(true); useEffect(() => { fetchAnalyses().then(...) })
   const hasAnalyses = analyses.length > 0;
@@ -69,6 +79,7 @@ export function Dashboard() {
                 key={analysis.id}
                 analysis={analysis}
                 isActive={analysis.id === activeAnalysisId}
+                onClick={() => handleCardClick(analysis.id)}
               />
             ))}
           </div>

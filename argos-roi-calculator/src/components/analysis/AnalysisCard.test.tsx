@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { AnalysisCard } from './AnalysisCard';
 import type { Analysis } from '@/types';
 
@@ -187,5 +188,81 @@ describe('AnalysisCard', () => {
     const roiElement = screen.getByTestId('roi-percentage');
     expect(roiElement.textContent).toMatch(/-69,2/);
     expect(roiElement.className).toMatch(/text-red-600/);
+  });
+
+  describe('Card Navigation (Story 3.2)', () => {
+    it('calls onClick handler when card is clicked', async () => {
+      const onClick = vi.fn();
+      const user = userEvent.setup();
+
+      render(<AnalysisCard analysis={baseAnalysis} isActive={false} onClick={onClick} />);
+
+      const card = screen.getByLabelText('Analyse CVD Chamber 04');
+      await user.click(card);
+
+      expect(onClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('is clickable when onClick is provided', () => {
+      const onClick = vi.fn();
+      render(<AnalysisCard analysis={baseAnalysis} isActive={false} onClick={onClick} />);
+
+      const card = screen.getByLabelText('Analyse CVD Chamber 04');
+      expect(card).toBeInTheDocument();
+      expect(card).toHaveAttribute('tabIndex', '0');
+    });
+
+    it('is not clickable when onClick is not provided', () => {
+      render(<AnalysisCard analysis={baseAnalysis} isActive={false} />);
+
+      const card = screen.getByLabelText('Analyse CVD Chamber 04');
+      expect(card).toBeInTheDocument();
+      expect(card).not.toHaveAttribute('tabIndex');
+      expect(card).not.toHaveAttribute('role');
+    });
+
+    it('calls onClick when Enter key is pressed', async () => {
+      const onClick = vi.fn();
+      const user = userEvent.setup();
+
+      render(<AnalysisCard analysis={baseAnalysis} isActive={false} onClick={onClick} />);
+
+      const card = screen.getByLabelText('Analyse CVD Chamber 04');
+      card.focus();
+      await user.keyboard('{Enter}');
+
+      expect(onClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls onClick when Space key is pressed', async () => {
+      const onClick = vi.fn();
+      const user = userEvent.setup();
+
+      render(<AnalysisCard analysis={baseAnalysis} isActive={false} onClick={onClick} />);
+
+      const card = screen.getByLabelText('Analyse CVD Chamber 04');
+      card.focus();
+      await user.keyboard(' ');
+
+      expect(onClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('has hover styles when clickable', () => {
+      const onClick = vi.fn();
+      const { container } = render(
+        <AnalysisCard analysis={baseAnalysis} isActive={false} onClick={onClick} />,
+      );
+
+      const card = container.firstChild as HTMLElement;
+      expect(card.className).toMatch(/cursor-pointer/);
+      expect(card.className).toMatch(/hover:shadow-lg/);
+    });
+
+    it('does not have hover styles when not clickable', () => {
+      const { container } = render(<AnalysisCard analysis={baseAnalysis} isActive={false} />);
+
+      const card = container.firstChild as HTMLElement;
+      expect(card.className).not.toMatch(/cursor-pointer/);
+    });
   });
 });
