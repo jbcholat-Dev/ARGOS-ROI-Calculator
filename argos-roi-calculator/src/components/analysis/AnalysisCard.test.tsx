@@ -168,4 +168,24 @@ describe('AnalysisCard', () => {
     const savingsText = screen.getByText(/€.*677[\s\u00a0\u202f]100/);
     expect(savingsText).toBeInTheDocument();
   });
+
+  it('calculates with waferQuantity=1 for mono wafer even if analysis.waferQuantity > 1', () => {
+    const monoAnalysisWithHighQuantity: Analysis = {
+      ...baseAnalysis,
+      waferType: 'mono',
+      waferQuantity: 100, // This should be IGNORED for mono type
+      waferCost: 8000,
+    };
+
+    render(<AnalysisCard analysis={monoAnalysisWithHighQuantity} isActive={false} />);
+
+    // Expected calculation with waferQuantity = 1 (NOT 100):
+    // Total failure cost = (10 × 0.10) × (8000 × 1 + 6 × 500) = 1 × 11,000 = 11,000
+    // Service cost = 10 × 2500 = 25,000
+    // Savings = 11,000 × 0.70 - 25,000 = 7,700 - 25,000 = -17,300 (negative!)
+    // ROI = (-17,300 / 25,000) × 100 = -69.2% (red!)
+    const roiElement = screen.getByTestId('roi-percentage');
+    expect(roiElement.textContent).toMatch(/-69,2/);
+    expect(roiElement.className).toMatch(/text-red-600/);
+  });
 });

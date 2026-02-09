@@ -50,6 +50,8 @@ export function Dashboard() {
     [addAnalysis, navigate],
   );
 
+  // Note: Future enhancement - Add isLoading state for persistence (localStorage/API fetch)
+  // Pattern: const [isLoading, setIsLoading] = useState(true); useEffect(() => { fetchAnalyses().then(...) })
   const hasAnalyses = analyses.length > 0;
 
   return (
@@ -60,6 +62,7 @@ export function Dashboard() {
             <NewAnalysisButton onClick={() => setIsModalOpen(true)} />
           </div>
           {/* Analysis grid — Story 3.1 */}
+          {/* Note: Uses analysis.id as React key. Store guarantees unique IDs (validated in app-store addAnalysis). */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {analyses.map((analysis) => (
               <AnalysisCard

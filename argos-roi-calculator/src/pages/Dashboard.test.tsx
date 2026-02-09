@@ -141,6 +141,15 @@ describe('Dashboard', () => {
       // Both cards should render
       expect(screen.getByText('Active Analysis')).toBeInTheDocument();
       expect(screen.getByText('Inactive Analysis')).toBeInTheDocument();
+
+      // Verify active card has red border (border-primary border-2)
+      const activeCard = screen.getByText('Active Analysis').closest('[class*="p-6"]');
+      expect(activeCard?.className).toMatch(/border-primary/);
+      expect(activeCard?.className).toMatch(/border-2/);
+
+      // Verify inactive card does NOT have active border
+      const inactiveCard = screen.getByText('Inactive Analysis').closest('[class*="p-6"]');
+      expect(inactiveCard?.className).not.toMatch(/border-primary/);
     });
 
     it('grid uses responsive columns (check className presence)', () => {

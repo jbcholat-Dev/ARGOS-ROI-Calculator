@@ -65,7 +65,7 @@ development_status:
 
   # Epic 3: Multi-Analysis Management (4 stories)
   epic-3: in-progress
-  3-1-dashboard-grid-with-analysis-cards: review
+  3-1-dashboard-grid-with-analysis-cards: done
   3-2-card-navigation-to-focus-mode: backlog
   3-3-analysis-duplicate-and-delete-actions: backlog
   3-4-global-parameters-adjustment-with-propagation: backlog

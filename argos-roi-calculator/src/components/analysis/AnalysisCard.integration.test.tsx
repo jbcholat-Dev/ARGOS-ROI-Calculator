@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { Dashboard } from '@/pages/Dashboard';
@@ -189,5 +189,52 @@ describe('AnalysisCard Integration Tests', () => {
     const state = useAppStore.getState();
     expect(state.analyses).toHaveLength(1);
     expect(state.analyses[0].name).toBe('Test Process');
+  });
+
+  it('real-time update flow: Dashboard → modify analysis in store → verify card ROI updates immediately (AC5)', async () => {
+    // Create analysis with known ROI
+    const analysis = {
+      id: 'test-analysis',
+      name: 'CVD Chamber',
+      pumpType: 'A3004XN',
+      pumpQuantity: 10,
+      failureRateMode: 'percentage' as const,
+      failureRatePercentage: 10,
+      waferType: 'batch' as const,
+      waferQuantity: 125,
+      waferCost: 8000,
+      downtimeDuration: 6,
+      downtimeCostPerHour: 500,
+      detectionRate: 70,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    useAppStore.setState({ analyses: [analysis], activeAnalysisId: 'test-analysis' });
+    renderApp();
+
+    // Verify initial ROI display (2708.4%)
+    const initialROI = screen.getByTestId('roi-percentage');
+    expect(initialROI.textContent).toMatch(/2[\s\u00a0\u202f]708,4/);
+
+    // Simulate user modifying analysis in FocusMode (change pump quantity to 5)
+    useAppStore.getState().updateAnalysis('test-analysis', { pumpQuantity: 5 });
+
+    // New calculation with pumpQuantity = 5:
+    // Total failure cost = (5 × 0.10) × (8000 × 125 + 6 × 500) = 0.5 × 1,003,000 = 501,500
+    // Service cost = 5 × 2500 = 12,500
+    // Savings = 501,500 × 0.70 - 12,500 = 351,050 - 12,500 = 338,550
+    // ROI = (338,550 / 12,500) × 100 = 2708.4% (same ROI ratio!)
+
+    // For different ROI, change detectionRate to 85%:
+    useAppStore.getState().updateAnalysis('test-analysis', { detectionRate: 85 });
+
+    // Wait for component to re-render with updated store values (Zustand triggers re-render)
+    await waitFor(() => {
+      const updatedROI = screen.getByTestId('roi-percentage');
+      // New ROI with 85% detection: Savings = 501,500 × 0.85 - 12,500 = 413,775
+      // ROI = (413,775 / 12,500) × 100 = 3310.2%
+      expect(updatedROI.textContent).toMatch(/3[\s\u00a0\u202f]310,2/);
+    });
   });
 });

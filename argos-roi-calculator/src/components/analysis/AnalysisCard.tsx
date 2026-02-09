@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { clsx } from 'clsx';
 import { Card } from '@/components/ui';
 import {
@@ -7,7 +8,7 @@ import {
   calculateROI,
   getROIColorClass,
 } from '@/lib/calculations';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { DEFAULT_DETECTION_RATE, DEFAULT_SERVICE_COST_PER_PUMP } from '@/lib/constants';
 import type { Analysis } from '@/types';
 
@@ -37,30 +38,48 @@ export function AnalysisCard({ analysis, isActive }: AnalysisCardProps) {
   // Use per-analysis detection rate, fallback to global default (Story 2.9 pattern)
   const detectionRate = analysis.detectionRate ?? DEFAULT_DETECTION_RATE;
 
-  // Calculate ROI metrics using same functions as ResultsPanel
-  const totalFailureCost = calculateTotalFailureCost(
+  // Memoize calculations to prevent unnecessary re-computation (NFR-P6: 5 concurrent analyses)
+  const { totalFailureCost, argosServiceCost, savings, roi } = useMemo(() => {
+    const totalCost = calculateTotalFailureCost(
+      analysis.pumpQuantity,
+      analysis.failureRatePercentage,
+      analysis.waferCost,
+      waferQuantity,
+      analysis.downtimeDuration,
+      analysis.downtimeCostPerHour,
+    );
+
+    const serviceCost = calculateArgosServiceCost(
+      analysis.pumpQuantity,
+      DEFAULT_SERVICE_COST_PER_PUMP,
+    );
+
+    const calculatedSavings = calculateSavings(totalCost, serviceCost, detectionRate);
+    const calculatedROI = calculateROI(calculatedSavings, serviceCost);
+
+    return {
+      totalFailureCost: totalCost,
+      argosServiceCost: serviceCost,
+      savings: calculatedSavings,
+      roi: calculatedROI,
+    };
+  }, [
     analysis.pumpQuantity,
     analysis.failureRatePercentage,
     analysis.waferCost,
     waferQuantity,
     analysis.downtimeDuration,
     analysis.downtimeCostPerHour,
-  );
-
-  const argosServiceCost = calculateArgosServiceCost(
-    analysis.pumpQuantity,
-    DEFAULT_SERVICE_COST_PER_PUMP,
-  );
-
-  const savings = calculateSavings(totalFailureCost, argosServiceCost, detectionRate);
-
-  const roi = calculateROI(savings, argosServiceCost);
+    detectionRate,
+  ]);
 
   // Traffic-light color for ROI
   const roiColorClass = getROIColorClass(roi);
 
   return (
     <Card
+      role="article"
+      aria-label={`Analyse ${analysis.name}`}
       className={clsx(
         // Active state border
         isActive && 'border-primary border-2',
@@ -81,7 +100,7 @@ export function AnalysisCard({ analysis, isActive }: AnalysisCardProps) {
       <div className="mb-2">
         <div className="text-sm font-medium text-gray-600 mb-1">ROI</div>
         <div className={clsx('text-4xl font-bold', roiColorClass)} data-testid="roi-percentage">
-          {roi.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %
+          {formatPercentage(roi)}
         </div>
       </div>
 
