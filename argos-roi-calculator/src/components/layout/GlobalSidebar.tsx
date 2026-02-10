@@ -88,7 +88,6 @@ export function GlobalSidebar() {
             <Input
               label="ARGOS Service Cost (per pump/year)"
               type="number"
-              min={1}
               step={100}
               value={displayServiceCost}
               onChange={handleServiceCostChange}
