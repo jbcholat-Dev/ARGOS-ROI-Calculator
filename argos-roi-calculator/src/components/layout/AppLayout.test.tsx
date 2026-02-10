@@ -1,12 +1,41 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
+import { useAppStore } from '@/stores/app-store';
 
 describe('AppLayout', () => {
-  const renderWithRouter = (children: React.ReactNode) => {
+  beforeEach(() => {
+    useAppStore.setState({
+      analyses: [
+        {
+          id: 'test-1',
+          name: 'Poly Etch',
+          pumpType: 'A3004XN',
+          pumpQuantity: 10,
+          failureRateMode: 'percentage',
+          failureRatePercentage: 10,
+          waferType: 'batch',
+          waferQuantity: 125,
+          waferCost: 8000,
+          downtimeDuration: 6,
+          downtimeCostPerHour: 500,
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+      activeAnalysisId: 'test-1',
+      globalParams: {
+        detectionRate: 70,
+        serviceCostPerPump: 2500,
+      },
+      unsavedChanges: false,
+    });
+  });
+
+  const renderWithRouter = (children: React.ReactNode, route = '/') => {
     return render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={[route]}>
         <AppLayout>{children}</AppLayout>
       </MemoryRouter>
     );
@@ -18,13 +47,6 @@ describe('AppLayout', () => {
 
       expect(screen.getByRole('navigation')).toBeInTheDocument();
       expect(screen.getByText('ARGOS')).toBeInTheDocument();
-    });
-
-    it('should render GlobalSidebar', () => {
-      renderWithRouter(<div>Test Content</div>);
-
-      expect(screen.getByRole('complementary')).toBeInTheDocument();
-      expect(screen.getByText('Global Parameters')).toBeInTheDocument();
     });
 
     it('should render children in main content area', () => {
@@ -41,13 +63,40 @@ describe('AppLayout', () => {
         </div>
       );
 
-      // Navigation
       expect(screen.getByRole('navigation')).toBeInTheDocument();
-      // Sidebar
       expect(screen.getByRole('complementary')).toBeInTheDocument();
-      // Main content
       expect(screen.getByText('Page Title')).toBeInTheDocument();
       expect(screen.getByText('Page content goes here')).toBeInTheDocument();
+    });
+  });
+
+  describe('conditional sidebar rendering', () => {
+    it('should render GlobalSidebar on Dashboard route', () => {
+      renderWithRouter(<div>Dashboard</div>, '/');
+
+      const sidebar = screen.getByRole('complementary');
+      expect(sidebar).toHaveAttribute('aria-label', 'Global Parameters');
+    });
+
+    it('should render FocusSidebar on Focus Mode route', () => {
+      renderWithRouter(<div>Focus Mode</div>, '/analysis/test-1');
+
+      const sidebar = screen.getByRole('complementary');
+      expect(sidebar).toHaveAttribute('aria-label', 'Analysis Navigation');
+    });
+
+    it('should render GlobalSidebar on Global Analysis route', () => {
+      renderWithRouter(<div>Global</div>, '/global');
+
+      const sidebar = screen.getByRole('complementary');
+      expect(sidebar).toHaveAttribute('aria-label', 'Global Parameters');
+    });
+
+    it('should render GlobalSidebar on Solutions route', () => {
+      renderWithRouter(<div>Solutions</div>, '/solutions');
+
+      const sidebar = screen.getByRole('complementary');
+      expect(sidebar).toHaveAttribute('aria-label', 'Global Parameters');
     });
   });
 
@@ -81,11 +130,18 @@ describe('AppLayout', () => {
       expect(screen.getByRole('navigation')).toBeInTheDocument();
     });
 
-    it('should have complementary landmark for sidebar', () => {
-      renderWithRouter(<div>Test</div>);
+    it('should have complementary landmark for GlobalSidebar on Dashboard', () => {
+      renderWithRouter(<div>Test</div>, '/');
 
       const sidebar = screen.getByRole('complementary');
       expect(sidebar).toHaveAttribute('aria-label', 'Global Parameters');
+    });
+
+    it('should have complementary landmark for FocusSidebar on Focus Mode', () => {
+      renderWithRouter(<div>Test</div>, '/analysis/test-1');
+
+      const sidebar = screen.getByRole('complementary');
+      expect(sidebar).toHaveAttribute('aria-label', 'Analysis Navigation');
     });
 
     it('should have main landmark with aria-label', () => {

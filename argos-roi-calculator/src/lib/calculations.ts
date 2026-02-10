@@ -205,3 +205,26 @@ export function getROIColorClass(roi: number): string {
   }
   return 'text-green-600';
 }
+
+/**
+ * Checks if an analysis has all required fields populated for ROI calculation.
+ * Shared between MiniCard (summary display) and ResultsPanel (detailed display).
+ *
+ * @param analysis - Object with the required numeric fields
+ * @returns true if all fields are > 0 and calculation can proceed
+ */
+export function isAnalysisCalculable(analysis: {
+  pumpQuantity: number;
+  failureRatePercentage: number;
+  waferCost: number;
+  downtimeDuration: number;
+  downtimeCostPerHour: number;
+}): boolean {
+  return (
+    analysis.pumpQuantity > 0 &&
+    analysis.failureRatePercentage > 0 &&
+    analysis.waferCost > 0 &&
+    analysis.downtimeDuration > 0 &&
+    analysis.downtimeCostPerHour > 0
+  );
+}
