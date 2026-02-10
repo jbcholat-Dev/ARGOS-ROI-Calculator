@@ -609,6 +609,16 @@ describe('AppStore', () => {
       const updatedState = useAppStore.getState();
       expect(updatedState.globalParams).toEqual(originalParams); // Unchanged
     });
+
+    it('should reject zero serviceCostPerPump', () => {
+      const state = useAppStore.getState();
+      const originalParams = { ...state.globalParams };
+
+      state.updateGlobalParams({ serviceCostPerPump: 0 });
+
+      const updatedState = useAppStore.getState();
+      expect(updatedState.globalParams).toEqual(originalParams); // Unchanged
+    });
   });
 
   describe('Validation and Error Cases', () => {

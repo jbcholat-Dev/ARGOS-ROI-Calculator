@@ -258,14 +258,18 @@ export const useAppStore = create<AppState>((set) => ({
   updateGlobalParams: (params) =>
     set((state) => {
       // Validation: Check global parameter bounds
-      if (params.detectionRate !== undefined &&
-          (params.detectionRate < 0 || params.detectionRate > 100)) {
-        console.error('Cannot update global params: detectionRate must be between 0-100');
-        return state;
+      if (params.detectionRate !== undefined) {
+        if (!Number.isFinite(params.detectionRate) ||
+            params.detectionRate < 0 || params.detectionRate > 100) {
+          console.error('Cannot update global params: detectionRate must be finite and between 0-100');
+          return state;
+        }
       }
-      if (params.serviceCostPerPump !== undefined && params.serviceCostPerPump < 0) {
-        console.error('Cannot update global params: serviceCostPerPump must be non-negative');
-        return state;
+      if (params.serviceCostPerPump !== undefined) {
+        if (!Number.isFinite(params.serviceCostPerPump) || params.serviceCostPerPump <= 0) {
+          console.error('Cannot update global params: serviceCostPerPump must be finite and greater than 0');
+          return state;
+        }
       }
 
       return {
