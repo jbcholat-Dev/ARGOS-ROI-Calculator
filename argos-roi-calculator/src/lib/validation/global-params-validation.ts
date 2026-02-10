@@ -5,42 +5,6 @@ export interface ValidationResult {
 }
 
 /**
- * Validates detection rate for ARGOS global parameters
- * @param value - String input from user
- * @returns ValidationResult with isValid flag and optional error message
- */
-export function validateDetectionRate(value: string): ValidationResult {
-  // Empty check
-  if (!value || value.trim() === '') {
-    return {
-      isValid: false,
-      error: 'Please enter a detection rate'
-    };
-  }
-
-  // Parse to number
-  const numValue = parseFloat(value);
-
-  // NaN and Infinity check
-  if (isNaN(numValue) || !isFinite(numValue)) {
-    return {
-      isValid: false,
-      error: 'Please enter a valid number'
-    };
-  }
-
-  // Range check: 0-100 inclusive
-  if (numValue < 0 || numValue > 100) {
-    return {
-      isValid: false,
-      error: 'Rate must be between 0 and 100'
-    };
-  }
-
-  return { isValid: true, value: numValue };
-}
-
-/**
  * Validates service cost per pump for ARGOS global parameters
  * @param value - String input from user
  * @returns ValidationResult with isValid flag and optional error message
@@ -74,15 +38,6 @@ export function validateServiceCost(value: string): ValidationResult {
   }
 
   return { isValid: true, value: numValue };
-}
-
-/**
- * Formats detection rate for display
- * @param value - Numeric detection rate (0-100)
- * @returns Formatted string with percentage symbol
- */
-export function formatDetectionRate(value: number): string {
-  return `${value}%`;
 }
 
 /**

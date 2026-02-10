@@ -1,88 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
-  validateDetectionRate,
   validateServiceCost,
-  formatDetectionRate,
   formatServiceCost
 } from './global-params-validation';
-
-describe('validateDetectionRate', () => {
-  it('should accept valid detection rates within range', () => {
-    const result0 = validateDetectionRate('0');
-    expect(result0.isValid).toBe(true);
-    expect(result0.value).toBe(0);
-
-    const result50 = validateDetectionRate('50');
-    expect(result50.isValid).toBe(true);
-    expect(result50.value).toBe(50);
-
-    const result70 = validateDetectionRate('70');
-    expect(result70.isValid).toBe(true);
-    expect(result70.value).toBe(70);
-
-    const result100 = validateDetectionRate('100');
-    expect(result100.isValid).toBe(true);
-    expect(result100.value).toBe(100);
-  });
-
-  it('should reject detection rates below 0', () => {
-    const result = validateDetectionRate('-1');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Rate must be between 0 and 100');
-  });
-
-  it('should reject detection rates above 100', () => {
-    const result = validateDetectionRate('101');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Rate must be between 0 and 100');
-  });
-
-  it('should reject empty strings', () => {
-    const result = validateDetectionRate('');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Please enter a detection rate');
-  });
-
-  it('should reject whitespace-only strings', () => {
-    const result = validateDetectionRate('   ');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Please enter a detection rate');
-  });
-
-  it('should reject non-numeric values', () => {
-    const result = validateDetectionRate('abc');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Please enter a valid number');
-  });
-
-  it('should accept decimal values within range', () => {
-    const result1 = validateDetectionRate('85.5');
-    expect(result1.isValid).toBe(true);
-    expect(result1.value).toBe(85.5);
-
-    const result2 = validateDetectionRate('0.5');
-    expect(result2.isValid).toBe(true);
-    expect(result2.value).toBe(0.5);
-  });
-
-  it('should reject Infinity', () => {
-    const result = validateDetectionRate('Infinity');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Please enter a valid number');
-  });
-
-  it('should reject -Infinity', () => {
-    const result = validateDetectionRate('-Infinity');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Please enter a valid number');
-  });
-
-  it('should reject very large numbers that become Infinity', () => {
-    const result = validateDetectionRate('1e309');
-    expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Please enter a valid number');
-  });
-});
 
 describe('validateServiceCost', () => {
   it('should accept valid positive service costs', () => {
@@ -151,19 +71,6 @@ describe('validateServiceCost', () => {
     const result = validateServiceCost('1e309');
     expect(result.isValid).toBe(false);
     expect(result.error).toBe('Please enter a valid number');
-  });
-});
-
-describe('formatDetectionRate', () => {
-  it('should format detection rate with percentage symbol', () => {
-    expect(formatDetectionRate(70)).toBe('70%');
-    expect(formatDetectionRate(85)).toBe('85%');
-    expect(formatDetectionRate(0)).toBe('0%');
-    expect(formatDetectionRate(100)).toBe('100%');
-  });
-
-  it('should format decimal detection rates', () => {
-    expect(formatDetectionRate(85.5)).toBe('85.5%');
   });
 });
 

@@ -2,7 +2,6 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAppStore } from '@/stores/app-store';
 import { Input } from '@/components/ui/Input';
 import {
-  validateDetectionRate,
   validateServiceCost,
   formatServiceCost
 } from '@/lib/validation/global-params-validation';
@@ -10,14 +9,6 @@ import {
 export function GlobalSidebar() {
   const globalParams = useAppStore((state) => state.globalParams);
   const updateGlobalParams = useAppStore((state) => state.updateGlobalParams);
-
-  // Detection Rate state
-  const [detectionRateValue, setDetectionRateValue] = useState(
-    String(globalParams.detectionRate)
-  );
-  const [detectionRateError, setDetectionRateError] = useState<string | undefined>();
-  const [isDetectionRateFocused, setIsDetectionRateFocused] = useState(false);
-  const isDetectionRateCancellingRef = useRef(false);
 
   // Service Cost state
   const [serviceCostValue, setServiceCostValue] = useState(
@@ -29,62 +20,10 @@ export function GlobalSidebar() {
 
   // Sync local state when globalParams changes externally (and not focused)
   useEffect(() => {
-    if (!isDetectionRateFocused) {
-      setDetectionRateValue(String(globalParams.detectionRate));
-    }
-  }, [globalParams.detectionRate, isDetectionRateFocused]);
-
-  useEffect(() => {
     if (!isServiceCostFocused) {
       setServiceCostValue(String(globalParams.serviceCostPerPump));
     }
   }, [globalParams.serviceCostPerPump, isServiceCostFocused]);
-
-  // Detection Rate handlers
-  const handleDetectionRateChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setDetectionRateValue(e.target.value);
-      setDetectionRateError(undefined);
-    },
-    []
-  );
-
-  const handleDetectionRateCommit = useCallback(() => {
-    const result = validateDetectionRate(detectionRateValue);
-    if (result.isValid && result.value !== undefined) {
-      updateGlobalParams({ detectionRate: result.value });
-      setDetectionRateError(undefined);
-    } else {
-      setDetectionRateError(result.error);
-    }
-  }, [detectionRateValue, updateGlobalParams]);
-
-  const handleDetectionRateBlur = useCallback(() => {
-    setIsDetectionRateFocused(false);
-    if (isDetectionRateCancellingRef.current) {
-      isDetectionRateCancellingRef.current = false;
-      return;
-    }
-    handleDetectionRateCommit();
-  }, [handleDetectionRateCommit]);
-
-  const handleDetectionRateFocus = useCallback(() => {
-    setIsDetectionRateFocused(true);
-  }, []);
-
-  const handleDetectionRateKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        handleDetectionRateCommit();
-      } else if (e.key === 'Escape') {
-        isDetectionRateCancellingRef.current = true;
-        setDetectionRateValue(String(globalParams.detectionRate));
-        setDetectionRateError(undefined);
-        (e.target as HTMLInputElement).blur();
-      }
-    },
-    [handleDetectionRateCommit, globalParams.detectionRate]
-  );
 
   // Service Cost handlers
   const handleServiceCostChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,10 +69,6 @@ export function GlobalSidebar() {
   );
 
   // Display formatted values when not focused
-  const displayDetectionRate = isDetectionRateFocused
-    ? detectionRateValue
-    : String(globalParams.detectionRate);
-
   const displayServiceCost = isServiceCostFocused
     ? serviceCostValue
     : String(globalParams.serviceCostPerPump);
@@ -148,24 +83,6 @@ export function GlobalSidebar() {
         <h2 className="text-lg font-semibold text-gray-900">Global Parameters</h2>
 
         <div className="flex flex-col gap-4">
-          {/* Detection Rate Input */}
-          <div>
-            <Input
-              label="ARGOS Detection Rate"
-              type="number"
-              min={0}
-              max={100}
-              step={1}
-              value={displayDetectionRate}
-              onChange={handleDetectionRateChange}
-              onBlur={handleDetectionRateBlur}
-              onFocus={handleDetectionRateFocus}
-              onKeyDown={handleDetectionRateKeyDown}
-              error={detectionRateError}
-              helperText="Detection probability (0-100%)"
-            />
-          </div>
-
           {/* Service Cost Input */}
           <div>
             <Input
