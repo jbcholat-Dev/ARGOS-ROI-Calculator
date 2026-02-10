@@ -101,10 +101,10 @@ export function Dashboard() {
             />
           </svg>
           <h2 className="text-2xl font-bold text-gray-900">
-            Aucune analyse créée
+            No analyses created
           </h2>
           <p className="text-base text-gray-600">
-            Créez votre première analyse pour commencer
+            Create your first analysis to get started
           </p>
           <NewAnalysisButton onClick={() => setIsModalOpen(true)} />
         </div>

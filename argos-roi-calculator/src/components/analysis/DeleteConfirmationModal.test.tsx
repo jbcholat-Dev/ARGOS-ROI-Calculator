@@ -24,9 +24,9 @@ describe('DeleteConfirmationModal', () => {
         />,
       );
 
-      expect(screen.getByText('Supprimer l\'analyse ?')).toBeInTheDocument();
+      expect(screen.getByText('Delete analysis?')).toBeInTheDocument();
       expect(
-        screen.getByText(/Cette action est irréversible/i),
+        screen.getByText(/This action is irreversible/i),
       ).toBeInTheDocument();
     });
 
@@ -40,7 +40,7 @@ describe('DeleteConfirmationModal', () => {
         />,
       );
 
-      expect(screen.queryByText('Supprimer l\'analyse ?')).not.toBeInTheDocument();
+      expect(screen.queryByText('Delete analysis?')).not.toBeInTheDocument();
     });
 
     it('displays the analysis name in the message', () => {
@@ -68,8 +68,8 @@ describe('DeleteConfirmationModal', () => {
         />,
       );
 
-      expect(screen.getByRole('button', { name: /Annuler/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Supprimer/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Cancel/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Delete/i })).toBeInTheDocument();
     });
   });
 
@@ -85,7 +85,7 @@ describe('DeleteConfirmationModal', () => {
         />,
       );
 
-      const cancelButton = screen.getByRole('button', { name: /Annuler/i });
+      const cancelButton = screen.getByRole('button', { name: /Cancel/i });
       await user.click(cancelButton);
 
       expect(mockOnCancel).toHaveBeenCalledTimes(1);
@@ -103,7 +103,7 @@ describe('DeleteConfirmationModal', () => {
         />,
       );
 
-      const deleteButton = screen.getByRole('button', { name: /Supprimer/i });
+      const deleteButton = screen.getByRole('button', { name: /Delete/i });
       await user.click(deleteButton);
 
       expect(mockOnConfirm).toHaveBeenCalledTimes(1);
@@ -157,10 +157,10 @@ describe('DeleteConfirmationModal', () => {
       );
 
       const closeButton = screen.getByLabelText(/Close modal/i);
-      const cancelButton = screen.getByRole('button', { name: /Annuler/i });
-      const deleteButton = screen.getByRole('button', { name: /Supprimer/i });
+      const cancelButton = screen.getByRole('button', { name: /Cancel/i });
+      const deleteButton = screen.getByRole('button', { name: /Delete/i });
 
-      // Modal has 3 focusable elements: close button (×), Annuler, Supprimer
+      // Modal has 3 focusable elements: close button (×), Cancel, Delete
       // Tab through all buttons
       await user.tab();
       expect(document.activeElement).toBe(closeButton);
@@ -188,8 +188,8 @@ describe('DeleteConfirmationModal', () => {
       );
 
       const closeButton = screen.getByLabelText(/Close modal/i);
-      const cancelButton = screen.getByRole('button', { name: /Annuler/i });
-      const deleteButton = screen.getByRole('button', { name: /Supprimer/i });
+      const cancelButton = screen.getByRole('button', { name: /Cancel/i });
+      const deleteButton = screen.getByRole('button', { name: /Delete/i });
 
       // Focus close button (first in tab order)
       closeButton.focus();

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EquipmentInputs } from './EquipmentInputs';
@@ -38,14 +38,14 @@ describe('EquipmentInputs Integration', () => {
     render(<EquipmentInputs analysisId="integration-test-1" />);
 
     // Step 1: Enter pump type
-    const pumpTypeInput = screen.getByLabelText('Type de pompe');
+    const pumpTypeInput = screen.getByLabelText('Pump Model');
     await user.type(pumpTypeInput, 'HiPace 700');
 
     // Verify store updated with pumpType
     expect(useAppStore.getState().analyses[0].pumpType).toBe('HiPace 700');
 
     // Step 2: Enter pump quantity
-    const pumpQuantityInput = screen.getByLabelText('Nombre de pompes');
+    const pumpQuantityInput = screen.getByLabelText('Pump Quantity');
     await user.type(pumpQuantityInput, '8');
 
     // Verify store updated with pumpQuantity as number
@@ -61,11 +61,11 @@ describe('EquipmentInputs Integration', () => {
     const user = userEvent.setup();
     render(<EquipmentInputs analysisId="integration-test-1" />);
 
-    const pumpQuantityInput = screen.getByLabelText('Nombre de pompes');
+    const pumpQuantityInput = screen.getByLabelText('Pump Quantity');
 
     // Step 1: Enter invalid value
     await user.type(pumpQuantityInput, '-5');
-    expect(screen.getByText('Doit être un nombre positif')).toBeInTheDocument();
+    expect(screen.getByText('Must be a positive number')).toBeInTheDocument();
 
     // Step 2: Verify store NOT updated with invalid value
     expect(useAppStore.getState().analyses[0].pumpQuantity).toBe(0);
@@ -75,7 +75,7 @@ describe('EquipmentInputs Integration', () => {
     await user.type(pumpQuantityInput, '10');
 
     // Step 4: Verify error clears
-    expect(screen.queryByText('Doit être un nombre positif')).not.toBeInTheDocument();
+    expect(screen.queryByText('Must be a positive number')).not.toBeInTheDocument();
 
     // Step 5: Verify store updated
     expect(useAppStore.getState().analyses[0].pumpQuantity).toBe(10);
@@ -88,8 +88,8 @@ describe('EquipmentInputs Integration', () => {
     );
 
     // Enter values
-    await user.type(screen.getByLabelText('Type de pompe'), 'HiScrew');
-    await user.type(screen.getByLabelText('Nombre de pompes'), '15');
+    await user.type(screen.getByLabelText('Pump Model'), 'HiScrew');
+    await user.type(screen.getByLabelText('Pump Quantity'), '15');
 
     // Verify store state
     expect(useAppStore.getState().analyses[0].pumpType).toBe('HiScrew');
@@ -100,15 +100,15 @@ describe('EquipmentInputs Integration', () => {
     render(<EquipmentInputs analysisId="integration-test-1" />);
 
     // Values should still be displayed from store
-    expect(screen.getByLabelText('Type de pompe')).toHaveValue('HiScrew');
-    expect(screen.getByLabelText('Nombre de pompes')).toHaveValue(15);
+    expect(screen.getByLabelText('Pump Model')).toHaveValue('HiScrew');
+    expect(screen.getByLabelText('Pump Quantity')).toHaveValue(15);
   });
 
   it('max boundary: entering exactly 1000 succeeds, 1001 fails', async () => {
     const user = userEvent.setup();
     render(<EquipmentInputs analysisId="integration-test-1" />);
 
-    const input = screen.getByLabelText('Nombre de pompes');
+    const input = screen.getByLabelText('Pump Quantity');
 
     // Enter max valid value
     await user.type(input, '1000');
@@ -118,6 +118,6 @@ describe('EquipmentInputs Integration', () => {
     // Clear and enter 1001
     await user.clear(input);
     await user.type(input, '1001');
-    expect(screen.getByText('Maximum 1000 pompes')).toBeInTheDocument();
+    expect(screen.getByText('Maximum 1000 pumps')).toBeInTheDocument();
   });
 });

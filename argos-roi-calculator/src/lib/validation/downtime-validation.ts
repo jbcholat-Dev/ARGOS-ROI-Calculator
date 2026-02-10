@@ -9,28 +9,28 @@ import type { ValidationResult } from './equipment-validation';
  * Validate downtime duration (hours per failure event)
  *
  * Rules:
- * - Empty → soft warning (amber): "Requis pour le calcul ROI"
- * - Non-numeric → hard error (red): "Doit être un nombre valide"
- * - Negative → hard error (red): "Doit être un nombre positif"
+ * - Empty → soft warning (amber): "Required for ROI calculation"
+ * - Non-numeric → hard error (red): "Must be a valid number"
+ * - Negative → hard error (red): "Must be a positive number"
  * - Zero or positive → valid (decimals allowed, e.g., 6.5 hours)
  *
  * @param value - Raw string from input field
- * @returns Validation result with optional French error/warning message and severity
+ * @returns Validation result with optional error/warning message and severity
  */
 export function validateDowntimeDuration(value: string): ValidationResult & { warning?: string } {
   if (value.trim() === '') {
-    return { isValid: true, warning: 'Requis pour le calcul ROI' };
+    return { isValid: true, warning: 'Required for ROI calculation' };
   }
 
   // Use Number() instead of parseFloat() to reject trailing non-numeric chars (e.g., "12abc")
   const parsed = Number(value.trim());
 
   if (isNaN(parsed)) {
-    return { isValid: false, error: 'Doit être un nombre valide' };
+    return { isValid: false, error: 'Must be a valid number' };
   }
 
   if (parsed < 0) {
-    return { isValid: false, error: 'Doit être un nombre positif' };
+    return { isValid: false, error: 'Must be a positive number' };
   }
 
   return { isValid: true };
@@ -40,28 +40,28 @@ export function validateDowntimeDuration(value: string): ValidationResult & { wa
  * Validate downtime cost per hour (EUR/h)
  *
  * Rules:
- * - Empty → soft warning (amber): "Requis pour le calcul ROI"
- * - Non-numeric → hard error (red): "Doit être un nombre valide"
- * - Negative → hard error (red): "Doit être un nombre positif"
+ * - Empty → soft warning (amber): "Required for ROI calculation"
+ * - Non-numeric → hard error (red): "Must be a valid number"
+ * - Negative → hard error (red): "Must be a positive number"
  * - Zero or positive → valid (integers only)
  *
  * @param value - Raw string from input field
- * @returns Validation result with optional French error/warning message and severity
+ * @returns Validation result with optional error/warning message and severity
  */
 export function validateDowntimeCostPerHour(value: string): ValidationResult & { warning?: string } {
   if (value.trim() === '') {
-    return { isValid: true, warning: 'Requis pour le calcul ROI' };
+    return { isValid: true, warning: 'Required for ROI calculation' };
   }
 
   // Use Number() instead of parseFloat() to reject trailing non-numeric chars (e.g., "12abc")
   const parsed = Number(value.trim());
 
   if (isNaN(parsed)) {
-    return { isValid: false, error: 'Doit être un nombre valide' };
+    return { isValid: false, error: 'Must be a valid number' };
   }
 
   if (parsed < 0) {
-    return { isValid: false, error: 'Doit être un nombre positif' };
+    return { isValid: false, error: 'Must be a positive number' };
   }
 
   return { isValid: true };

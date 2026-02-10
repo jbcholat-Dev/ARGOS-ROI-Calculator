@@ -40,10 +40,10 @@ describe('AnalysisCard Integration Tests', () => {
     renderApp();
 
     // Create an analysis
-    await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
-    const input = screen.getByLabelText('Nom du process');
+    await user.click(screen.getByRole('button', { name: 'New Analysis' }));
+    const input = screen.getByLabelText('Analysis Name');
     await user.type(input, 'CVD Chamber 04');
-    await user.click(screen.getByRole('button', { name: 'Créer' }));
+    await user.click(screen.getByRole('button', { name: 'Create' }));
 
     // We're now in Focus Mode, navigate back to Dashboard
     // This is simulated - in real app, user would click "Analyses" in nav
@@ -174,14 +174,14 @@ describe('AnalysisCard Integration Tests', () => {
     renderApp();
 
     // Verify empty state
-    expect(screen.getByText('Aucune analyse créée')).toBeInTheDocument();
-    expect(screen.getByText('Créez votre première analyse pour commencer')).toBeInTheDocument();
+    expect(screen.getByText('No analyses created')).toBeInTheDocument();
+    expect(screen.getByText('Create your first analysis to get started')).toBeInTheDocument();
 
     // Create analysis
-    await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
-    const input = screen.getByLabelText('Nom du process');
+    await user.click(screen.getByRole('button', { name: 'New Analysis' }));
+    const input = screen.getByLabelText('Analysis Name');
     await user.type(input, 'Test Process');
-    await user.click(screen.getByRole('button', { name: 'Créer' }));
+    await user.click(screen.getByRole('button', { name: 'Create' }));
 
     // User is now in Focus Mode after creation
     // In real app, they would navigate back to Dashboard to see the grid

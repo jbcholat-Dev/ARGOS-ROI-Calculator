@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WaferInputs } from './WaferInputs';
@@ -43,9 +43,9 @@ describe('WaferInputs', () => {
     expect(screen.getByText('Wafer')).toBeInTheDocument();
   });
 
-  it('renders radio button group with legend "Type de wafer"', () => {
+  it('renders radio button group with legend "Wafer Type"', () => {
     render(<WaferInputs analysisId="test-analysis-1" />);
-    expect(screen.getByText('Type de wafer')).toBeInTheDocument();
+    expect(screen.getByText('Wafer Type')).toBeInTheDocument();
   });
 
   it('renders both radio options: Mono-wafer and Batch', () => {
@@ -54,9 +54,9 @@ describe('WaferInputs', () => {
     expect(screen.getByLabelText('Batch')).toBeInTheDocument();
   });
 
-  it('renders wafer cost field with label "Coût par wafer (€)"', () => {
+  it('renders wafer cost field with label "Average Cost per Wafer (€)"', () => {
     render(<WaferInputs analysisId="test-analysis-1" />);
-    expect(screen.getByLabelText('Coût par wafer (€)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Average Cost per Wafer (€)')).toBeInTheDocument();
   });
 
   it('returns null when analysis does not exist', () => {
@@ -74,12 +74,12 @@ describe('WaferInputs', () => {
 
   it('hides wafer quantity field in mono mode', () => {
     render(<WaferInputs analysisId="test-analysis-1" />);
-    expect(screen.queryByLabelText('Wafers par lot')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Wafers per Batch')).not.toBeInTheDocument();
   });
 
   it('displays formatted wafer cost by default', () => {
     render(<WaferInputs analysisId="test-analysis-1" />);
-    const costInput = screen.getByLabelText('Coût par wafer (€)') as HTMLInputElement;
+    const costInput = screen.getByLabelText('Average Cost per Wafer (€)') as HTMLInputElement;
     // Use the same formatter to get exact expected value (handles locale-specific separators)
     const expected = formatEuroCurrency(8000);
     expect(costInput.value).toBe(expected);
@@ -93,7 +93,7 @@ describe('WaferInputs', () => {
 
     await user.click(screen.getByLabelText('Batch'));
 
-    expect(screen.getByLabelText('Wafers par lot')).toBeInTheDocument();
+    expect(screen.getByLabelText('Wafers per Batch')).toBeInTheDocument();
   });
 
   it('displays default value 125 in wafer quantity field when Batch selected', async () => {
@@ -102,7 +102,7 @@ describe('WaferInputs', () => {
 
     await user.click(screen.getByLabelText('Batch'));
 
-    const quantityInput = screen.getByLabelText('Wafers par lot');
+    const quantityInput = screen.getByLabelText('Wafers per Batch');
     expect(quantityInput).toHaveValue(125);
   });
 
@@ -113,11 +113,11 @@ describe('WaferInputs', () => {
     });
 
     render(<WaferInputs analysisId="test-analysis-1" />);
-    expect(screen.getByLabelText('Wafers par lot')).toBeInTheDocument();
+    expect(screen.getByLabelText('Wafers per Batch')).toBeInTheDocument();
 
     await user.click(screen.getByLabelText('Mono-wafer'));
 
-    expect(screen.queryByLabelText('Wafers par lot')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Wafers per Batch')).not.toBeInTheDocument();
   });
 
   // === Store Integration Tests ===
@@ -162,7 +162,7 @@ describe('WaferInputs', () => {
     });
     render(<WaferInputs analysisId="test-analysis-1" />);
 
-    const quantityInput = screen.getByLabelText('Wafers par lot');
+    const quantityInput = screen.getByLabelText('Wafers per Batch');
     await user.clear(quantityInput);
     await user.type(quantityInput, '200');
 
@@ -174,7 +174,7 @@ describe('WaferInputs', () => {
     const user = userEvent.setup();
     render(<WaferInputs analysisId="test-analysis-1" />);
 
-    const costInput = screen.getByLabelText('Coût par wafer (€)');
+    const costInput = screen.getByLabelText('Average Cost per Wafer (€)');
     await user.click(costInput); // Focus to get raw value
     await user.clear(costInput);
     await user.type(costInput, '15000');
@@ -190,7 +190,7 @@ describe('WaferInputs', () => {
     });
     render(<WaferInputs analysisId="test-analysis-1" />);
 
-    const quantityInput = screen.getByLabelText('Wafers par lot');
+    const quantityInput = screen.getByLabelText('Wafers per Batch');
     await user.clear(quantityInput);
     await user.type(quantityInput, '-10');
 
@@ -203,7 +203,7 @@ describe('WaferInputs', () => {
     const user = userEvent.setup();
     render(<WaferInputs analysisId="test-analysis-1" />);
 
-    const costInput = screen.getByLabelText('Coût par wafer (€)');
+    const costInput = screen.getByLabelText('Average Cost per Wafer (€)');
     await user.click(costInput);
     await user.clear(costInput);
     await user.type(costInput, 'abc');
@@ -232,23 +232,23 @@ describe('WaferInputs', () => {
     });
     render(<WaferInputs analysisId="test-analysis-1" />);
 
-    const quantityInput = screen.getByLabelText('Wafers par lot');
+    const quantityInput = screen.getByLabelText('Wafers per Batch');
     await user.clear(quantityInput);
     await user.type(quantityInput, '0');
 
-    expect(screen.getByText(/Doit être un nombre positif/)).toBeInTheDocument();
+    expect(screen.getByText(/Must be a positive number/)).toBeInTheDocument();
   });
 
   it('shows error for invalid wafer cost input', async () => {
     const user = userEvent.setup();
     render(<WaferInputs analysisId="test-analysis-1" />);
 
-    const costInput = screen.getByLabelText('Coût par wafer (€)');
+    const costInput = screen.getByLabelText('Average Cost per Wafer (€)');
     await user.click(costInput);
     await user.clear(costInput);
     await user.type(costInput, '-500');
 
-    expect(screen.getByText(/Doit être un nombre positif/)).toBeInTheDocument();
+    expect(screen.getByText(/Must be a positive number/)).toBeInTheDocument();
   });
 
   it('clears error when valid input is entered after invalid', async () => {
@@ -258,14 +258,14 @@ describe('WaferInputs', () => {
     });
     render(<WaferInputs analysisId="test-analysis-1" />);
 
-    const quantityInput = screen.getByLabelText('Wafers par lot');
+    const quantityInput = screen.getByLabelText('Wafers per Batch');
     await user.clear(quantityInput);
     await user.type(quantityInput, '0');
-    expect(screen.getByText(/Doit être un nombre positif/)).toBeInTheDocument();
+    expect(screen.getByText(/Must be a positive number/)).toBeInTheDocument();
 
     await user.clear(quantityInput);
     await user.type(quantityInput, '50');
-    expect(screen.queryByText(/Doit être un nombre positif/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Must be a positive number/)).not.toBeInTheDocument();
   });
 
   it('clears quantity error when switching wafer type', async () => {
@@ -276,14 +276,14 @@ describe('WaferInputs', () => {
     render(<WaferInputs analysisId="test-analysis-1" />);
 
     // Create error
-    const quantityInput = screen.getByLabelText('Wafers par lot');
+    const quantityInput = screen.getByLabelText('Wafers per Batch');
     await user.clear(quantityInput);
     await user.type(quantityInput, '0');
-    expect(screen.getByText(/Doit être un nombre positif/)).toBeInTheDocument();
+    expect(screen.getByText(/Must be a positive number/)).toBeInTheDocument();
 
     // Switch to mono — error should clear
     await user.click(screen.getByLabelText('Mono-wafer'));
-    expect(screen.queryByText(/Doit être un nombre positif/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Must be a positive number/)).not.toBeInTheDocument();
   });
 
   it('replaces invalid quantity with valid default when switching types', async () => {
@@ -294,16 +294,16 @@ describe('WaferInputs', () => {
     render(<WaferInputs analysisId="test-analysis-1" />);
 
     // Enter invalid quantity
-    const quantityInput = screen.getByLabelText('Wafers par lot');
+    const quantityInput = screen.getByLabelText('Wafers per Batch');
     await user.clear(quantityInput);
     await user.type(quantityInput, '0');
-    expect(screen.getByText(/Doit être un nombre positif/)).toBeInTheDocument();
+    expect(screen.getByText(/Must be a positive number/)).toBeInTheDocument();
 
     // Switch to mono — should replace with valid default 1
     await user.click(screen.getByLabelText('Mono-wafer'));
     const analysis = useAppStore.getState().analyses[0];
     expect(analysis.waferQuantity).toBe(1);
-    expect(screen.queryByText(/Doit être un nombre positif/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Must be a positive number/)).not.toBeInTheDocument();
   });
 
   // === Accessibility Tests ===
@@ -320,7 +320,7 @@ describe('WaferInputs', () => {
     const fieldset = screen.getByRole('group');
     const legend = fieldset.querySelector('legend');
     expect(legend).toBeInTheDocument();
-    expect(legend?.textContent).toBe('Type de wafer');
+    expect(legend?.textContent).toBe('Wafer Type');
   });
 
   it('radio buttons are keyboard navigable', async () => {
@@ -347,7 +347,7 @@ describe('WaferInputs', () => {
     const user = userEvent.setup();
     render(<WaferInputs analysisId="test-analysis-1" />);
 
-    const costInput = screen.getByLabelText('Coût par wafer (€)') as HTMLInputElement;
+    const costInput = screen.getByLabelText('Average Cost per Wafer (€)') as HTMLInputElement;
     await user.click(costInput); // Focus: shows raw
     await user.clear(costInput);
     await user.type(costInput, '12500');
@@ -364,7 +364,7 @@ describe('WaferInputs', () => {
     const user = userEvent.setup();
     render(<WaferInputs analysisId="test-analysis-1" />);
 
-    const costInput = screen.getByLabelText('Coût par wafer (€)');
+    const costInput = screen.getByLabelText('Average Cost per Wafer (€)');
     await user.click(costInput);
 
     // When focused, should show raw number

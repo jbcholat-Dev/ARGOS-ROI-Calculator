@@ -17,7 +17,7 @@ export interface ValidationResult {
  * - Must be <= 1000
  *
  * @param value - Raw string from input field
- * @returns Validation result with optional French error message
+ * @returns Validation result with optional error message
  */
 export function validateWaferQuantity(value: string): ValidationResult {
   if (value.trim() === '') {
@@ -27,11 +27,11 @@ export function validateWaferQuantity(value: string): ValidationResult {
   const parsed = parseInt(value, 10);
 
   if (isNaN(parsed) || String(parsed) !== value.trim()) {
-    return { isValid: false, error: 'Doit être un nombre positif' };
+    return { isValid: false, error: 'Must be a positive number' };
   }
 
   if (parsed <= 0) {
-    return { isValid: false, error: 'Doit être un nombre positif' };
+    return { isValid: false, error: 'Must be a positive number' };
   }
 
   if (parsed > 1000) {
@@ -50,7 +50,7 @@ export function validateWaferQuantity(value: string): ValidationResult {
  * - Must be <= 1000000 (1M EUR cap)
  *
  * @param value - Raw string from input field (spaces removed before calling)
- * @returns Validation result with optional French error message
+ * @returns Validation result with optional error message
  */
 export function validateWaferCost(value: string): ValidationResult {
   if (value.trim() === '') {
@@ -60,11 +60,11 @@ export function validateWaferCost(value: string): ValidationResult {
   const parsed = parseFloat(value);
 
   if (isNaN(parsed)) {
-    return { isValid: false, error: 'Doit être un nombre positif' };
+    return { isValid: false, error: 'Must be a positive number' };
   }
 
   if (parsed <= 0) {
-    return { isValid: false, error: 'Doit être un nombre positif' };
+    return { isValid: false, error: 'Must be a positive number' };
   }
 
   if (parsed > 1000000) {

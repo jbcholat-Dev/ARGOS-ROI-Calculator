@@ -38,7 +38,7 @@ describe('AnalysisCard', () => {
     render(<AnalysisCard analysis={baseAnalysis} isActive={false} />);
 
     expect(screen.getByText('CVD Chamber 04')).toBeInTheDocument();
-    expect(screen.getByText(/Pompes/)).toBeInTheDocument();
+    expect(screen.getByText(/Pumps/)).toBeInTheDocument();
     expect(screen.getByText('10')).toBeInTheDocument();
   });
 
@@ -52,7 +52,7 @@ describe('AnalysisCard', () => {
   it('displays pump quantity with "Pompes" label', () => {
     render(<AnalysisCard analysis={baseAnalysis} isActive={false} />);
 
-    expect(screen.getByText(/Pompes/)).toBeInTheDocument();
+    expect(screen.getByText(/Pumps/)).toBeInTheDocument();
     expect(screen.getByText('10')).toBeInTheDocument();
   });
 
@@ -209,7 +209,7 @@ describe('AnalysisCard', () => {
 
       render(<AnalysisCard analysis={baseAnalysis} isActive={false} onClick={onClick} />);
 
-      const card = screen.getByLabelText('Analyse CVD Chamber 04');
+      const card = screen.getByLabelText('Analysis CVD Chamber 04');
       await user.click(card);
 
       expect(onClick).toHaveBeenCalledTimes(1);
@@ -219,7 +219,7 @@ describe('AnalysisCard', () => {
       const onClick = vi.fn();
       render(<AnalysisCard analysis={baseAnalysis} isActive={false} onClick={onClick} />);
 
-      const card = screen.getByLabelText('Analyse CVD Chamber 04');
+      const card = screen.getByLabelText('Analysis CVD Chamber 04');
       expect(card).toBeInTheDocument();
       expect(card).toHaveAttribute('tabIndex', '0');
     });
@@ -227,7 +227,7 @@ describe('AnalysisCard', () => {
     it('is not clickable when onClick is not provided', () => {
       render(<AnalysisCard analysis={baseAnalysis} isActive={false} />);
 
-      const card = screen.getByLabelText('Analyse CVD Chamber 04');
+      const card = screen.getByLabelText('Analysis CVD Chamber 04');
       expect(card).toBeInTheDocument();
       expect(card).not.toHaveAttribute('tabIndex');
       expect(card).not.toHaveAttribute('role');
@@ -239,7 +239,7 @@ describe('AnalysisCard', () => {
 
       render(<AnalysisCard analysis={baseAnalysis} isActive={false} onClick={onClick} />);
 
-      const card = screen.getByLabelText('Analyse CVD Chamber 04');
+      const card = screen.getByLabelText('Analysis CVD Chamber 04');
       card.focus();
       await user.keyboard('{Enter}');
 
@@ -252,7 +252,7 @@ describe('AnalysisCard', () => {
 
       render(<AnalysisCard analysis={baseAnalysis} isActive={false} onClick={onClick} />);
 
-      const card = screen.getByLabelText('Analyse CVD Chamber 04');
+      const card = screen.getByLabelText('Analysis CVD Chamber 04');
       card.focus();
       await user.keyboard(' ');
 
@@ -300,7 +300,7 @@ describe('AnalysisCard', () => {
         </MemoryRouter>,
       );
 
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       expect(menuButton).toBeInTheDocument();
       expect(menuButton).toHaveAttribute('aria-haspopup', 'menu');
     });
@@ -313,12 +313,12 @@ describe('AnalysisCard', () => {
         </MemoryRouter>,
       );
 
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       await user.click(menuButton);
 
       expect(screen.getByRole('menu')).toBeInTheDocument();
-      expect(screen.getByRole('menuitem', { name: /Dupliquer/i })).toBeInTheDocument();
-      expect(screen.getByRole('menuitem', { name: /Supprimer/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /Duplicate/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /Delete/i })).toBeInTheDocument();
     });
 
     it('closes menu when clicking outside', async () => {
@@ -330,7 +330,7 @@ describe('AnalysisCard', () => {
       );
 
       // Open menu
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       await user.click(menuButton);
       expect(screen.getByRole('menu')).toBeInTheDocument();
 
@@ -351,7 +351,7 @@ describe('AnalysisCard', () => {
       );
 
       // Open menu
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       await user.click(menuButton);
       expect(screen.getByRole('menu')).toBeInTheDocument();
 
@@ -372,7 +372,7 @@ describe('AnalysisCard', () => {
         </MemoryRouter>,
       );
 
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       await user.click(menuButton);
 
       // Card onClick should NOT be called (stopPropagation)
@@ -398,10 +398,10 @@ describe('AnalysisCard', () => {
       );
 
       // Open menu and click Dupliquer
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       await user.click(menuButton);
 
-      const duplicateButton = screen.getByRole('menuitem', { name: /Dupliquer/i });
+      const duplicateButton = screen.getByRole('menuitem', { name: /Duplicate/i });
       await user.click(duplicateButton);
 
       // Verify duplicate was created in store
@@ -421,10 +421,10 @@ describe('AnalysisCard', () => {
       );
 
       // Open menu and click Dupliquer
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       await user.click(menuButton);
 
-      const duplicateButton = screen.getByRole('menuitem', { name: /Dupliquer/i });
+      const duplicateButton = screen.getByRole('menuitem', { name: /Duplicate/i });
       await user.click(duplicateButton);
 
       // Verify navigation to duplicate
@@ -441,10 +441,10 @@ describe('AnalysisCard', () => {
       );
 
       // Open menu and click Dupliquer
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       await user.click(menuButton);
 
-      const duplicateButton = screen.getByRole('menuitem', { name: /Dupliquer/i });
+      const duplicateButton = screen.getByRole('menuitem', { name: /Duplicate/i });
       await user.click(duplicateButton);
 
       // Verify all fields copied
@@ -465,10 +465,10 @@ describe('AnalysisCard', () => {
       );
 
       // Open menu and click Dupliquer
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       await user.click(menuButton);
 
-      const duplicateButton = screen.getByRole('menuitem', { name: /Dupliquer/i });
+      const duplicateButton = screen.getByRole('menuitem', { name: /Duplicate/i });
       await user.click(duplicateButton);
 
       // Menu should close
@@ -496,16 +496,16 @@ describe('AnalysisCard', () => {
       );
 
       // Open menu and click Supprimer
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       await user.click(menuButton);
 
-      const deleteButton = screen.getByRole('menuitem', { name: /Supprimer/i });
+      const deleteButton = screen.getByRole('menuitem', { name: /Delete/i });
       await user.click(deleteButton);
 
       // Verify modal opened with title
-      expect(screen.getByText(/Supprimer l'analyse \?/i)).toBeInTheDocument();
+      expect(screen.getByText(/Delete analysis\?/i)).toBeInTheDocument();
       // Verify modal contains the message with analysis name
-      expect(screen.getByText(/Cette action est irréversible/i)).toBeInTheDocument();
+      expect(screen.getByText(/This action is irreversible/i)).toBeInTheDocument();
     });
 
     it('does not delete analysis when canceling confirmation', async () => {
@@ -517,12 +517,12 @@ describe('AnalysisCard', () => {
       );
 
       // Open menu and click Supprimer
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       await user.click(menuButton);
-      await user.click(screen.getByRole('menuitem', { name: /Supprimer/i }));
+      await user.click(screen.getByRole('menuitem', { name: /Delete/i }));
 
       // Cancel deletion
-      const cancelButton = screen.getByRole('button', { name: /Annuler/i });
+      const cancelButton = screen.getByRole('button', { name: /Cancel/i });
       await user.click(cancelButton);
 
       // Analysis should still exist
@@ -540,12 +540,12 @@ describe('AnalysisCard', () => {
       );
 
       // Open menu and click Supprimer
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       await user.click(menuButton);
-      await user.click(screen.getByRole('menuitem', { name: /Supprimer/i }));
+      await user.click(screen.getByRole('menuitem', { name: /Delete/i }));
 
       // Confirm deletion
-      const confirmButton = screen.getByRole('button', { name: /Supprimer/i });
+      const confirmButton = screen.getByRole('button', { name: /Delete/i });
       await user.click(confirmButton);
 
       // Analysis should be deleted
@@ -562,13 +562,13 @@ describe('AnalysisCard', () => {
       );
 
       // Open menu, delete, and confirm
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse CVD Chamber 04/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
       await user.click(menuButton);
-      await user.click(screen.getByRole('menuitem', { name: /Supprimer/i }));
+      await user.click(screen.getByRole('menuitem', { name: /Delete/i }));
 
-      // Get all Supprimer buttons (menu + modal), click modal button
-      const suppressButtons = screen.getAllByRole('button', { name: /Supprimer/i });
-      const modalDeleteButton = suppressButtons.find(btn => btn.textContent === 'Supprimer' && btn.className.includes('pfeiffer-red'));
+      // Get all Delete buttons (menu + modal), click modal button
+      const suppressButtons = screen.getAllByRole('button', { name: /Delete/i });
+      const modalDeleteButton = suppressButtons.find(btn => btn.textContent === 'Delete' && btn.className.includes('pfeiffer-red'));
       await user.click(modalDeleteButton!);
 
       // Should navigate to Dashboard
@@ -597,13 +597,13 @@ describe('AnalysisCard', () => {
       );
 
       // Delete second analysis
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse Process 2/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis Process 2/i);
       await user.click(menuButton);
-      await user.click(screen.getByRole('menuitem', { name: /Supprimer/i }));
+      await user.click(screen.getByRole('menuitem', { name: /Delete/i }));
 
       // Click modal delete button
-      const suppressButtons = screen.getAllByRole('button', { name: /Supprimer/i });
-      const modalDeleteButton = suppressButtons.find(btn => btn.textContent === 'Supprimer' && btn.className.includes('pfeiffer-red'));
+      const suppressButtons = screen.getAllByRole('button', { name: /Delete/i });
+      const modalDeleteButton = suppressButtons.find(btn => btn.textContent === 'Delete' && btn.className.includes('pfeiffer-red'));
       await user.click(modalDeleteButton!);
 
       // Should navigate to first analysis (baseAnalysis)
@@ -633,10 +633,10 @@ describe('AnalysisCard', () => {
       );
 
       // Delete second analysis (not active)
-      const menuButton = screen.getByLabelText(/Actions pour l'analyse Process 2/i);
+      const menuButton = screen.getByLabelText(/Actions for analysis Process 2/i);
       await user.click(menuButton);
-      await user.click(screen.getByRole('menuitem', { name: /Supprimer/i }));
-      await user.click(screen.getAllByRole('button', { name: /Supprimer/i })[1]);
+      await user.click(screen.getByRole('menuitem', { name: /Delete/i }));
+      await user.click(screen.getAllByRole('button', { name: /Delete/i })[1]);
 
       // Should NOT navigate (active analysis unchanged)
       expect(mockNavigate).not.toHaveBeenCalled();

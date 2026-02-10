@@ -24,7 +24,7 @@ describe('AppLayout', () => {
       renderWithRouter(<div>Test Content</div>);
 
       expect(screen.getByRole('complementary')).toBeInTheDocument();
-      expect(screen.getByText('Paramètres Globaux')).toBeInTheDocument();
+      expect(screen.getByText('Global Parameters')).toBeInTheDocument();
     });
 
     it('should render children in main content area', () => {
@@ -85,7 +85,7 @@ describe('AppLayout', () => {
       renderWithRouter(<div>Test</div>);
 
       const sidebar = screen.getByRole('complementary');
-      expect(sidebar).toHaveAttribute('aria-label', 'Paramètres globaux');
+      expect(sidebar).toHaveAttribute('aria-label', 'Global Parameters');
     });
 
     it('should have main landmark with aria-label', () => {

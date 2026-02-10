@@ -39,20 +39,20 @@ describe('Analysis Creation - Integration Tests', () => {
     renderDashboard();
 
     // 1. Verify empty state on Dashboard
-    expect(screen.getByText('Aucune analyse créée')).toBeInTheDocument();
+    expect(screen.getByText('No analyses created')).toBeInTheDocument();
 
-    // 2. Click "Nouvelle Analyse" button
-    await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
+    // 2. Click "New Analysis" button
+    await user.click(screen.getByRole('button', { name: 'New Analysis' }));
 
     // 3. Modal opens with correct title
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
     // 4. Type analysis name
-    const input = screen.getByLabelText('Nom du process');
+    const input = screen.getByLabelText('Analysis Name');
     await user.type(input, 'Poly Etch - Chamber 04');
 
-    // 5. Click "Créer"
-    await user.click(screen.getByRole('button', { name: 'Créer' }));
+    // 5. Click "Create"
+    await user.click(screen.getByRole('button', { name: 'Create' }));
 
     // 6. Analysis added to store with correct data
     const state = useAppStore.getState();
@@ -73,14 +73,14 @@ describe('Analysis Creation - Integration Tests', () => {
     renderDashboard();
 
     // 1. Open modal
-    await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
+    await user.click(screen.getByRole('button', { name: 'New Analysis' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-    // 2. Click "Créer" without entering name
-    await user.click(screen.getByRole('button', { name: 'Créer' }));
+    // 2. Click "Create" without entering name
+    await user.click(screen.getByRole('button', { name: 'Create' }));
 
     // 3. Error message displays
-    expect(screen.getByText(/Le nom de l'analyse est requis/)).toBeInTheDocument();
+    expect(screen.getByText(/Analysis name is required/)).toBeInTheDocument();
 
     // 4. Modal remains open
     expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -89,14 +89,14 @@ describe('Analysis Creation - Integration Tests', () => {
     expect(useAppStore.getState().analyses).toHaveLength(0);
 
     // 6. Enter valid name
-    const input = screen.getByLabelText('Nom du process');
+    const input = screen.getByLabelText('Analysis Name');
     await user.type(input, 'Valid Name');
 
     // 7. Error clears
-    expect(screen.queryByText(/Le nom de l'analyse est requis/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Analysis name is required/)).not.toBeInTheDocument();
 
-    // 8. Click "Créer" - success
-    await user.click(screen.getByRole('button', { name: 'Créer' }));
+    // 8. Click "Create" - success
+    await user.click(screen.getByRole('button', { name: 'Create' }));
     expect(useAppStore.getState().analyses).toHaveLength(1);
     expect(useAppStore.getState().analyses[0].name).toBe('Valid Name');
     expect(mockNavigate).toHaveBeenCalled();
@@ -107,15 +107,15 @@ describe('Analysis Creation - Integration Tests', () => {
     renderDashboard();
 
     // 1. Open modal
-    await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
+    await user.click(screen.getByRole('button', { name: 'New Analysis' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
     // 2. Enter partial name
-    const input = screen.getByLabelText('Nom du process');
+    const input = screen.getByLabelText('Analysis Name');
     await user.type(input, 'Partial Name');
 
-    // 3. Click "Annuler"
-    await user.click(screen.getByRole('button', { name: 'Annuler' }));
+    // 3. Click "Cancel"
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     // 4. Modal closes
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -130,8 +130,8 @@ describe('Analysis Creation - Integration Tests', () => {
     renderDashboard();
 
     // Open modal and type
-    await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
-    const input = screen.getByLabelText('Nom du process');
+    await user.click(screen.getByRole('button', { name: 'New Analysis' }));
+    const input = screen.getByLabelText('Analysis Name');
     await user.type(input, 'Some Input');
 
     // Press Escape

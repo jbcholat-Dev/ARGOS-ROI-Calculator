@@ -9,7 +9,7 @@ export function GlobalAnalysis() {
 
   return (
     <AppLayout>
-      <PlaceholderMessage message="Aucune analyse - créez-en d'abord" />
+      <PlaceholderMessage message="No analyses - create one first" />
     </AppLayout>
   );
 }

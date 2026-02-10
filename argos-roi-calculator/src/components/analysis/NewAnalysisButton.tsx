@@ -14,7 +14,7 @@ export function NewAnalysisButton({ className, onClick }: NewAnalysisButtonProps
       onClick={onClick}
       className={clsx(className)}
     >
-      Nouvelle Analyse
+      New Analysis
     </Button>
   );
 }

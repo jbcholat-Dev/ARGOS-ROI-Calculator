@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DowntimeInputs } from './DowntimeInputs';
@@ -43,9 +43,9 @@ describe('DowntimeInputs', () => {
       expect(screen.getByText(/Temps d.arrêt/)).toBeInTheDocument();
     });
 
-    it('renders duration label "Heures d\'arrêt par panne"', () => {
+    it('renders duration label "hours d\'arrêt par panne"', () => {
       renderComponent();
-      expect(screen.getByLabelText(/Heures d.arrêt par panne/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/hours d.arrêt par panne/)).toBeInTheDocument();
     });
 
     it('renders cost label "Coût horaire d\'arrêt"', () => {
@@ -63,9 +63,9 @@ describe('DowntimeInputs', () => {
       expect(screen.getByPlaceholderText('ex: 15000')).toBeInTheDocument();
     });
 
-    it('renders unit display "heures"', () => {
+    it('renders unit display "hours"', () => {
       renderComponent();
-      expect(screen.getByText('heures')).toBeInTheDocument();
+      expect(screen.getByText('hours')).toBeInTheDocument();
     });
 
     it('renders unit display "€/h"', () => {
@@ -75,13 +75,13 @@ describe('DowntimeInputs', () => {
 
     it('renders duration input with type="number"', () => {
       renderComponent();
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       expect(input).toHaveAttribute('type', 'number');
     });
 
     it('renders duration input with step="0.1"', () => {
       renderComponent();
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       expect(input).toHaveAttribute('step', '0.1');
     });
   });
@@ -89,7 +89,7 @@ describe('DowntimeInputs', () => {
   describe('Initial values from store', () => {
     it('shows empty duration when default is 0', () => {
       renderComponent();
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       expect(input).toHaveValue(null);
     });
 
@@ -104,7 +104,7 @@ describe('DowntimeInputs', () => {
         analyses: [createTestAnalysis({ downtimeDuration: 6 })],
       });
       renderComponent();
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       expect(input).toHaveValue(6);
     });
 
@@ -124,7 +124,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.type(input, '6');
 
       const state = useAppStore.getState();
@@ -135,17 +135,17 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.type(input, '-5');
 
-      expect(screen.getByText('Doit être un nombre positif')).toBeInTheDocument();
+      expect(screen.getByText('Must be a positive number')).toBeInTheDocument();
     });
 
     it('does NOT save negative value to store', async () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.type(input, '6');
       expect(useAppStore.getState().analyses[0].downtimeDuration).toBe(6);
 
@@ -159,13 +159,13 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.type(input, '-1');
-      expect(screen.getByText('Doit être un nombre positif')).toBeInTheDocument();
+      expect(screen.getByText('Must be a positive number')).toBeInTheDocument();
 
       await user.clear(input);
       await user.type(input, '6');
-      expect(screen.queryByText('Doit être un nombre positif')).not.toBeInTheDocument();
+      expect(screen.queryByText('Must be a positive number')).not.toBeInTheDocument();
     });
   });
 
@@ -190,7 +190,7 @@ describe('DowntimeInputs', () => {
       await user.click(input);
       await user.type(input, '-100');
 
-      expect(screen.getByText('Doit être un nombre positif')).toBeInTheDocument();
+      expect(screen.getByText('Must be a positive number')).toBeInTheDocument();
     });
 
     it('does NOT save negative cost to store', async () => {
@@ -217,10 +217,10 @@ describe('DowntimeInputs', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.clear(input);
 
-      expect(screen.getByText('Requis pour le calcul ROI')).toBeInTheDocument();
+      expect(screen.getByText('Required for ROI calculation')).toBeInTheDocument();
     });
 
     it('shows warning when cost is cleared', async () => {
@@ -234,7 +234,7 @@ describe('DowntimeInputs', () => {
       await user.click(input);
       await user.clear(input);
 
-      expect(screen.getByText('Requis pour le calcul ROI')).toBeInTheDocument();
+      expect(screen.getByText('Required for ROI calculation')).toBeInTheDocument();
     });
 
     it('warning text is amber colored (not red)', async () => {
@@ -244,10 +244,10 @@ describe('DowntimeInputs', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.clear(input);
 
-      const warning = screen.getByText('Requis pour le calcul ROI');
+      const warning = screen.getByText('Required for ROI calculation');
       expect(warning).toHaveClass('text-amber-600');
     });
 
@@ -255,15 +255,15 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       // First clear to trigger warning
       await user.type(input, '6');
       await user.clear(input);
-      expect(screen.getByText('Requis pour le calcul ROI')).toBeInTheDocument();
+      expect(screen.getByText('Required for ROI calculation')).toBeInTheDocument();
 
       // Enter valid value
       await user.type(input, '8');
-      expect(screen.queryByText('Requis pour le calcul ROI')).not.toBeInTheDocument();
+      expect(screen.queryByText('Required for ROI calculation')).not.toBeInTheDocument();
     });
   });
 
@@ -272,10 +272,10 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.type(input, '-1');
 
-      const error = screen.getByText('Doit être un nombre positif');
+      const error = screen.getByText('Must be a positive number');
       expect(error).toHaveClass('text-red-600');
     });
 
@@ -283,7 +283,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.type(input, '-1');
 
       expect(screen.getByRole('alert')).toBeInTheDocument();
@@ -293,7 +293,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.type(input, '-1');
 
       expect(input).toHaveAttribute('aria-invalid', 'true');
@@ -303,7 +303,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.type(input, '-1');
 
       expect(input).toHaveClass('border-red-600');
@@ -316,7 +316,7 @@ describe('DowntimeInputs', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.clear(input);
 
       expect(input).toHaveClass('border-amber-500');
@@ -340,7 +340,7 @@ describe('DowntimeInputs', () => {
 
     it('duration input has accessible label', () => {
       renderComponent();
-      expect(screen.getByLabelText(/Heures d.arrêt par panne/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/hours d.arrêt par panne/)).toBeInTheDocument();
     });
 
     it('cost input has accessible label', () => {
@@ -352,14 +352,14 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.type(input, '-1');
 
       expect(input).toHaveAttribute('aria-describedby');
       const describedById = input.getAttribute('aria-describedby');
       const errorEl = document.getElementById(describedById!);
       expect(errorEl).toBeInTheDocument();
-      expect(errorEl?.textContent).toContain('Doit être un nombre positif');
+      expect(errorEl?.textContent).toContain('Must be a positive number');
     });
 
     it('warning message has role="status" for screen readers', async () => {
@@ -369,10 +369,10 @@ describe('DowntimeInputs', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.clear(input);
 
-      const warning = screen.getByText('Requis pour le calcul ROI');
+      const warning = screen.getByText('Required for ROI calculation');
       expect(warning).toHaveAttribute('role', 'status');
     });
   });
@@ -381,7 +381,7 @@ describe('DowntimeInputs', () => {
     it('allows Tab to move from duration to cost', async () => {
       const user = userEvent.setup();
       renderComponent();
-      const durationInput = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const durationInput = screen.getByLabelText(/hours d.arrêt par panne/);
       const costInput = screen.getByLabelText(/Coût horaire d.arrêt/);
 
       durationInput.focus();
@@ -392,7 +392,7 @@ describe('DowntimeInputs', () => {
     it('allows Shift+Tab to move from cost to duration', async () => {
       const user = userEvent.setup();
       renderComponent();
-      const durationInput = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const durationInput = screen.getByLabelText(/hours d.arrêt par panne/);
       const costInput = screen.getByLabelText(/Coût horaire d.arrêt/);
 
       costInput.focus();
@@ -414,7 +414,7 @@ describe('DowntimeInputs', () => {
 
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.type(input, '6');
 
       const newUpdatedAt = useAppStore.getState().analyses[0].updatedAt;
@@ -435,7 +435,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const input = screen.getByLabelText(/hours d.arrêt par panne/);
       await user.type(input, '6');
 
       expect(typeof useAppStore.getState().analyses[0].downtimeDuration).toBe('number');

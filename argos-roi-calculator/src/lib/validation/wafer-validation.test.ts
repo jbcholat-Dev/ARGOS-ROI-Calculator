@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import {
   validateWaferQuantity,
   validateWaferCost,
@@ -38,25 +38,25 @@ describe('validateWaferQuantity', () => {
     it('rejects negative number -10', () => {
       const result = validateWaferQuantity('-10');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
     it('rejects zero', () => {
       const result = validateWaferQuantity('0');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
     it('rejects non-numeric string "abc"', () => {
       const result = validateWaferQuantity('abc');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
     it('rejects decimal "1.5"', () => {
       const result = validateWaferQuantity('1.5');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
     it('rejects values exceeding maximum (1001)', () => {
@@ -106,19 +106,19 @@ describe('validateWaferCost', () => {
     it('rejects negative number -5000', () => {
       const result = validateWaferCost('-5000');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
     it('rejects zero', () => {
       const result = validateWaferCost('0');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
     it('rejects non-numeric string "abc"', () => {
       const result = validateWaferCost('abc');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
     it('rejects values exceeding maximum (1000001)', () => {

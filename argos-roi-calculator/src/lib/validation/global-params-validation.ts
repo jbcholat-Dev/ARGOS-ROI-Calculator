@@ -14,7 +14,7 @@ export function validateDetectionRate(value: string): ValidationResult {
   if (!value || value.trim() === '') {
     return {
       isValid: false,
-      error: 'Veuillez entrer un taux de détection'
+      error: 'Please enter a detection rate'
     };
   }
 
@@ -25,7 +25,7 @@ export function validateDetectionRate(value: string): ValidationResult {
   if (isNaN(numValue) || !isFinite(numValue)) {
     return {
       isValid: false,
-      error: 'Veuillez entrer un nombre valide'
+      error: 'Please enter a valid number'
     };
   }
 
@@ -33,7 +33,7 @@ export function validateDetectionRate(value: string): ValidationResult {
   if (numValue < 0 || numValue > 100) {
     return {
       isValid: false,
-      error: 'Le taux doit être entre 0 et 100'
+      error: 'Rate must be between 0 and 100'
     };
   }
 
@@ -50,7 +50,7 @@ export function validateServiceCost(value: string): ValidationResult {
   if (!value || value.trim() === '') {
     return {
       isValid: false,
-      error: 'Veuillez entrer un coût de service'
+      error: 'Please enter a service cost'
     };
   }
 
@@ -61,7 +61,7 @@ export function validateServiceCost(value: string): ValidationResult {
   if (isNaN(numValue) || !isFinite(numValue)) {
     return {
       isValid: false,
-      error: 'Veuillez entrer un nombre valide'
+      error: 'Please enter a valid number'
     };
   }
 
@@ -69,7 +69,7 @@ export function validateServiceCost(value: string): ValidationResult {
   if (numValue <= 0) {
     return {
       isValid: false,
-      error: 'Le coût doit être supérieur à 0'
+      error: 'Cost must be greater than 0'
     };
   }
 

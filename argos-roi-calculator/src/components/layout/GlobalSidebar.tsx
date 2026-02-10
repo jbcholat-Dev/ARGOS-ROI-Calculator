@@ -141,17 +141,17 @@ export function GlobalSidebar() {
   return (
     <aside
       role="complementary"
-      aria-label="Paramètres globaux"
+      aria-label="Global Parameters"
       className="w-[280px] h-full p-6 bg-white border-r border-surface-alternate"
     >
       <div className="flex flex-col gap-6">
-        <h2 className="text-lg font-semibold text-gray-900">Paramètres Globaux</h2>
+        <h2 className="text-lg font-semibold text-gray-900">Global Parameters</h2>
 
         <div className="flex flex-col gap-4">
           {/* Detection Rate Input */}
           <div>
             <Input
-              label="Taux de détection ARGOS"
+              label="ARGOS Detection Rate"
               type="number"
               min={0}
               max={100}
@@ -162,14 +162,14 @@ export function GlobalSidebar() {
               onFocus={handleDetectionRateFocus}
               onKeyDown={handleDetectionRateKeyDown}
               error={detectionRateError}
-              helperText="Probabilité de détection (0-100%)"
+              helperText="Detection probability (0-100%)"
             />
           </div>
 
           {/* Service Cost Input */}
           <div>
             <Input
-              label="Coût service ARGOS (par pompe/an)"
+              label="ARGOS Service Cost (per pump/year)"
               type="number"
               min={1}
               step={100}
@@ -179,7 +179,7 @@ export function GlobalSidebar() {
               onFocus={handleServiceCostFocus}
               onKeyDown={handleServiceCostKeyDown}
               error={serviceCostError}
-              helperText="Montant en EUR"
+              helperText="Amount in EUR"
             />
             {!isServiceCostFocused && !serviceCostError && (
               <div className="mt-1 text-sm text-gray-600">

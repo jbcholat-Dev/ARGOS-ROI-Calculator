@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FailureRateModeToggle } from './FailureRateModeToggle';
@@ -12,20 +12,20 @@ describe('FailureRateModeToggle', () => {
   describe('Rendering', () => {
     it('renders both mode options', () => {
       render(<FailureRateModeToggle {...defaultProps} />);
-      expect(screen.getByText('Taux (%)')).toBeInTheDocument();
-      expect(screen.getByText('Nombre de pannes/an')).toBeInTheDocument();
+      expect(screen.getByText('Rate (%)')).toBeInTheDocument();
+      expect(screen.getByText('Failures Count/year')).toBeInTheDocument();
     });
 
     it('renders with radiogroup role', () => {
       render(<FailureRateModeToggle {...defaultProps} />);
       expect(
-        screen.getByRole('radiogroup', { name: 'Mode de saisie du taux de panne' }),
+        screen.getByRole('radiogroup', { name: 'Failure Rate Input Mode' }),
       ).toBeInTheDocument();
     });
 
     it('shows percentage mode as active by default', () => {
       render(<FailureRateModeToggle {...defaultProps} />);
-      const percentageRadio = screen.getByRole('radio', { name: 'Taux (%)' });
+      const percentageRadio = screen.getByRole('radio', { name: 'Rate (%)' });
       expect(percentageRadio).toHaveAttribute('aria-checked', 'true');
     });
 
@@ -34,7 +34,7 @@ describe('FailureRateModeToggle', () => {
         <FailureRateModeToggle {...defaultProps} mode="absolute" />,
       );
       const countRadio = screen.getByRole('radio', {
-        name: 'Nombre de pannes/an',
+        name: 'Failures Count/year',
       });
       expect(countRadio).toHaveAttribute('aria-checked', 'true');
     });
@@ -48,7 +48,7 @@ describe('FailureRateModeToggle', () => {
         <FailureRateModeToggle {...defaultProps} onChange={onChange} />,
       );
 
-      await user.click(screen.getByText('Nombre de pannes/an'));
+      await user.click(screen.getByText('Failures Count/year'));
       expect(onChange).toHaveBeenCalledWith('absolute');
     });
 
@@ -63,7 +63,7 @@ describe('FailureRateModeToggle', () => {
         />,
       );
 
-      await user.click(screen.getByText('Taux (%)'));
+      await user.click(screen.getByText('Rate (%)'));
       expect(onChange).toHaveBeenCalledWith('percentage');
     });
   });
@@ -73,7 +73,7 @@ describe('FailureRateModeToggle', () => {
       render(
         <FailureRateModeToggle {...defaultProps} disabled />,
       );
-      const percentageRadio = screen.getByRole('radio', { name: 'Taux (%)' });
+      const percentageRadio = screen.getByRole('radio', { name: 'Rate (%)' });
       expect(percentageRadio).toBeDisabled();
     });
 
@@ -82,11 +82,11 @@ describe('FailureRateModeToggle', () => {
         <FailureRateModeToggle
           {...defaultProps}
           disabled
-          disabledMessage="Entrez d'abord le nombre de pompes"
+          disabledMessage="Entrez d'abord le Pump Quantity"
         />,
       );
       expect(
-        screen.getByText("Entrez d'abord le nombre de pompes"),
+        screen.getByText("Entrez d'abord le Pump Quantity"),
       ).toBeInTheDocument();
     });
 
@@ -94,11 +94,11 @@ describe('FailureRateModeToggle', () => {
       render(
         <FailureRateModeToggle
           {...defaultProps}
-          disabledMessage="Entrez d'abord le nombre de pompes"
+          disabledMessage="Entrez d'abord le Pump Quantity"
         />,
       );
       expect(
-        screen.queryByText("Entrez d'abord le nombre de pompes"),
+        screen.queryByText("Entrez d'abord le Pump Quantity"),
       ).not.toBeInTheDocument();
     });
   });
@@ -111,7 +111,7 @@ describe('FailureRateModeToggle', () => {
         <FailureRateModeToggle {...defaultProps} onChange={onChange} />,
       );
 
-      const percentageRadio = screen.getByRole('radio', { name: 'Taux (%)' });
+      const percentageRadio = screen.getByRole('radio', { name: 'Rate (%)' });
       percentageRadio.focus();
       await user.keyboard('{ArrowRight}');
       expect(onChange).toHaveBeenCalledWith('absolute');
@@ -129,7 +129,7 @@ describe('FailureRateModeToggle', () => {
       );
 
       const countRadio = screen.getByRole('radio', {
-        name: 'Nombre de pannes/an',
+        name: 'Failures Count/year',
       });
       countRadio.focus();
       await user.keyboard('{ArrowLeft}');

@@ -56,16 +56,16 @@ describe('ResultsPanel', () => {
   // ========== Rendering Tests ==========
 
   describe('Rendering', () => {
-    it('renders section heading "Résultats"', () => {
+    it('renders section heading "Results"', () => {
       renderComponent();
-      expect(screen.getByRole('heading', { level: 2, name: 'Résultats' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 2, name: 'Results' })).toBeInTheDocument();
     });
 
     it('renders all 4 metric labels', () => {
       renderComponent();
-      expect(screen.getByText('Coût Total des Pannes')).toBeInTheDocument();
-      expect(screen.getByText('Coût du Service ARGOS')).toBeInTheDocument();
-      expect(screen.getByText('Économies Réalisées')).toBeInTheDocument();
+      expect(screen.getByText('Total Failure Cost')).toBeInTheDocument();
+      expect(screen.getByText('ARGOS Service Cost')).toBeInTheDocument();
+      expect(screen.getByText('Savings Realized')).toBeInTheDocument();
       expect(screen.getByText('ROI')).toBeInTheDocument();
     });
 
@@ -82,7 +82,7 @@ describe('ResultsPanel', () => {
 
     it('shows incomplete data message when inputs are missing', () => {
       renderComponent();
-      expect(screen.getByText('Complétez les données pour voir les résultats')).toBeInTheDocument();
+      expect(screen.getByText('Complete the data to see results')).toBeInTheDocument();
     });
   });
 
@@ -125,7 +125,7 @@ describe('ResultsPanel', () => {
       });
       renderComponent();
 
-      expect(screen.queryByText('Complétez les données pour voir les résultats')).not.toBeInTheDocument();
+      expect(screen.queryByText('Complete the data to see results')).not.toBeInTheDocument();
     });
 
     it('never shows NaN or Infinity', () => {
@@ -411,9 +411,9 @@ describe('ResultsPanel', () => {
   // ========== Accessibility ==========
 
   describe('Accessibility', () => {
-    it('has section element with aria-label "Résultats"', () => {
+    it('has section element with aria-label "Results"', () => {
       renderComponent();
-      expect(screen.getByRole('region', { name: 'Résultats' })).toBeInTheDocument();
+      expect(screen.getByRole('region', { name: 'Results' })).toBeInTheDocument();
     });
 
     it('uses semantic heading hierarchy (h2 for section, h3 for metrics)', () => {
@@ -428,7 +428,7 @@ describe('ResultsPanel', () => {
   describe('Formula tooltips', () => {
     it('renders info icon next to each metric label', () => {
       renderComponent();
-      const infoButtons = screen.getAllByLabelText('Voir la formule de calcul');
+      const infoButtons = screen.getAllByLabelText('View calculation formula');
       expect(infoButtons.length).toBe(4);
     });
 
@@ -436,7 +436,7 @@ describe('ResultsPanel', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const infoButtons = screen.getAllByLabelText('Voir la formule de calcul');
+      const infoButtons = screen.getAllByLabelText('View calculation formula');
       await user.hover(infoButtons[0]);
 
       expect(screen.getByRole('tooltip')).toBeInTheDocument();
@@ -449,7 +449,7 @@ describe('ResultsPanel', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const infoButtons = screen.getAllByLabelText('Voir la formule de calcul');
+      const infoButtons = screen.getAllByLabelText('View calculation formula');
       await user.tab();
       // Tab to first info button
       infoButtons[0].focus();
@@ -461,7 +461,7 @@ describe('ResultsPanel', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const infoButtons = screen.getAllByLabelText('Voir la formule de calcul');
+      const infoButtons = screen.getAllByLabelText('View calculation formula');
 
       // Total Failure Cost formula
       await user.hover(infoButtons[0]);
@@ -495,7 +495,7 @@ describe('ResultsPanel', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const infoButtons = screen.getAllByLabelText('Voir la formule de calcul');
+      const infoButtons = screen.getAllByLabelText('View calculation formula');
 
       // Before hover: aria-describedby should NOT be set (tooltip not in DOM)
       expect(infoButtons[0]).not.toHaveAttribute('aria-describedby');
@@ -511,7 +511,7 @@ describe('ResultsPanel', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const infoButtons = screen.getAllByLabelText('Voir la formule de calcul');
+      const infoButtons = screen.getAllByLabelText('View calculation formula');
       await user.hover(infoButtons[0]);
       expect(screen.getByRole('tooltip')).toBeInTheDocument();
 

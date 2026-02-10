@@ -28,7 +28,7 @@ function FormulaTooltip({ formula, tooltipId, children }: FormulaTooltipProps) {
       <button
         type="button"
         className="inline-flex h-5 w-5 items-center justify-center rounded-full text-xs text-gray-400 hover:text-gray-600 focus:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        aria-label="Voir la formule de calcul"
+        aria-label="View calculation formula"
         aria-describedby={isVisible ? tooltipId : undefined}
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
@@ -130,12 +130,12 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
   const showIncompleteMessage = !isFullyCalculable;
 
   return (
-    <section aria-label="Résultats">
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">Résultats</h2>
+    <section aria-label="Results">
+      <h2 className="mb-4 text-lg font-semibold text-gray-900">Results</h2>
 
       {showIncompleteMessage && (
         <p className="mb-4 text-sm text-gray-500">
-          Complétez les données pour voir les résultats
+          Complete the data to see results
         </p>
       )}
 
@@ -144,7 +144,7 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
         <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
           <h3 className="text-sm font-medium text-gray-600">
             <FormulaTooltip formula={FORMULAS.totalFailureCost} tooltipId={`${tooltipBaseId}-total-failure-cost`}>
-              Coût Total des Pannes
+              Total Failure Cost
             </FormulaTooltip>
           </h3>
           <p className="mt-1 text-4xl font-bold text-gray-900" data-testid="total-failure-cost-value">
@@ -159,7 +159,7 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
         <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
           <h3 className="text-sm font-medium text-gray-600">
             <FormulaTooltip formula={FORMULAS.argosServiceCost} tooltipId={`${tooltipBaseId}-argos-service-cost`}>
-              Coût du Service ARGOS
+              ARGOS Service Cost
             </FormulaTooltip>
           </h3>
           <p className="mt-1 text-2xl font-bold text-gray-900" data-testid="argos-service-cost-value">
@@ -174,7 +174,7 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
         <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
           <h3 className="text-sm font-medium text-gray-600">
             <FormulaTooltip formula={FORMULAS.savings} tooltipId={`${tooltipBaseId}-savings`}>
-              Économies Réalisées
+              Savings Realized
             </FormulaTooltip>
           </h3>
           <p

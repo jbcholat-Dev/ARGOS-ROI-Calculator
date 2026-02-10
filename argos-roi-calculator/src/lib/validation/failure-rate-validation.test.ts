@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import {
   validateFailureRatePercentage,
   validateFailureCount,
@@ -29,27 +29,27 @@ describe('validateFailureRatePercentage', () => {
   it('rejects negative values', () => {
     const result = validateFailureRatePercentage('-5');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Doit être un nombre positif');
+    expect(result.error).toBe('Must be a positive number');
   });
 
   it('rejects values greater than 100', () => {
     const result = validateFailureRatePercentage('101');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Le taux doit être entre 0 et 100%');
+    expect(result.error).toBe('Rate must be between 0 and 100%');
   });
 
   it('rejects non-numeric strings', () => {
     const result = validateFailureRatePercentage('abc');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Doit être un nombre positif');
+    expect(result.error).toBe('Must be a positive number');
   });
 
-  it('returns French error messages', () => {
+  it('returns English error messages', () => {
     const negResult = validateFailureRatePercentage('-1');
-    expect(negResult.error).toMatch(/nombre positif/);
+    expect(negResult.error).toMatch(/positive number/);
 
     const overResult = validateFailureRatePercentage('150');
-    expect(overResult.error).toMatch(/entre 0 et 100/);
+    expect(overResult.error).toMatch(/between 0 and 100/);
   });
 });
 
@@ -73,24 +73,24 @@ describe('validateFailureCount', () => {
   it('rejects negative values', () => {
     const result = validateFailureCount('-2');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Doit être un nombre entier positif');
+    expect(result.error).toBe('Must be a positive integer');
   });
 
   it('rejects decimal values (3.5)', () => {
     const result = validateFailureCount('3.5');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Doit être un nombre entier positif');
+    expect(result.error).toBe('Must be a positive integer');
   });
 
   it('rejects non-numeric strings', () => {
     const result = validateFailureCount('abc');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Doit être un nombre entier positif');
+    expect(result.error).toBe('Must be a positive integer');
   });
 
-  it('returns French error message', () => {
+  it('returns English error message', () => {
     const result = validateFailureCount('-1');
-    expect(result.error).toMatch(/nombre entier positif/);
+    expect(result.error).toMatch(/positive integer/);
   });
 });
 

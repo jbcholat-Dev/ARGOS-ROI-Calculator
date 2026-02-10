@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DetectionRateInput Tests
  * Story 2.9: Detection Rate Per Analysis
  */
@@ -53,7 +53,7 @@ describe('DetectionRateInput', () => {
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
       expect(
-        screen.getByLabelText('Taux de Détection ARGOS (%)')
+        screen.getByLabelText('ARGOS Detection Rate (%)')
       ).toBeInTheDocument();
     });
 
@@ -65,7 +65,7 @@ describe('DetectionRateInput', () => {
 
       expect(
         screen.getByText(
-          'Probabilité de détecter une panne avant qu\'elle ne se produise (défaut: 70%)'
+          'Probability of detecting a failure before it occurs (default: 70%)'
         )
       ).toBeInTheDocument();
     });
@@ -77,7 +77,7 @@ describe('DetectionRateInput', () => {
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
       const input = screen.getByLabelText(
-        'Taux de Détection ARGOS (%)'
+        'ARGOS Detection Rate (%)'
       ) as HTMLInputElement;
       expect(input.value).toBe('70');
     });
@@ -89,7 +89,7 @@ describe('DetectionRateInput', () => {
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
       const input = screen.getByLabelText(
-        'Taux de Détection ARGOS (%)'
+        'ARGOS Detection Rate (%)'
       ) as HTMLInputElement;
       expect(input.value).toBe('85');
     });
@@ -101,7 +101,7 @@ describe('DetectionRateInput', () => {
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
       const input = screen.getByLabelText(
-        'Taux de Détection ARGOS (%)'
+        'ARGOS Detection Rate (%)'
       ) as HTMLInputElement;
       expect(input.type).toBe('number');
     });
@@ -113,7 +113,7 @@ describe('DetectionRateInput', () => {
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
       const input = screen.getByLabelText(
-        'Taux de Détection ARGOS (%)'
+        'ARGOS Detection Rate (%)'
       ) as HTMLInputElement;
       expect(input.min).toBe('0');
     });
@@ -125,7 +125,7 @@ describe('DetectionRateInput', () => {
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
       const input = screen.getByLabelText(
-        'Taux de Détection ARGOS (%)'
+        'ARGOS Detection Rate (%)'
       ) as HTMLInputElement;
       expect(input.max).toBe('100');
     });
@@ -149,7 +149,7 @@ describe('DetectionRateInput', () => {
 
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
-      const input = screen.getByLabelText('Taux de Détection ARGOS (%)');
+      const input = screen.getByLabelText('ARGOS Detection Rate (%)');
 
       // Change to 85
       await user.clear(input);
@@ -168,7 +168,7 @@ describe('DetectionRateInput', () => {
 
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
-      const input = screen.getByLabelText('Taux de Détection ARGOS (%)') as HTMLInputElement;
+      const input = screen.getByLabelText('ARGOS Detection Rate (%)') as HTMLInputElement;
 
       // Try to set negative value
       await user.clear(input);
@@ -191,7 +191,7 @@ describe('DetectionRateInput', () => {
 
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
-      const input = screen.getByLabelText('Taux de Détection ARGOS (%)');
+      const input = screen.getByLabelText('ARGOS Detection Rate (%)');
 
       // Initially no error
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
@@ -204,7 +204,7 @@ describe('DetectionRateInput', () => {
       // Note: "1" and "15" are valid intermediates, "150" triggers error
       const errorMessage = screen.queryByRole('alert');
       if (errorMessage) {
-        expect(errorMessage).toHaveTextContent('Doit être entre 0 et 100');
+        expect(errorMessage).toHaveTextContent('Must be between 0 and 100');
       }
     });
 
@@ -215,7 +215,7 @@ describe('DetectionRateInput', () => {
 
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
-      const input = screen.getByLabelText('Taux de Détection ARGOS (%)') as HTMLInputElement;
+      const input = screen.getByLabelText('ARGOS Detection Rate (%)') as HTMLInputElement;
 
       // Initially aria-invalid should be false
       expect(input.getAttribute('aria-invalid')).toBe('false');
@@ -233,7 +233,7 @@ describe('DetectionRateInput', () => {
 
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
-      const input = screen.getByLabelText('Taux de Détection ARGOS (%)') as HTMLInputElement;
+      const input = screen.getByLabelText('ARGOS Detection Rate (%)') as HTMLInputElement;
 
       // Try to set value > 100
       await user.clear(input);
@@ -256,7 +256,7 @@ describe('DetectionRateInput', () => {
 
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
-      const input = screen.getByLabelText('Taux de Détection ARGOS (%)');
+      const input = screen.getByLabelText('ARGOS Detection Rate (%)');
 
       await user.clear(input);
       await user.type(input, '0');
@@ -272,7 +272,7 @@ describe('DetectionRateInput', () => {
 
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
-      const input = screen.getByLabelText('Taux de Détection ARGOS (%)');
+      const input = screen.getByLabelText('ARGOS Detection Rate (%)');
 
       await user.clear(input);
       await user.type(input, '100');
@@ -288,7 +288,7 @@ describe('DetectionRateInput', () => {
 
       render(<DetectionRateInput analysisId={mockAnalysisId} />);
 
-      const input = screen.getByLabelText('Taux de Détection ARGOS (%)');
+      const input = screen.getByLabelText('ARGOS Detection Rate (%)');
 
       await user.clear(input);
       await user.type(input, '70');

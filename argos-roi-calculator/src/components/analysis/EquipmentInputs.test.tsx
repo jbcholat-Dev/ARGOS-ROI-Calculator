@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EquipmentInputs } from './EquipmentInputs';
@@ -38,19 +38,19 @@ describe('EquipmentInputs', () => {
   };
 
   describe('Rendering', () => {
-    it('renders section heading "Équipement"', () => {
+    it('renders section heading "Equipment"', () => {
       renderComponent();
-      expect(screen.getByText('Équipement')).toBeInTheDocument();
+      expect(screen.getByText('Equipment')).toBeInTheDocument();
     });
 
-    it('renders pump type label "Type de pompe"', () => {
+    it('renders pump type label "Pump Model"', () => {
       renderComponent();
-      expect(screen.getByLabelText('Type de pompe')).toBeInTheDocument();
+      expect(screen.getByLabelText('Pump Model')).toBeInTheDocument();
     });
 
-    it('renders pump quantity label "Nombre de pompes"', () => {
+    it('renders pump quantity label "Pump Quantity"', () => {
       renderComponent();
-      expect(screen.getByLabelText('Nombre de pompes')).toBeInTheDocument();
+      expect(screen.getByLabelText('Pump Quantity')).toBeInTheDocument();
     });
 
     it('renders pump type placeholder from PUMP_TYPE_SUGGESTIONS', () => {
@@ -67,7 +67,7 @@ describe('EquipmentInputs', () => {
 
     it('renders pump quantity input with type="number"', () => {
       renderComponent();
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       expect(input).toHaveAttribute('type', 'number');
     });
   });
@@ -78,7 +78,7 @@ describe('EquipmentInputs', () => {
         analyses: [createTestAnalysis({ pumpType: 'HiPace 700' })],
       });
       renderComponent();
-      expect(screen.getByLabelText('Type de pompe')).toHaveValue('HiPace 700');
+      expect(screen.getByLabelText('Pump Model')).toHaveValue('HiPace 700');
     });
 
     it('displays pump quantity from store', () => {
@@ -86,12 +86,12 @@ describe('EquipmentInputs', () => {
         analyses: [createTestAnalysis({ pumpQuantity: 8 })],
       });
       renderComponent();
-      expect(screen.getByLabelText('Nombre de pompes')).toHaveValue(8);
+      expect(screen.getByLabelText('Pump Quantity')).toHaveValue(8);
     });
 
     it('shows empty pump quantity when default is 0', () => {
       renderComponent();
-      expect(screen.getByLabelText('Nombre de pompes')).toHaveValue(null);
+      expect(screen.getByLabelText('Pump Quantity')).toHaveValue(null);
     });
   });
 
@@ -100,7 +100,7 @@ describe('EquipmentInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText('Type de pompe');
+      const input = screen.getByLabelText('Pump Model');
       await user.type(input, 'HiPace 700');
 
       const state = useAppStore.getState();
@@ -111,7 +111,7 @@ describe('EquipmentInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText('Type de pompe');
+      const input = screen.getByLabelText('Pump Model');
       await user.type(input, 'Hi');
 
       const state = useAppStore.getState();
@@ -124,7 +124,7 @@ describe('EquipmentInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       await user.type(input, '8');
 
       const state = useAppStore.getState();
@@ -135,7 +135,7 @@ describe('EquipmentInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       await user.type(input, '25');
 
       const state = useAppStore.getState();
@@ -146,30 +146,30 @@ describe('EquipmentInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       await user.type(input, '-5');
 
-      expect(screen.getByText('Doit être un nombre positif')).toBeInTheDocument();
+      expect(screen.getByText('Must be a positive number')).toBeInTheDocument();
     });
 
     it('shows error for zero', async () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       await user.type(input, '0');
 
-      expect(screen.getByText('Doit être un nombre positif')).toBeInTheDocument();
+      expect(screen.getByText('Must be a positive number')).toBeInTheDocument();
     });
 
     it('shows error for value exceeding 1000', async () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       await user.type(input, '1001');
 
-      expect(screen.getByText('Maximum 1000 pompes')).toBeInTheDocument();
+      expect(screen.getByText('Maximum 1000 pumps')).toBeInTheDocument();
     });
 
     it('does NOT update store with invalid values', async () => {
@@ -177,7 +177,7 @@ describe('EquipmentInputs', () => {
       renderComponent();
 
       // First set a valid value
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       await user.type(input, '5');
       expect(useAppStore.getState().analyses[0].pumpQuantity).toBe(5);
 
@@ -195,7 +195,7 @@ describe('EquipmentInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       await user.type(input, '-1');
 
       expect(screen.getByRole('alert')).toBeInTheDocument();
@@ -205,35 +205,35 @@ describe('EquipmentInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       // Type invalid first
       await user.type(input, '-1');
-      expect(screen.getByText('Doit être un nombre positif')).toBeInTheDocument();
+      expect(screen.getByText('Must be a positive number')).toBeInTheDocument();
 
       // Clear and type valid
       await user.clear(input);
       await user.type(input, '10');
 
-      expect(screen.queryByText('Doit être un nombre positif')).not.toBeInTheDocument();
+      expect(screen.queryByText('Must be a positive number')).not.toBeInTheDocument();
     });
 
     it('clears error when field is emptied', async () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       await user.type(input, '-1');
-      expect(screen.getByText('Doit être un nombre positif')).toBeInTheDocument();
+      expect(screen.getByText('Must be a positive number')).toBeInTheDocument();
 
       await user.clear(input);
-      expect(screen.queryByText('Doit être un nombre positif')).not.toBeInTheDocument();
+      expect(screen.queryByText('Must be a positive number')).not.toBeInTheDocument();
     });
 
     it('marks input as aria-invalid when error is shown', async () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       await user.type(input, '-1');
 
       expect(input).toHaveAttribute('aria-invalid', 'true');
@@ -252,31 +252,31 @@ describe('EquipmentInputs', () => {
   describe('Accessibility', () => {
     it('has section with aria-label', () => {
       renderComponent();
-      expect(screen.getByRole('region', { name: 'Équipement' })).toBeInTheDocument();
+      expect(screen.getByRole('region', { name: 'Equipment' })).toBeInTheDocument();
     });
 
     it('pump type input has accessible label', () => {
       renderComponent();
-      expect(screen.getByLabelText('Type de pompe')).toBeInTheDocument();
+      expect(screen.getByLabelText('Pump Model')).toBeInTheDocument();
     });
 
     it('pump quantity input has accessible label', () => {
       renderComponent();
-      expect(screen.getByLabelText('Nombre de pompes')).toBeInTheDocument();
+      expect(screen.getByLabelText('Pump Quantity')).toBeInTheDocument();
     });
 
     it('error message is associated with input via aria-describedby', async () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       await user.type(input, '-1');
 
       expect(input).toHaveAttribute('aria-describedby');
       const describedById = input.getAttribute('aria-describedby');
       const errorEl = document.getElementById(describedById!);
       expect(errorEl).toBeInTheDocument();
-      expect(errorEl?.textContent).toContain('Doit être un nombre positif');
+      expect(errorEl?.textContent).toContain('Must be a positive number');
     });
   });
 
@@ -285,7 +285,7 @@ describe('EquipmentInputs', () => {
       renderComponent();
       // Verify the component renders correctly after unrelated state change
       useAppStore.setState({ unsavedChanges: true });
-      expect(screen.getByText('Équipement')).toBeInTheDocument();
+      expect(screen.getByText('Equipment')).toBeInTheDocument();
     });
 
     it('updates updatedAt timestamp on store change', async () => {
@@ -294,7 +294,7 @@ describe('EquipmentInputs', () => {
 
       renderComponent();
 
-      const input = screen.getByLabelText('Type de pompe');
+      const input = screen.getByLabelText('Pump Model');
       await user.type(input, 'A');
 
       const newUpdatedAt = useAppStore.getState().analyses[0].updatedAt;
@@ -325,15 +325,15 @@ describe('EquipmentInputs', () => {
       );
 
       // Create error on first analysis
-      const input = screen.getByLabelText('Nombre de pompes');
+      const input = screen.getByLabelText('Pump Quantity');
       await user.type(input, '-5');
-      expect(screen.getByText('Doit être un nombre positif')).toBeInTheDocument();
+      expect(screen.getByText('Must be a positive number')).toBeInTheDocument();
 
       // Switch to second analysis
       rerender(<EquipmentInputs analysisId="test-analysis-2" />);
 
       // Error should be cleared
-      expect(screen.queryByText('Doit être un nombre positif')).not.toBeInTheDocument();
+      expect(screen.queryByText('Must be a positive number')).not.toBeInTheDocument();
     });
   });
 });

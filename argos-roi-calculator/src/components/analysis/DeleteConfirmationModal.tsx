@@ -22,21 +22,21 @@ export function DeleteConfirmationModal({
     <Modal
       isOpen={isOpen}
       onClose={onCancel}
-      title="Supprimer l'analyse ?"
+      title="Delete analysis?"
       footer={
         <div className="flex gap-3 justify-end">
           <Button variant="secondary" onClick={onCancel}>
-            Annuler
+            Cancel
           </Button>
           <Button variant="danger" onClick={onConfirm}>
-            Supprimer
+            Delete
           </Button>
         </div>
       }
     >
       <p className="text-gray-700">
-        Cette action est irréversible. L'analyse «&nbsp;{analysisName}&nbsp;»
-        sera définitivement supprimée.
+        This action is irreversible. The analysis "{analysisName}"
+        will be permanently deleted.
       </p>
     </Modal>
   );

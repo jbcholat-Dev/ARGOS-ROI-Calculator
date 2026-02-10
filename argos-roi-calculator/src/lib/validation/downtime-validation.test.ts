@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import {
   validateDowntimeDuration,
   validateDowntimeCostPerHour,
@@ -35,13 +35,13 @@ describe('validateDowntimeDuration', () => {
     it('returns warning for empty string', () => {
       const result = validateDowntimeDuration('');
       expect(result.isValid).toBe(true);
-      expect(result.warning).toBe('Requis pour le calcul ROI');
+      expect(result.warning).toBe('Required for ROI calculation');
     });
 
     it('returns warning for whitespace-only', () => {
       const result = validateDowntimeDuration('   ');
       expect(result.isValid).toBe(true);
-      expect(result.warning).toBe('Requis pour le calcul ROI');
+      expect(result.warning).toBe('Required for ROI calculation');
     });
   });
 
@@ -49,19 +49,19 @@ describe('validateDowntimeDuration', () => {
     it('rejects negative value -5', () => {
       const result = validateDowntimeDuration('-5');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
     it('rejects non-numeric text "abc"', () => {
       const result = validateDowntimeDuration('abc');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre valide');
+      expect(result.error).toBe('Must be a valid number');
     });
 
     it('rejects mixed text "12abc"', () => {
       const result = validateDowntimeDuration('12abc');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre valide');
+      expect(result.error).toBe('Must be a valid number');
     });
   });
 });
@@ -89,7 +89,7 @@ describe('validateDowntimeCostPerHour', () => {
     it('returns warning for empty string', () => {
       const result = validateDowntimeCostPerHour('');
       expect(result.isValid).toBe(true);
-      expect(result.warning).toBe('Requis pour le calcul ROI');
+      expect(result.warning).toBe('Required for ROI calculation');
     });
   });
 
@@ -97,13 +97,13 @@ describe('validateDowntimeCostPerHour', () => {
     it('rejects negative value -100', () => {
       const result = validateDowntimeCostPerHour('-100');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
     it('rejects non-numeric text "xyz"', () => {
       const result = validateDowntimeCostPerHour('xyz');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre valide');
+      expect(result.error).toBe('Must be a valid number');
     });
   });
 });

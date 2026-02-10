@@ -73,7 +73,7 @@ export function DetectionRateInput({ analysisId }: DetectionRateInputProps) {
         htmlFor={`detection-rate-${analysisId}`}
         className="block text-sm font-medium text-gray-700"
       >
-        Taux de Détection ARGOS (%)
+        ARGOS Detection Rate (%)
       </label>
       <Input
         id={`detection-rate-${analysisId}`}
@@ -96,7 +96,7 @@ export function DetectionRateInput({ analysisId }: DetectionRateInputProps) {
         id={`detection-rate-helper-${analysisId}`}
         className="text-sm text-gray-500"
       >
-        Probabilité de détecter une panne avant qu'elle ne se produise (défaut: 70%)
+        Probability of detecting a failure before it occurs (default: 70%)
       </p>
     </div>
   );

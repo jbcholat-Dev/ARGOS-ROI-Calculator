@@ -22,13 +22,13 @@ describe('GlobalSidebar', () => {
     it('should render Paramètres Globaux heading', () => {
       render(<GlobalSidebar />);
 
-      expect(screen.getByText('Paramètres Globaux')).toBeInTheDocument();
+      expect(screen.getByText('Global Parameters')).toBeInTheDocument();
     });
 
     it('should display detection rate input with default value', () => {
       render(<GlobalSidebar />);
 
-      const detectionRateInput = screen.getByLabelText('Taux de détection ARGOS');
+      const detectionRateInput = screen.getByLabelText('ARGOS Detection Rate');
       expect(detectionRateInput).toBeInTheDocument();
       expect(detectionRateInput).toHaveValue(70);
     });
@@ -36,7 +36,7 @@ describe('GlobalSidebar', () => {
     it('should display service cost input with default value', () => {
       render(<GlobalSidebar />);
 
-      const serviceCostInput = screen.getByLabelText('Coût service ARGOS (par pompe/an)');
+      const serviceCostInput = screen.getByLabelText('ARGOS Service Cost (per pump/year)');
       expect(serviceCostInput).toBeInTheDocument();
       expect(serviceCostInput).toHaveValue(2500);
     });
@@ -50,8 +50,8 @@ describe('GlobalSidebar', () => {
     it('should display helper text for both inputs', () => {
       render(<GlobalSidebar />);
 
-      expect(screen.getByText('Probabilité de détection (0-100%)')).toBeInTheDocument();
-      expect(screen.getByText('Montant en EUR')).toBeInTheDocument();
+      expect(screen.getByText('Detection probability (0-100%)')).toBeInTheDocument();
+      expect(screen.getByText('Amount in EUR')).toBeInTheDocument();
     });
   });
 
@@ -60,7 +60,7 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Taux de détection ARGOS');
+      const input = screen.getByLabelText('ARGOS Detection Rate');
 
       await user.clear(input);
       await user.type(input, '85');
@@ -73,13 +73,13 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Taux de détection ARGOS');
+      const input = screen.getByLabelText('ARGOS Detection Rate');
 
       await user.clear(input);
       await user.type(input, '-5');
       await user.tab();
 
-      expect(screen.getByText('Le taux doit être entre 0 et 100')).toBeInTheDocument();
+      expect(screen.getByText('Rate must be between 0 and 100')).toBeInTheDocument();
       expect(useAppStore.getState().globalParams.detectionRate).toBe(70); // Unchanged
     });
 
@@ -87,13 +87,13 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Taux de détection ARGOS');
+      const input = screen.getByLabelText('ARGOS Detection Rate');
 
       await user.clear(input);
       await user.type(input, '150');
       await user.tab();
 
-      expect(screen.getByText('Le taux doit être entre 0 et 100')).toBeInTheDocument();
+      expect(screen.getByText('Rate must be between 0 and 100')).toBeInTheDocument();
       expect(useAppStore.getState().globalParams.detectionRate).toBe(70);
     });
 
@@ -101,12 +101,12 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Taux de détection ARGOS');
+      const input = screen.getByLabelText('ARGOS Detection Rate');
 
       await user.clear(input);
       await user.tab();
 
-      expect(screen.getByText('Veuillez entrer un taux de détection')).toBeInTheDocument();
+      expect(screen.getByText('Please enter a detection rate')).toBeInTheDocument();
       expect(useAppStore.getState().globalParams.detectionRate).toBe(70);
     });
 
@@ -114,7 +114,7 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Taux de détection ARGOS');
+      const input = screen.getByLabelText('ARGOS Detection Rate');
 
       // Test 0%
       await user.clear(input);
@@ -135,7 +135,7 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Coût service ARGOS (par pompe/an)');
+      const input = screen.getByLabelText('ARGOS Service Cost (per pump/year)');
 
       await user.clear(input);
       await user.type(input, '3000');
@@ -148,13 +148,13 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Coût service ARGOS (par pompe/an)');
+      const input = screen.getByLabelText('ARGOS Service Cost (per pump/year)');
 
       await user.clear(input);
       await user.type(input, '0');
       await user.tab();
 
-      expect(screen.getByText('Le coût doit être supérieur à 0')).toBeInTheDocument();
+      expect(screen.getByText('Cost must be greater than 0')).toBeInTheDocument();
       expect(useAppStore.getState().globalParams.serviceCostPerPump).toBe(2500);
     });
 
@@ -162,13 +162,13 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Coût service ARGOS (par pompe/an)');
+      const input = screen.getByLabelText('ARGOS Service Cost (per pump/year)');
 
       await user.clear(input);
       await user.type(input, '-100');
       await user.tab();
 
-      expect(screen.getByText('Le coût doit être supérieur à 0')).toBeInTheDocument();
+      expect(screen.getByText('Cost must be greater than 0')).toBeInTheDocument();
       expect(useAppStore.getState().globalParams.serviceCostPerPump).toBe(2500);
     });
 
@@ -176,12 +176,12 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Coût service ARGOS (par pompe/an)');
+      const input = screen.getByLabelText('ARGOS Service Cost (per pump/year)');
 
       await user.clear(input);
       await user.tab();
 
-      expect(screen.getByText('Veuillez entrer un coût de service')).toBeInTheDocument();
+      expect(screen.getByText('Please enter a service cost')).toBeInTheDocument();
       expect(useAppStore.getState().globalParams.serviceCostPerPump).toBe(2500);
     });
 
@@ -189,7 +189,7 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Coût service ARGOS (par pompe/an)');
+      const input = screen.getByLabelText('ARGOS Service Cost (per pump/year)');
 
       await user.clear(input);
       await user.type(input, '1');
@@ -204,7 +204,7 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Taux de détection ARGOS');
+      const input = screen.getByLabelText('ARGOS Detection Rate');
 
       await user.clear(input);
       await user.type(input, '80');
@@ -217,7 +217,7 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Taux de détection ARGOS');
+      const input = screen.getByLabelText('ARGOS Detection Rate');
 
       await user.clear(input);
       await user.type(input, '99');
@@ -231,7 +231,7 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Coût service ARGOS (par pompe/an)');
+      const input = screen.getByLabelText('ARGOS Service Cost (per pump/year)');
 
       await user.clear(input);
       await user.type(input, '3500');
@@ -244,7 +244,7 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Coût service ARGOS (par pompe/an)');
+      const input = screen.getByLabelText('ARGOS Service Cost (per pump/year)');
 
       await user.clear(input);
       await user.type(input, '9999');
@@ -258,18 +258,18 @@ describe('GlobalSidebar', () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Taux de détection ARGOS');
+      const input = screen.getByLabelText('ARGOS Detection Rate');
 
       // Create error
       await user.clear(input);
       await user.type(input, '150');
       await user.tab();
-      expect(screen.getByText('Le taux doit être entre 0 et 100')).toBeInTheDocument();
+      expect(screen.getByText('Rate must be between 0 and 100')).toBeInTheDocument();
 
       // Escape should restore value and clear error
       input.focus();
       await user.keyboard('{Escape}');
-      expect(screen.queryByText('Le taux doit être entre 0 et 100')).not.toBeInTheDocument();
+      expect(screen.queryByText('Rate must be between 0 and 100')).not.toBeInTheDocument();
     });
   });
 
@@ -284,7 +284,7 @@ describe('GlobalSidebar', () => {
 
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Taux de détection ARGOS');
+      const input = screen.getByLabelText('ARGOS Detection Rate');
       expect(input).toHaveValue(85);
     });
 
@@ -298,7 +298,7 @@ describe('GlobalSidebar', () => {
 
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Coût service ARGOS (par pompe/an)');
+      const input = screen.getByLabelText('ARGOS Service Cost (per pump/year)');
       expect(input).toHaveValue(3000);
     });
   });
@@ -315,21 +315,21 @@ describe('GlobalSidebar', () => {
       render(<GlobalSidebar />);
 
       const sidebar = screen.getByRole('complementary');
-      expect(sidebar).toHaveAttribute('aria-label', 'Paramètres globaux');
+      expect(sidebar).toHaveAttribute('aria-label', 'Global Parameters');
     });
 
     it('should have accessible labels for inputs', () => {
       render(<GlobalSidebar />);
 
-      expect(screen.getByLabelText('Taux de détection ARGOS')).toBeInTheDocument();
-      expect(screen.getByLabelText('Coût service ARGOS (par pompe/an)')).toBeInTheDocument();
+      expect(screen.getByLabelText('ARGOS Detection Rate')).toBeInTheDocument();
+      expect(screen.getByLabelText('ARGOS Service Cost (per pump/year)')).toBeInTheDocument();
     });
 
     it('should set aria-invalid when validation fails', async () => {
       const user = userEvent.setup();
       render(<GlobalSidebar />);
 
-      const input = screen.getByLabelText('Taux de détection ARGOS');
+      const input = screen.getByLabelText('ARGOS Detection Rate');
 
       await user.clear(input);
       await user.type(input, '150');

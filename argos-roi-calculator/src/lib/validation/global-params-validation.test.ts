@@ -28,31 +28,31 @@ describe('validateDetectionRate', () => {
   it('should reject detection rates below 0', () => {
     const result = validateDetectionRate('-1');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Le taux doit être entre 0 et 100');
+    expect(result.error).toBe('Rate must be between 0 and 100');
   });
 
   it('should reject detection rates above 100', () => {
     const result = validateDetectionRate('101');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Le taux doit être entre 0 et 100');
+    expect(result.error).toBe('Rate must be between 0 and 100');
   });
 
   it('should reject empty strings', () => {
     const result = validateDetectionRate('');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Veuillez entrer un taux de détection');
+    expect(result.error).toBe('Please enter a detection rate');
   });
 
   it('should reject whitespace-only strings', () => {
     const result = validateDetectionRate('   ');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Veuillez entrer un taux de détection');
+    expect(result.error).toBe('Please enter a detection rate');
   });
 
   it('should reject non-numeric values', () => {
     const result = validateDetectionRate('abc');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Veuillez entrer un nombre valide');
+    expect(result.error).toBe('Please enter a valid number');
   });
 
   it('should accept decimal values within range', () => {
@@ -68,19 +68,19 @@ describe('validateDetectionRate', () => {
   it('should reject Infinity', () => {
     const result = validateDetectionRate('Infinity');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Veuillez entrer un nombre valide');
+    expect(result.error).toBe('Please enter a valid number');
   });
 
   it('should reject -Infinity', () => {
     const result = validateDetectionRate('-Infinity');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Veuillez entrer un nombre valide');
+    expect(result.error).toBe('Please enter a valid number');
   });
 
   it('should reject very large numbers that become Infinity', () => {
     const result = validateDetectionRate('1e309');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Veuillez entrer un nombre valide');
+    expect(result.error).toBe('Please enter a valid number');
   });
 });
 
@@ -102,31 +102,31 @@ describe('validateServiceCost', () => {
   it('should reject zero service cost', () => {
     const result = validateServiceCost('0');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Le coût doit être supérieur à 0');
+    expect(result.error).toBe('Cost must be greater than 0');
   });
 
   it('should reject negative service costs', () => {
     const result = validateServiceCost('-100');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Le coût doit être supérieur à 0');
+    expect(result.error).toBe('Cost must be greater than 0');
   });
 
   it('should reject empty strings', () => {
     const result = validateServiceCost('');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Veuillez entrer un coût de service');
+    expect(result.error).toBe('Please enter a service cost');
   });
 
   it('should reject whitespace-only strings', () => {
     const result = validateServiceCost('   ');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Veuillez entrer un coût de service');
+    expect(result.error).toBe('Please enter a service cost');
   });
 
   it('should reject non-numeric values', () => {
     const result = validateServiceCost('abc');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Veuillez entrer un nombre valide');
+    expect(result.error).toBe('Please enter a valid number');
   });
 
   it('should accept decimal service costs', () => {
@@ -138,19 +138,19 @@ describe('validateServiceCost', () => {
   it('should reject Infinity', () => {
     const result = validateServiceCost('Infinity');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Veuillez entrer un nombre valide');
+    expect(result.error).toBe('Please enter a valid number');
   });
 
   it('should reject -Infinity', () => {
     const result = validateServiceCost('-Infinity');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Veuillez entrer un nombre valide');
+    expect(result.error).toBe('Please enter a valid number');
   });
 
   it('should reject very large numbers', () => {
     const result = validateServiceCost('1e309');
     expect(result.isValid).toBe(false);
-    expect(result.error).toBe('Veuillez entrer un nombre valide');
+    expect(result.error).toBe('Please enter a valid number');
   });
 });
 

@@ -17,7 +17,7 @@ export interface ValidationResult {
  * - Must be <= 100
  *
  * @param value - Raw string from input field
- * @returns Validation result with French error message
+ * @returns Validation result with error message
  */
 export function validateFailureRatePercentage(value: string): ValidationResult {
   if (value.trim() === '') {
@@ -27,15 +27,15 @@ export function validateFailureRatePercentage(value: string): ValidationResult {
   const parsed = parseFloat(value);
 
   if (isNaN(parsed)) {
-    return { isValid: false, error: 'Doit être un nombre positif' };
+    return { isValid: false, error: 'Must be a positive number' };
   }
 
   if (parsed < 0) {
-    return { isValid: false, error: 'Doit être un nombre positif' };
+    return { isValid: false, error: 'Must be a positive number' };
   }
 
   if (parsed > 100) {
-    return { isValid: false, error: 'Le taux doit être entre 0 et 100%' };
+    return { isValid: false, error: 'Rate must be between 0 and 100%' };
   }
 
   return { isValid: true };
@@ -50,7 +50,7 @@ export function validateFailureRatePercentage(value: string): ValidationResult {
  * - Must be integer (no decimals)
  *
  * @param value - Raw string from input field
- * @returns Validation result with French error message
+ * @returns Validation result with error message
  */
 export function validateFailureCount(value: string): ValidationResult {
   if (value.trim() === '') {
@@ -59,17 +59,17 @@ export function validateFailureCount(value: string): ValidationResult {
 
   // Reject decimals explicitly (e.g., "3.0" is parsed as 3 by parseFloat but user typed a dot)
   if (value.includes('.')) {
-    return { isValid: false, error: 'Doit être un nombre entier positif' };
+    return { isValid: false, error: 'Must be a positive integer' };
   }
 
   const parsed = parseInt(value, 10);
 
   if (isNaN(parsed) || String(parsed) !== value.trim()) {
-    return { isValid: false, error: 'Doit être un nombre entier positif' };
+    return { isValid: false, error: 'Must be a positive integer' };
   }
 
   if (parsed < 0) {
-    return { isValid: false, error: 'Doit être un nombre entier positif' };
+    return { isValid: false, error: 'Must be a positive integer' };
   }
 
   return { isValid: true };

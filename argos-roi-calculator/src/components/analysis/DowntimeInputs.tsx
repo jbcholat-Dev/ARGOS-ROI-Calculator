@@ -134,15 +134,15 @@ export function DowntimeInputs({ analysisId }: DowntimeInputsProps) {
   };
 
   return (
-    <section aria-label="Temps d'arrêt">
+    <section aria-label="Downtime">
       <h2 className="mb-4 text-lg font-semibold text-gray-900">
-        Temps d&apos;arrêt
+        Downtime
       </h2>
       <div className="flex flex-col gap-4">
         {/* Downtime Duration Field */}
         <div className="flex flex-col gap-1">
           <label htmlFor={durationInputId} className="text-base font-medium text-gray-900">
-            Heures d&apos;arrêt par panne
+            Duration per Failure (hours)
           </label>
           <div className="relative">
             <input
@@ -171,7 +171,7 @@ export function DowntimeInputs({ analysisId }: DowntimeInputsProps) {
               )}
             />
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-500">
-              heures
+              hours
             </span>
           </div>
           {durationError && (
@@ -199,7 +199,7 @@ export function DowntimeInputs({ analysisId }: DowntimeInputsProps) {
         {/* Downtime Cost Per Hour Field */}
         <div className="flex flex-col gap-1">
           <label htmlFor={costInputId} className="text-base font-medium text-gray-900">
-            Coût horaire d&apos;arrêt
+            Cost per Hour of Downtime (€)
           </label>
           <div className="relative">
             <input

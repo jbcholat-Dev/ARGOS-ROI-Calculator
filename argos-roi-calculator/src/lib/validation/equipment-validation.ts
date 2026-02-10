@@ -27,15 +27,15 @@ export function validatePumpQuantity(value: string): ValidationResult {
   const parsed = parseInt(value, 10);
 
   if (isNaN(parsed) || String(parsed) !== value.trim()) {
-    return { isValid: false, error: 'Doit être un nombre positif' };
+    return { isValid: false, error: 'Must be a positive number' };
   }
 
   if (parsed <= 0) {
-    return { isValid: false, error: 'Doit être un nombre positif' };
+    return { isValid: false, error: 'Must be a positive number' };
   }
 
   if (parsed > 1000) {
-    return { isValid: false, error: 'Maximum 1000 pompes' };
+    return { isValid: false, error: 'Maximum 1000 pumps' };
   }
 
   return { isValid: true };
@@ -55,7 +55,7 @@ export function validatePumpQuantity(value: string): ValidationResult {
  */
 export function validateDetectionRate(value: number): string | null {
   if (value < 0 || value > 100) {
-    return 'Doit être entre 0 et 100';
+    return 'Must be between 0 and 100';
   }
 
   return null;

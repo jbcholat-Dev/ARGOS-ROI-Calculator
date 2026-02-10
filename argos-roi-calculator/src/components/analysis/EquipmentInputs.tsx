@@ -55,19 +55,19 @@ export function EquipmentInputs({ analysisId }: EquipmentInputsProps) {
   };
 
   return (
-    <section aria-label="Équipement">
+    <section aria-label="Equipment">
       <h2 className="mb-4 text-lg font-semibold text-gray-900">
-        Équipement
+        Equipment
       </h2>
       <div className="flex flex-col gap-4">
         <Input
-          label="Type de pompe"
+          label="Pump Model"
           placeholder={`ex: ${PUMP_TYPE_SUGGESTIONS.join(', ')}`}
           value={analysis.pumpType}
           onChange={handlePumpTypeChange}
         />
         <Input
-          label="Nombre de pompes"
+          label="Pump Quantity"
           type="number"
           placeholder="ex: 8"
           value={quantityValue}

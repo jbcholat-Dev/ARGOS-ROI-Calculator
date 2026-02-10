@@ -104,7 +104,7 @@ export function WaferInputs({ analysisId }: WaferInputsProps) {
         {/* Wafer Type Radio Buttons */}
         <fieldset>
           <legend className="mb-2 text-base font-medium text-gray-900">
-            Type de wafer
+            Wafer Type
           </legend>
           <div className="flex gap-6">
             <label
@@ -159,7 +159,7 @@ export function WaferInputs({ analysisId }: WaferInputsProps) {
         {/* Wafers per batch - conditional on batch mode */}
         {analysis.waferType === 'batch' && (
           <Input
-            label="Wafers par lot"
+            label="Wafers per Batch"
             type="number"
             placeholder="ex: 125"
             value={analysis.waferQuantity === 0 ? '' : String(analysis.waferQuantity)}
@@ -172,7 +172,7 @@ export function WaferInputs({ analysisId }: WaferInputsProps) {
 
         {/* Wafer cost - always visible */}
         <Input
-          label="Coût par wafer (€)"
+          label="Average Cost per Wafer (€)"
           type="text"
           placeholder="ex: 8000"
           value={costDisplayValue}

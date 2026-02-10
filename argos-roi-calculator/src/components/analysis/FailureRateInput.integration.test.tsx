@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FailureRateInput } from './FailureRateInput';
@@ -38,12 +38,12 @@ describe('FailureRateInput Integration', () => {
     const user = userEvent.setup();
     render(<FailureRateInput analysisId="integration-failure-1" />);
 
-    // Verify default mode is "Taux (%)"
-    const percentageRadio = screen.getByRole('radio', { name: 'Taux (%)' });
+    // Verify default mode is "Rate (%)"
+    const percentageRadio = screen.getByRole('radio', { name: 'Rate (%)' });
     expect(percentageRadio).toHaveAttribute('aria-checked', 'true');
 
     // Enter "15" in percentage input
-    const input = screen.getByLabelText('Taux de panne annuel (%)');
+    const input = screen.getByLabelText('Failure Rate (%)');
     await user.type(input, '15');
 
     // Verify store updated
@@ -63,11 +63,11 @@ describe('FailureRateInput Integration', () => {
     render(<FailureRateInput analysisId="integration-failure-1" />);
 
     // Switch to count mode
-    await user.click(screen.getByText('Nombre de pannes/an'));
+    await user.click(screen.getByText('Failures Count/year'));
 
     // Enter "3" in count input
     const input = screen.getByLabelText(
-      'Nombre de pannes (année dernière)',
+      'Nombre de pannes (last year)',
     );
     await user.type(input, '3');
 
@@ -89,9 +89,9 @@ describe('FailureRateInput Integration', () => {
     render(<FailureRateInput analysisId="integration-failure-1" />);
 
     // Switch to count mode and enter 3
-    await user.click(screen.getByText('Nombre de pannes/an'));
+    await user.click(screen.getByText('Failures Count/year'));
     const countInput = screen.getByLabelText(
-      'Nombre de pannes (année dernière)',
+      'Nombre de pannes (last year)',
     );
     await user.type(countInput, '3');
 
@@ -101,11 +101,11 @@ describe('FailureRateInput Integration', () => {
     ).toBe(37.5);
 
     // Switch back to percentage mode
-    await user.click(screen.getByText('Taux (%)'));
+    await user.click(screen.getByText('Rate (%)'));
 
     // Verify percentage field shows calculated value
     const percentageInput = screen.getByLabelText(
-      'Taux de panne annuel (%)',
+      'Failure Rate (%)',
     );
     expect(percentageInput).toHaveValue(37.5);
 
@@ -119,12 +119,12 @@ describe('FailureRateInput Integration', () => {
     const user = userEvent.setup();
     render(<FailureRateInput analysisId="integration-failure-1" />);
 
-    const input = screen.getByLabelText('Taux de panne annuel (%)');
+    const input = screen.getByLabelText('Failure Rate (%)');
 
     // Enter invalid value "-5"
     await user.type(input, '-5');
     expect(
-      screen.getByText('Doit être un nombre positif'),
+      screen.getByText('Must be a positive number'),
     ).toBeInTheDocument();
 
     // Verify store NOT updated
@@ -136,7 +136,7 @@ describe('FailureRateInput Integration', () => {
     await user.clear(input);
     await user.type(input, '110');
     expect(
-      screen.getByText('Le taux doit être entre 0 et 100%'),
+      screen.getByText('Rate must be between 0 and 100%'),
     ).toBeInTheDocument();
 
     // Clear and enter valid "10"
@@ -166,12 +166,12 @@ describe('FailureRateInput Integration', () => {
 
     // Helper message should display
     expect(
-      screen.getByText("Entrez d'abord le nombre de pompes"),
+      screen.getByText("Entrez d'abord le Pump Quantity"),
     ).toBeInTheDocument();
 
     // Percentage input should still be available
     expect(
-      screen.getByLabelText('Taux de panne annuel (%)'),
+      screen.getByLabelText('Failure Rate (%)'),
     ).toBeInTheDocument();
   });
 
@@ -182,7 +182,7 @@ describe('FailureRateInput Integration', () => {
     );
 
     // Enter percentage
-    const input = screen.getByLabelText('Taux de panne annuel (%)');
+    const input = screen.getByLabelText('Failure Rate (%)');
     await user.type(input, '25');
 
     // Verify store
@@ -196,7 +196,7 @@ describe('FailureRateInput Integration', () => {
 
     // Value should persist from store
     expect(
-      screen.getByLabelText('Taux de panne annuel (%)'),
+      screen.getByLabelText('Failure Rate (%)'),
     ).toHaveValue(25);
   });
 
@@ -213,12 +213,12 @@ describe('FailureRateInput Integration', () => {
     render(<FailureRateInput analysisId="integration-failure-1" />);
 
     const input = screen.getByLabelText(
-      'Nombre de pannes (année dernière)',
+      'Nombre de pannes (last year)',
     );
     await user.type(input, '3.5');
 
     expect(
-      screen.getByText('Doit être un nombre entier positif'),
+      screen.getByText('Must be a positive integer'),
     ).toBeInTheDocument();
   });
 });

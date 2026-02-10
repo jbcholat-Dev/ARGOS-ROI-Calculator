@@ -63,13 +63,19 @@ development_status:
   2-9-detection-rate-per-analysis: done
   epic-2-retrospective: done
 
-  # Epic 3: Multi-Analysis Management (4 stories)
-  epic-3: done
+  # Epic 3: Multi-Analysis Management (4 stories + 6 post-retro fixes)
+  epic-3: in-progress
   3-1-dashboard-grid-with-analysis-cards: done
   3-2-card-navigation-to-focus-mode: done
   3-3-analysis-duplicate-and-delete-actions: done
   3-4-global-parameters-adjustment-with-propagation: done
-  epic-3-retrospective: optional
+  3-5-ui-labels-french-to-english: review
+  3-6-fix-delete-function: backlog
+  3-7-remove-detection-rate-from-global-sidebar: backlog
+  3-8-fix-service-cost-increment: backlog
+  3-9-focus-sidebar-navigation: backlog
+  3-10-what-if-scenario-comparison-mode: backlog
+  epic-3-retrospective: done
 
   # Epic 4: Global Analysis & Comparison (3 stories)
   epic-4: backlog

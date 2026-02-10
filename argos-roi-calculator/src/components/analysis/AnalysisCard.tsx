@@ -169,7 +169,7 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
   return (
     <>
       <Card
-        aria-label={`Analyse ${analysis.name}`}
+        aria-label={`Analysis ${analysis.name}`}
         onClick={onClick}
         className={clsx(
           // Active state border
@@ -186,7 +186,7 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
             setIsMenuOpen(!isMenuOpen);
           }}
           className="absolute top-4 right-4 p-2 text-gray-500 hover:text-pfeiffer-red transition-colors rounded hover:bg-gray-100"
-          aria-label={`Actions pour l'analyse ${analysis.name}`}
+          aria-label={`Actions for analysis ${analysis.name}`}
           aria-expanded={isMenuOpen}
           aria-haspopup="menu"
         >
@@ -200,7 +200,7 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
           <div
             ref={menuRef}
             role="menu"
-            aria-label="Actions de l'analyse"
+            aria-label="Analysis actions"
             className="absolute top-12 right-4 bg-white shadow-lg border border-gray-200 rounded-lg py-1 z-10 min-w-[150px]"
           >
             <button
@@ -209,7 +209,7 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
               className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
             >
               <span aria-hidden="true">⎘</span>
-              Dupliquer
+              Duplicate
             </button>
             <button
               role="menuitem"
@@ -217,7 +217,7 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
               className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
             >
               <span aria-hidden="true">🗑</span>
-              Supprimer
+              Delete
             </button>
           </div>
         )}
@@ -229,7 +229,7 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
 
       {/* Pump Count */}
       <div className="mb-4 flex items-center gap-2">
-        <span className="text-sm font-medium text-gray-600">Pompes:</span>
+        <span className="text-sm font-medium text-gray-600">Pumps:</span>
         <span className="text-base font-semibold text-gray-900">{analysis.pumpQuantity}</span>
       </div>
 
@@ -243,7 +243,7 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
 
       {/* Savings Amount */}
       <div>
-        <div className="text-sm font-medium text-gray-600 mb-1">Économies Réalisées</div>
+        <div className="text-sm font-medium text-gray-600 mb-1">Savings Realized</div>
         <div className="text-lg font-semibold text-gray-900" data-testid="savings-amount">
           {formatCurrency(savings)}
         </div>

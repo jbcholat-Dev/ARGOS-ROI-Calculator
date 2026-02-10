@@ -83,7 +83,7 @@ export function FailureRateInput({ analysisId }: FailureRateInputProps) {
 
       // Reject counts that exceed pump quantity (>100% failure rate)
       if (percentage > 100) {
-        setCountError('Le nombre de pannes ne peut pas dépasser le nombre de pompes');
+        setCountError('Failures count cannot exceed pump quantity');
         return;
       }
 
@@ -100,9 +100,9 @@ export function FailureRateInput({ analysisId }: FailureRateInputProps) {
   const calculatedPercentageId = `${analysisId}-calculated-percentage`;
 
   return (
-    <section aria-label="Taux de panne">
+    <section aria-label="Failure Rate">
       <h2 className="mb-4 text-lg font-semibold text-gray-900">
-        Taux de panne
+        Failure Rate
       </h2>
       <div className="flex flex-col gap-4">
         <FailureRateModeToggle
@@ -111,14 +111,14 @@ export function FailureRateInput({ analysisId }: FailureRateInputProps) {
           disabled={isCountDisabled}
           disabledMessage={
             isCountDisabled
-              ? "Entrez d'abord le nombre de pompes"
+              ? "Enter pump quantity first"
               : undefined
           }
         />
 
         {mode === 'percentage' && (
           <Input
-            label="Taux de panne annuel (%)"
+            label="Failure Rate (%)"
             type="number"
             placeholder="ex: 10"
             value={
@@ -137,7 +137,7 @@ export function FailureRateInput({ analysisId }: FailureRateInputProps) {
         {mode === 'absolute' && (
           <div className="flex flex-col gap-2">
             <Input
-              label="Nombre de pannes (année dernière)"
+              label="Failures Count (last year)"
               type="number"
               placeholder="ex: 3"
               value={
@@ -158,7 +158,7 @@ export function FailureRateInput({ analysisId }: FailureRateInputProps) {
               }
             />
             <p className="text-sm text-gray-500">
-              Pour {pumpQuantity} pompes
+              For {pumpQuantity} pumps
             </p>
             {analysis.absoluteFailureCount !== undefined &&
               analysis.absoluteFailureCount > 0 && (
@@ -166,7 +166,7 @@ export function FailureRateInput({ analysisId }: FailureRateInputProps) {
                   id={calculatedPercentageId}
                   className="text-sm font-medium text-gray-600"
                 >
-                  Taux calculé :{' '}
+                  Calculated rate:{' '}
                   {calculatePercentageFromCount(
                     analysis.absoluteFailureCount,
                     pumpQuantity,

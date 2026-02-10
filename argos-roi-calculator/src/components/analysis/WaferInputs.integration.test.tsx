@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+﻿import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WaferInputs } from './WaferInputs';
@@ -43,14 +43,14 @@ describe('WaferInputs Integration Tests', () => {
     // Step 1: Verify initial state — mono selected
     const monoRadio = screen.getByLabelText('Mono-wafer');
     expect(monoRadio).toBeChecked();
-    expect(screen.queryByLabelText('Wafers par lot')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Wafers per Batch')).not.toBeInTheDocument();
 
     // Step 2: Switch to batch mode
     await user.click(screen.getByLabelText('Batch'));
     expect(screen.getByLabelText('Batch')).toBeChecked();
 
     // Step 3: Verify quantity field appears with default 125
-    const quantityInput = screen.getByLabelText('Wafers par lot');
+    const quantityInput = screen.getByLabelText('Wafers per Batch');
     expect(quantityInput).toHaveValue(125);
 
     // Step 4: Verify store — waferType=batch, waferQuantity=125
@@ -65,7 +65,7 @@ describe('WaferInputs Integration Tests', () => {
     expect(analysis.waferQuantity).toBe(200);
 
     // Step 6: Edit wafer cost to 15000
-    const costInput = screen.getByLabelText('Coût par wafer (€)') as HTMLInputElement;
+    const costInput = screen.getByLabelText('Average Cost per Wafer (€)') as HTMLInputElement;
     await user.click(costInput);
     await user.clear(costInput);
     await user.type(costInput, '15000');
@@ -94,7 +94,7 @@ describe('WaferInputs Integration Tests', () => {
     expect(analysis.waferQuantity).toBe(125);
 
     // Edit batch quantity to 300
-    const quantityInput = screen.getByLabelText('Wafers par lot');
+    const quantityInput = screen.getByLabelText('Wafers per Batch');
     await user.clear(quantityInput);
     await user.type(quantityInput, '300');
     analysis = useAppStore.getState().analyses[0];
@@ -105,7 +105,7 @@ describe('WaferInputs Integration Tests', () => {
     analysis = useAppStore.getState().analyses[0];
     expect(analysis.waferType).toBe('mono');
     expect(analysis.waferQuantity).toBe(1);
-    expect(screen.queryByLabelText('Wafers par lot')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Wafers per Batch')).not.toBeInTheDocument();
   });
 
   it('completes validation flow: invalid → error → correct → error clears → store updated', async () => {
@@ -113,13 +113,13 @@ describe('WaferInputs Integration Tests', () => {
     render(<WaferInputs analysisId="integration-test-1" />);
 
     // Enter invalid cost
-    const costInput = screen.getByLabelText('Coût par wafer (€)');
+    const costInput = screen.getByLabelText('Average Cost per Wafer (€)');
     await user.click(costInput);
     await user.clear(costInput);
     await user.type(costInput, '-100');
 
     // Error should display
-    expect(screen.getByText(/Doit être un nombre positif/)).toBeInTheDocument();
+    expect(screen.getByText(/Must be a positive number/)).toBeInTheDocument();
 
     // Store should NOT be updated to -100
     let analysis = useAppStore.getState().analyses[0];
@@ -130,7 +130,7 @@ describe('WaferInputs Integration Tests', () => {
     await user.type(costInput, '10000');
 
     // Error should clear
-    expect(screen.queryByText(/Doit être un nombre positif/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Must be a positive number/)).not.toBeInTheDocument();
 
     // Store should be updated
     analysis = useAppStore.getState().analyses[0];

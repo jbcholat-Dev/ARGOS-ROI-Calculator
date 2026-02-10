@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DowntimeInputs } from './DowntimeInputs';
@@ -40,14 +40,14 @@ describe('DowntimeInputs Integration', () => {
       render(<DowntimeInputs analysisId="test-analysis-1" />);
 
       // Step 1: Enter downtime hours
-      const durationInput = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const durationInput = screen.getByLabelText(/Duration per Failure \(hours\)/);
       await user.type(durationInput, '6');
 
       let state = useAppStore.getState();
       expect(state.analyses[0].downtimeDuration).toBe(6);
 
       // Step 2: Enter downtime cost
-      const costInput = screen.getByLabelText(/Coût horaire d.arrêt/);
+      const costInput = screen.getByLabelText(/Cost per Hour of Downtime/);
       await user.click(costInput);
       await user.type(costInput, '15000');
 
@@ -76,18 +76,18 @@ describe('DowntimeInputs Integration', () => {
       const user = userEvent.setup();
       render(<DowntimeInputs analysisId="test-analysis-1" />);
 
-      const durationInput = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const durationInput = screen.getByLabelText(/Duration per Failure \(hours\)/);
 
       // Step 1: Enter invalid (negative)
       await user.type(durationInput, '-5');
-      expect(screen.getByText('Doit être un nombre positif')).toBeInTheDocument();
+      expect(screen.getByText('Must be a positive number')).toBeInTheDocument();
       // Value should not be saved (store has 0 from before)
       expect(useAppStore.getState().analyses[0].downtimeDuration).toBe(0);
 
       // Step 2: Clear and enter valid
       await user.clear(durationInput);
       await user.type(durationInput, '6');
-      expect(screen.queryByText('Doit être un nombre positif')).not.toBeInTheDocument();
+      expect(screen.queryByText('Must be a positive number')).not.toBeInTheDocument();
       expect(useAppStore.getState().analyses[0].downtimeDuration).toBe(6);
     });
   });
@@ -118,7 +118,7 @@ describe('DowntimeInputs Integration', () => {
       expect(initialCost).toBe(1090000);
 
       // Change duration from 6 to 12
-      const durationInput = screen.getByLabelText(/Heures d.arrêt par panne/);
+      const durationInput = screen.getByLabelText(/Duration per Failure \(hours\)/);
       await user.clear(durationInput);
       await user.type(durationInput, '12');
 

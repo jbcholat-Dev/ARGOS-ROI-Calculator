@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FailureRateInput } from './FailureRateInput';
@@ -39,15 +39,15 @@ describe('FailureRateInput', () => {
   };
 
   describe('Rendering', () => {
-    it('renders section heading "Taux de panne"', () => {
+    it('renders section heading "Failure Rate"', () => {
       renderComponent();
-      expect(screen.getByText('Taux de panne')).toBeInTheDocument();
+      expect(screen.getByText('Failure Rate')).toBeInTheDocument();
     });
 
     it('renders in percentage mode by default', () => {
       renderComponent();
       expect(
-        screen.getByLabelText('Taux de panne annuel (%)'),
+        screen.getByLabelText('Failure Rate (%)'),
       ).toBeInTheDocument();
     });
 
@@ -58,8 +58,8 @@ describe('FailureRateInput', () => {
 
     it('renders mode toggle with both options', () => {
       renderComponent();
-      expect(screen.getByText('Taux (%)')).toBeInTheDocument();
-      expect(screen.getByText('Nombre de pannes/an')).toBeInTheDocument();
+      expect(screen.getByText('Rate (%)')).toBeInTheDocument();
+      expect(screen.getByText('Failures Count/year')).toBeInTheDocument();
     });
 
     it('renders nothing when analysis does not exist', () => {
@@ -73,7 +73,7 @@ describe('FailureRateInput', () => {
   describe('Percentage mode', () => {
     it('displays initial percentage value from store', () => {
       renderComponent();
-      const input = screen.getByLabelText('Taux de panne annuel (%)');
+      const input = screen.getByLabelText('Failure Rate (%)');
       expect(input).toHaveValue(10);
     });
 
@@ -82,7 +82,7 @@ describe('FailureRateInput', () => {
         analyses: [createTestAnalysis({ failureRatePercentage: 0 })],
       });
       renderComponent();
-      const input = screen.getByLabelText('Taux de panne annuel (%)');
+      const input = screen.getByLabelText('Failure Rate (%)');
       expect(input).toHaveValue(null);
     });
 
@@ -93,7 +93,7 @@ describe('FailureRateInput', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText('Taux de panne annuel (%)');
+      const input = screen.getByLabelText('Failure Rate (%)');
       await user.type(input, '15');
 
       const state = useAppStore.getState();
@@ -107,11 +107,11 @@ describe('FailureRateInput', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText('Taux de panne annuel (%)');
+      const input = screen.getByLabelText('Failure Rate (%)');
       await user.type(input, '101');
 
       expect(
-        screen.getByText('Le taux doit être entre 0 et 100%'),
+        screen.getByText('Rate must be between 0 and 100%'),
       ).toBeInTheDocument();
     });
 
@@ -122,11 +122,11 @@ describe('FailureRateInput', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText('Taux de panne annuel (%)');
+      const input = screen.getByLabelText('Failure Rate (%)');
       await user.type(input, '-5');
 
       expect(
-        screen.getByText('Doit être un nombre positif'),
+        screen.getByText('Must be a positive number'),
       ).toBeInTheDocument();
     });
 
@@ -137,7 +137,7 @@ describe('FailureRateInput', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText('Taux de panne annuel (%)');
+      const input = screen.getByLabelText('Failure Rate (%)');
       await user.type(input, '-5');
 
       // Store should remain at 0
@@ -152,7 +152,7 @@ describe('FailureRateInput', () => {
       });
       renderComponent();
       expect(
-        screen.getByLabelText('Nombre de pannes (année dernière)'),
+        screen.getByLabelText('Nombre de pannes (last year)'),
       ).toBeInTheDocument();
     });
 
@@ -161,7 +161,7 @@ describe('FailureRateInput', () => {
         analyses: [createTestAnalysis({ failureRateMode: 'absolute' })],
       });
       renderComponent();
-      expect(screen.getByText('Pour 8 pompes')).toBeInTheDocument();
+      expect(screen.getByText('For 8 pumps')).toBeInTheDocument();
     });
 
     it('shows count mode placeholder', () => {
@@ -186,7 +186,7 @@ describe('FailureRateInput', () => {
       renderComponent();
 
       const input = screen.getByLabelText(
-        'Nombre de pannes (année dernière)',
+        'Nombre de pannes (last year)',
       );
       await user.type(input, '3');
 
@@ -208,7 +208,7 @@ describe('FailureRateInput', () => {
       renderComponent();
 
       const input = screen.getByLabelText(
-        'Nombre de pannes (année dernière)',
+        'Nombre de pannes (last year)',
       );
       await user.type(input, '3');
 
@@ -223,10 +223,10 @@ describe('FailureRateInput', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      await user.click(screen.getByText('Nombre de pannes/an'));
+      await user.click(screen.getByText('Failures Count/year'));
 
       expect(
-        screen.getByLabelText('Nombre de pannes (année dernière)'),
+        screen.getByLabelText('Nombre de pannes (last year)'),
       ).toBeInTheDocument();
     });
 
@@ -244,9 +244,9 @@ describe('FailureRateInput', () => {
       renderComponent();
 
       // Switch to percentage mode
-      await user.click(screen.getByText('Taux (%)'));
+      await user.click(screen.getByText('Rate (%)'));
 
-      const input = screen.getByLabelText('Taux de panne annuel (%)');
+      const input = screen.getByLabelText('Failure Rate (%)');
       expect(input).toHaveValue(37.5);
     });
   });
@@ -271,7 +271,7 @@ describe('FailureRateInput', () => {
       renderComponent();
 
       expect(
-        screen.getByText("Entrez d'abord le nombre de pompes"),
+        screen.getByText("Entrez d'abord le Pump Quantity"),
       ).toBeInTheDocument();
     });
 
@@ -289,7 +289,7 @@ describe('FailureRateInput', () => {
       // Even if store says absolute, should show percentage input
       // because count mode is disabled
       expect(
-        screen.getByLabelText('Taux de panne annuel (%)'),
+        screen.getByLabelText('Failure Rate (%)'),
       ).toBeInTheDocument();
     });
   });
@@ -298,14 +298,14 @@ describe('FailureRateInput', () => {
     it('has section with aria-label', () => {
       renderComponent();
       expect(
-        screen.getByRole('region', { name: 'Taux de panne' }),
+        screen.getByRole('region', { name: 'Failure Rate' }),
       ).toBeInTheDocument();
     });
 
     it('percentage input has accessible label', () => {
       renderComponent();
       expect(
-        screen.getByLabelText('Taux de panne annuel (%)'),
+        screen.getByLabelText('Failure Rate (%)'),
       ).toBeInTheDocument();
     });
 
@@ -315,7 +315,7 @@ describe('FailureRateInput', () => {
       });
       renderComponent();
       expect(
-        screen.getByLabelText('Nombre de pannes (année dernière)'),
+        screen.getByLabelText('Nombre de pannes (last year)'),
       ).toBeInTheDocument();
     });
 
@@ -326,7 +326,7 @@ describe('FailureRateInput', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText('Taux de panne annuel (%)');
+      const input = screen.getByLabelText('Failure Rate (%)');
       await user.type(input, '-1');
 
       expect(screen.getByRole('alert')).toBeInTheDocument();
@@ -345,7 +345,7 @@ describe('FailureRateInput', () => {
       renderComponent();
 
       const input = screen.getByLabelText(
-        'Nombre de pannes (année dernière)',
+        'Nombre de pannes (last year)',
       );
       expect(input).toHaveAttribute('aria-describedby');
       const describedById = input.getAttribute('aria-describedby');
@@ -367,7 +367,7 @@ describe('FailureRateInput', () => {
       renderComponent();
 
       const input = screen.getByLabelText(
-        'Nombre de pannes (année dernière)',
+        'Nombre de pannes (last year)',
       );
       expect(input).not.toHaveAttribute('aria-describedby');
     });
@@ -378,7 +378,7 @@ describe('FailureRateInput', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      await user.click(screen.getByText('Nombre de pannes/an'));
+      await user.click(screen.getByText('Failures Count/year'));
 
       expect(useAppStore.getState().analyses[0].failureRateMode).toBe(
         'absolute',
@@ -391,7 +391,7 @@ describe('FailureRateInput', () => {
         useAppStore.getState().analyses[0].updatedAt;
       renderComponent();
 
-      const input = screen.getByLabelText('Taux de panne annuel (%)');
+      const input = screen.getByLabelText('Failure Rate (%)');
       await user.clear(input);
       await user.type(input, '20');
 
@@ -427,7 +427,7 @@ describe('FailureRateInput', () => {
       renderComponent();
 
       // Switch to percentage
-      await user.click(screen.getByText('Taux (%)'));
+      await user.click(screen.getByText('Rate (%)'));
 
       // absoluteFailureCount should still be in store
       expect(

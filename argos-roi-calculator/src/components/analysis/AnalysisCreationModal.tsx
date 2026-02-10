@@ -10,8 +10,8 @@ export interface AnalysisCreationModalProps {
 }
 
 const ANALYSIS_NAME_INPUT_ID = 'analysis-name-input';
-const VALIDATION_ERROR_REQUIRED = "Le nom de l'analyse est requis";
-const VALIDATION_ERROR_MAX_LENGTH = 'Le nom ne peut pas dépasser 100 caractères';
+const VALIDATION_ERROR_REQUIRED = 'Analysis name is required';
+const VALIDATION_ERROR_MAX_LENGTH = 'Name cannot exceed 100 characters';
 const MAX_NAME_LENGTH = 100;
 
 export function AnalysisCreationModal({
@@ -72,23 +72,23 @@ export function AnalysisCreationModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Nouvelle Analyse"
+      title="New Analysis"
       showCloseButton={false}
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
-            Annuler
+            Cancel
           </Button>
           <Button variant="primary" onClick={handleSubmit}>
-            Créer
+            Create
           </Button>
         </>
       }
     >
       <Input
         id={ANALYSIS_NAME_INPUT_ID}
-        label="Nom du process"
-        placeholder="ex: Poly Etch - Chamber 04"
+        label="Analysis Name"
+        placeholder="e.g.: Poly Etch - Chamber 04"
         value={name}
         onChange={handleChange}
         onKeyDown={handleKeyDown}

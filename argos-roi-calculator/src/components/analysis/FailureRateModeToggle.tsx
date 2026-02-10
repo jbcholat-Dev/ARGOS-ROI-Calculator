@@ -2,8 +2,8 @@ import { Toggle } from '@/components/ui/Toggle';
 import type { FailureRateMode } from '@/types';
 
 const TOGGLE_OPTIONS = [
-  { value: 'percentage', label: 'Taux (%)' },
-  { value: 'absolute', label: 'Nombre de pannes/an' },
+  { value: 'percentage', label: 'Rate (%)' },
+  { value: 'absolute', label: 'Failures Count/year' },
 ] as const;
 
 export interface FailureRateModeToggleProps {
@@ -29,7 +29,7 @@ export function FailureRateModeToggle({
         options={TOGGLE_OPTIONS}
         value={mode}
         onChange={handleChange}
-        label="Mode de saisie du taux de panne"
+        label="Failure Rate Input Mode"
         disabled={disabled}
       />
       {disabled && disabledMessage && (

@@ -4,9 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { NewAnalysisButton } from './NewAnalysisButton';
 
 describe('NewAnalysisButton', () => {
-  it('renders with correct label "Nouvelle Analyse"', () => {
+  it('renders with correct label "New Analysis"', () => {
     render(<NewAnalysisButton />);
-    expect(screen.getByRole('button', { name: 'Nouvelle Analyse' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'New Analysis' })).toBeInTheDocument();
   });
 
   it('calls onClick when clicked', async () => {

@@ -55,27 +55,27 @@ describe('Dashboard', () => {
   describe('Empty State', () => {
     it('renders empty state heading when no analyses exist', () => {
       renderDashboard();
-      expect(screen.getByText('Aucune analyse créée')).toBeInTheDocument();
+      expect(screen.getByText('No analyses created')).toBeInTheDocument();
     });
 
     it('renders empty state subheading with call-to-action text', () => {
       renderDashboard();
       expect(
-        screen.getByText('Créez votre première analyse pour commencer'),
+        screen.getByText('Create your first analysis to get started'),
       ).toBeInTheDocument();
     });
 
     it('renders NewAnalysisButton in empty state', () => {
       renderDashboard();
       expect(
-        screen.getByRole('button', { name: 'Nouvelle Analyse' }),
+        screen.getByRole('button', { name: 'New Analysis' }),
       ).toBeInTheDocument();
     });
 
     it('does not render empty state when analyses exist', () => {
       useAppStore.setState({ analyses: [createTestAnalysis()] });
       renderDashboard();
-      expect(screen.queryByText('Aucune analyse créée')).not.toBeInTheDocument();
+      expect(screen.queryByText('No analyses created')).not.toBeInTheDocument();
     });
 
     it('renders icon in empty state', () => {
@@ -90,7 +90,7 @@ describe('Dashboard', () => {
       useAppStore.setState({ analyses: [createTestAnalysis()] });
       renderDashboard();
       expect(
-        screen.getByRole('button', { name: 'Nouvelle Analyse' }),
+        screen.getByRole('button', { name: 'New Analysis' }),
       ).toBeInTheDocument();
     });
   });
@@ -98,7 +98,7 @@ describe('Dashboard', () => {
   describe('Analysis Grid (Story 3.1)', () => {
     it('renders empty state when no analyses', () => {
       renderDashboard();
-      expect(screen.getByText('Aucune analyse créée')).toBeInTheDocument();
+      expect(screen.getByText('No analyses created')).toBeInTheDocument();
     });
 
     it('renders AnalysisCard grid when analyses exist', () => {
@@ -110,7 +110,7 @@ describe('Dashboard', () => {
       renderDashboard();
 
       expect(screen.getByText('CVD Chamber 04')).toBeInTheDocument();
-      expect(screen.queryByText('Aucune analyse créée')).not.toBeInTheDocument();
+      expect(screen.queryByText('No analyses created')).not.toBeInTheDocument();
     });
 
     it('renders correct number of cards (match analyses count)', () => {
@@ -164,12 +164,12 @@ describe('Dashboard', () => {
 
     it('shows PlaceholderMessage when empty', () => {
       renderDashboard();
-      expect(screen.getByText('Aucune analyse créée')).toBeInTheDocument();
+      expect(screen.getByText('No analyses created')).toBeInTheDocument();
     });
 
     it('shows NewAnalysisButton when empty', () => {
       renderDashboard();
-      expect(screen.getByRole('button', { name: 'Nouvelle Analyse' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'New Analysis' })).toBeInTheDocument();
     });
   });
 
@@ -178,7 +178,7 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
+      await user.click(screen.getByRole('button', { name: 'New Analysis' }));
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
 
@@ -186,10 +186,10 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
+      await user.click(screen.getByRole('button', { name: 'New Analysis' }));
       expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-      await user.click(screen.getByRole('button', { name: 'Annuler' }));
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
   });
@@ -205,7 +205,7 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      const card = screen.getByLabelText('Analyse CVD Chamber');
+      const card = screen.getByLabelText('Analysis CVD Chamber');
       await user.click(card);
 
       expect(mockNavigate).toHaveBeenCalledWith('/analysis/test-123');
@@ -220,7 +220,7 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      const card = screen.getByLabelText('Analyse Test Analysis');
+      const card = screen.getByLabelText('Analysis Test Analysis');
       await user.click(card);
 
       const state = useAppStore.getState();
@@ -237,7 +237,7 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      const card2 = screen.getByLabelText('Analyse Analysis 2');
+      const card2 = screen.getByLabelText('Analysis Analysis 2');
       await user.click(card2);
 
       expect(mockNavigate).toHaveBeenCalledWith('/analysis/id-2');
@@ -254,7 +254,7 @@ describe('Dashboard', () => {
       renderDashboard();
 
       // Focus the card
-      const card = screen.getByLabelText('Analyse Test Analysis');
+      const card = screen.getByLabelText('Analysis Test Analysis');
       card.focus();
       expect(document.activeElement).toBe(card);
 
@@ -273,7 +273,7 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      const card = screen.getByLabelText('Analyse Test Analysis');
+      const card = screen.getByLabelText('Analysis Test Analysis');
       card.focus();
       await user.keyboard(' ');
 
@@ -286,10 +286,10 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
-      const input = screen.getByLabelText('Nom du process');
+      await user.click(screen.getByRole('button', { name: 'New Analysis' }));
+      const input = screen.getByLabelText('Analysis Name');
       await user.type(input, 'Poly Etch - Chamber 04');
-      await user.click(screen.getByRole('button', { name: 'Créer' }));
+      await user.click(screen.getByRole('button', { name: 'Create' }));
 
       const state = useAppStore.getState();
       expect(state.analyses).toHaveLength(1);
@@ -300,10 +300,10 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
-      const input = screen.getByLabelText('Nom du process');
+      await user.click(screen.getByRole('button', { name: 'New Analysis' }));
+      const input = screen.getByLabelText('Analysis Name');
       await user.type(input, 'Test Process');
-      await user.click(screen.getByRole('button', { name: 'Créer' }));
+      await user.click(screen.getByRole('button', { name: 'Create' }));
 
       const state = useAppStore.getState();
       const analysisId = state.analyses[0].id;
@@ -314,10 +314,10 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
-      const input = screen.getByLabelText('Nom du process');
+      await user.click(screen.getByRole('button', { name: 'New Analysis' }));
+      const input = screen.getByLabelText('Analysis Name');
       await user.type(input, 'Test Process');
-      await user.click(screen.getByRole('button', { name: 'Créer' }));
+      await user.click(screen.getByRole('button', { name: 'Create' }));
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
@@ -326,10 +326,10 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
-      const input = screen.getByLabelText('Nom du process');
+      await user.click(screen.getByRole('button', { name: 'New Analysis' }));
+      const input = screen.getByLabelText('Analysis Name');
       await user.type(input, 'Test');
-      await user.click(screen.getByRole('button', { name: 'Créer' }));
+      await user.click(screen.getByRole('button', { name: 'Create' }));
 
       const state = useAppStore.getState();
       expect(state.analyses[0].id).toMatch(
@@ -341,10 +341,10 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
-      const input = screen.getByLabelText('Nom du process');
+      await user.click(screen.getByRole('button', { name: 'New Analysis' }));
+      const input = screen.getByLabelText('Analysis Name');
       await user.type(input, '  Poly Etch  ');
-      await user.click(screen.getByRole('button', { name: 'Créer' }));
+      await user.click(screen.getByRole('button', { name: 'Create' }));
 
       const state = useAppStore.getState();
       expect(state.analyses[0].name).toBe('Poly Etch');
@@ -354,10 +354,10 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
-      const input = screen.getByLabelText('Nom du process');
+      await user.click(screen.getByRole('button', { name: 'New Analysis' }));
+      const input = screen.getByLabelText('Analysis Name');
       await user.type(input, 'Test');
-      await user.click(screen.getByRole('button', { name: 'Créer' }));
+      await user.click(screen.getByRole('button', { name: 'Create' }));
 
       const analysis = useAppStore.getState().analyses[0];
       expect(analysis.pumpType).toBe('');
@@ -375,10 +375,10 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       renderDashboard();
 
-      await user.click(screen.getByRole('button', { name: 'Nouvelle Analyse' }));
-      const input = screen.getByLabelText('Nom du process');
+      await user.click(screen.getByRole('button', { name: 'New Analysis' }));
+      const input = screen.getByLabelText('Analysis Name');
       await user.type(input, 'Test');
-      await user.click(screen.getByRole('button', { name: 'Créer' }));
+      await user.click(screen.getByRole('button', { name: 'Create' }));
 
       const state = useAppStore.getState();
       expect(state.activeAnalysisId).toBe(state.analyses[0].id);

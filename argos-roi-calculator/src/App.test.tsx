@@ -44,10 +44,10 @@ describe('[ROUTER] App Routing Integration Tests', () => {
         expect(screen.getByRole('navigation')).toBeInTheDocument();
         expect(screen.getByRole('complementary')).toBeInTheDocument();
         expect(
-          screen.getByText(/Créez votre première analyse/)
+          screen.getByText(/Create your first analysis to get started/)
         ).toBeInTheDocument();
         expect(
-          screen.getByRole('button', { name: 'Nouvelle Analyse' })
+          screen.getByRole('button', { name: 'New Analysis' })
         ).toBeInTheDocument();
       });
     });
@@ -63,7 +63,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
         expect(screen.getByRole('navigation')).toBeInTheDocument();
         expect(screen.getByRole('complementary')).toBeInTheDocument();
         expect(
-          screen.getByText(/Aucune analyse - créez-en d'abord/)
+          screen.getByText(/No analyses - create one first/)
         ).toBeInTheDocument();
       });
     });
@@ -162,7 +162,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       // Should redirect to Dashboard due to invalid ID
       await waitFor(() => {
         expect(
-          screen.getByText(/Créez votre première analyse/)
+          screen.getByText(/Create your first analysis to get started/)
         ).toBeInTheDocument();
       });
     });
@@ -177,7 +177,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/Créez votre première analyse/)
+          screen.getByText(/Create your first analysis to get started/)
         ).toBeInTheDocument();
       });
     });
@@ -249,7 +249,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/Créez votre première analyse/)
+          screen.getByText(/Create your first analysis to get started/)
         ).toBeInTheDocument();
       });
     });
@@ -281,7 +281,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       await waitFor(() => {
         expect(screen.getByRole('navigation')).toBeInTheDocument();
         expect(
-          screen.getByText(/Créez votre première analyse/)
+          screen.getByText(/Create your first analysis to get started/)
         ).toBeInTheDocument();
       });
     });

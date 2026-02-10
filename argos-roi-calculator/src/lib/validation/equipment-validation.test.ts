@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { validatePumpQuantity, validateDetectionRate } from './equipment-validation';
 
 describe('validatePumpQuantity', () => {
@@ -39,13 +39,13 @@ describe('validatePumpQuantity', () => {
     it('rejects -1', () => {
       const result = validatePumpQuantity('-1');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
     it('rejects -5', () => {
       const result = validatePumpQuantity('-5');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
   });
 
@@ -53,7 +53,7 @@ describe('validatePumpQuantity', () => {
     it('rejects 0', () => {
       const result = validatePumpQuantity('0');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
   });
 
@@ -61,19 +61,19 @@ describe('validatePumpQuantity', () => {
     it('rejects alphabetic text "abc"', () => {
       const result = validatePumpQuantity('abc');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
     it('rejects decimal "1.5"', () => {
       const result = validatePumpQuantity('1.5');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
     it('rejects mixed text "12abc"', () => {
       const result = validatePumpQuantity('12abc');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
   });
 
@@ -81,31 +81,31 @@ describe('validatePumpQuantity', () => {
     it('rejects 1001', () => {
       const result = validatePumpQuantity('1001');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Maximum 1000 pompes');
+      expect(result.error).toBe('Maximum 1000 pumps');
     });
 
     it('rejects 5000', () => {
       const result = validatePumpQuantity('5000');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Maximum 1000 pompes');
+      expect(result.error).toBe('Maximum 1000 pumps');
     });
 
     it('rejects very large number 999999', () => {
       const result = validatePumpQuantity('999999');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Maximum 1000 pompes');
+      expect(result.error).toBe('Maximum 1000 pumps');
     });
   });
 
-  describe('error messages are in French', () => {
-    it('returns French error for non-positive value', () => {
+  describe('error messages are in English', () => {
+    it('returns English error for non-positive value', () => {
       const result = validatePumpQuantity('-3');
-      expect(result.error).toBe('Doit être un nombre positif');
+      expect(result.error).toBe('Must be a positive number');
     });
 
-    it('returns French error for exceeding max', () => {
+    it('returns English error for exceeding max', () => {
       const result = validatePumpQuantity('2000');
-      expect(result.error).toBe('Maximum 1000 pompes');
+      expect(result.error).toBe('Maximum 1000 pumps');
     });
   });
 });
@@ -137,17 +137,17 @@ describe('validateDetectionRate', () => {
   describe('invalid inputs', () => {
     it('rejects negative value', () => {
       const error = validateDetectionRate(-1);
-      expect(error).toBe('Doit être entre 0 et 100');
+      expect(error).toBe('Must be between 0 and 100');
     });
 
     it('rejects value > 100', () => {
       const error = validateDetectionRate(101);
-      expect(error).toBe('Doit être entre 0 et 100');
+      expect(error).toBe('Must be between 0 and 100');
     });
 
     it('rejects large negative value', () => {
       const error = validateDetectionRate(-50);
-      expect(error).toBe('Doit être entre 0 et 100');
+      expect(error).toBe('Must be between 0 and 100');
     });
   });
 });

@@ -60,7 +60,7 @@ describe('DetectionRateInput Integration Tests', () => {
     );
 
     // Verify initial detection rate is 70%
-    const input = screen.getByLabelText('Taux de Détection ARGOS (%)') as HTMLInputElement;
+    const input = screen.getByLabelText('ARGOS Detection Rate (%)') as HTMLInputElement;
     expect(input.value).toBe('70');
 
     // Get initial savings value (with 70% detection rate)
@@ -99,7 +99,7 @@ describe('DetectionRateInput Integration Tests', () => {
     );
 
     // Input should show 70 (fallback to global)
-    const input = screen.getByLabelText('Taux de Détection ARGOS (%)') as HTMLInputElement;
+    const input = screen.getByLabelText('ARGOS Detection Rate (%)') as HTMLInputElement;
     expect(input.value).toBe('70');
 
     // Verify ResultsPanel uses global detectionRate
@@ -123,7 +123,7 @@ describe('DetectionRateInput Integration Tests', () => {
       </div>
     );
 
-    const input = screen.getByLabelText('Taux de Détection ARGOS (%)');
+    const input = screen.getByLabelText('ARGOS Detection Rate (%)');
 
     // Set detection rate to 0%
     await user.clear(input);
@@ -152,7 +152,7 @@ describe('DetectionRateInput Integration Tests', () => {
       </div>
     );
 
-    const input = screen.getByLabelText('Taux de Détection ARGOS (%)');
+    const input = screen.getByLabelText('ARGOS Detection Rate (%)');
 
     // Set detection rate to 100%
     await user.clear(input);
@@ -181,7 +181,7 @@ describe('DetectionRateInput Integration Tests', () => {
       </div>
     );
 
-    const input = screen.getByLabelText('Taux de Détection ARGOS (%)');
+    const input = screen.getByLabelText('ARGOS Detection Rate (%)');
     const getSavings = () => screen.getByTestId('savings-value').textContent;
 
     // Capture initial savings (70%)
