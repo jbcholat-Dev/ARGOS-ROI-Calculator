@@ -1,6 +1,6 @@
 # Story 3.5: UI Labels French → English
 
-Status: review
+Status: done
 
 ## Story
 
