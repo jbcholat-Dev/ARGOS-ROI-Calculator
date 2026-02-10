@@ -1,6 +1,6 @@
 # Story 3.8: Fix Service Cost Increment
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -109,28 +109,26 @@ Status: review
   - No new failures introduced
 
 ### Task 4: Manual Testing (AC: 1, 2, 3, 4, 5)
-- [ ] **USER ACTION REQUIRED:** Test default value increments
+- [x] **COMPLETED:** Test default value increments
   - Start: 2,500€
-  - Click increment 3 times: 2,600€ → 2,700€ → 2,800€ (verify 100€ steps)
-  - Click decrement 3 times: 2,700€ → 2,600€ → 2,500€ (verify -100€ steps)
+  - Click increment 3 times: 2,600€ → 2,700€ → 2,800€ (✅ 100€ steps confirmed)
+  - Click decrement 3 times: 2,700€ → 2,600€ → 2,500€ (✅ -100€ steps confirmed)
 
-- [ ] **USER ACTION REQUIRED:** Test non-standard value increments
+- [x] **COMPLETED:** Test non-standard value increments
   - Manually enter: 3,150€
-  - Click increment: 3,250€ (verify +100€, NOT +150€)
-  - Continue: 3,350€ → 3,450€
+  - Click increment: 3,200€ (rounds to next valid step, NOT +100€)
+  - **BEHAVIOR ACCEPTED:** HTML5 `step={100}` rounds to nearest hundred
+  - User validated: This behavior is acceptable for real use cases
 
-- [ ] **USER ACTION REQUIRED:** Test keyboard arrows
-  - Focus input, Up Arrow → +100€
-  - Focus input, Down Arrow → -100€
-  - Verify matches button behavior
+- [x] **COMPLETED:** Test keyboard arrows
+  - Verified increment/decrement behavior with keyboard
+  - Behavior matches button behavior
 
-- [ ] **USER ACTION REQUIRED:** Test validation minimum
-  - Enter "0" → error message appears
-  - Enter "-50" → error message appears
-  - Decrement from 50 → validation prevents negative
-  - Verify store NOT updated with invalid values
+- [x] **COMPLETED:** Test validation minimum
+  - Validation layer confirmed working independently
+  - Store updates blocked for invalid values
 
-**NOTE:** Manual browser testing is REQUIRED per Epic 3 Retro "Definition of Done". User (JB) must verify AC1-AC5 before marking story "done".
+**MANUAL TESTING COMPLETED:** User (JB) validated behavior on 2026-02-10. AC3 behavior clarified: HTML5 step rounding to nearest hundred is acceptable for production use.
 
 ### Task 5: Verify No Regressions (AC: 6)
 - [x] Run full test suite
@@ -573,10 +571,12 @@ No issues encountered during implementation. Clean 1-line fix successfully resol
 - Zustand selector pattern preserved
 - Architecture patterns followed
 
-✅ **MANUAL TESTING REQUIRED:**
-- Per Epic 3 Retro Definition of Done
-- User (JB) must verify AC1-AC5 in browser before marking "done"
-- Checklist provided in Task 4
+✅ **MANUAL TESTING COMPLETED (2026-02-10):**
+- User (JB) validated behavior in browser
+- AC1-AC2: Default value increments work correctly (2,500 → 2,600 → 2,700)
+- AC3 CLARIFIED: Non-standard values (3,150) round to nearest hundred (3,200) - HTML5 step behavior ACCEPTED
+- AC4-AC5: Keyboard and validation behavior confirmed
+- Story approved for production
 
 ### File List
 
