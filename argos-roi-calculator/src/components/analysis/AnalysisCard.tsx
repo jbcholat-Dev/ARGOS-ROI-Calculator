@@ -205,7 +205,10 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
           >
             <button
               role="menuitem"
-              onClick={handleDuplicate}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent event bubbling to Card onClick
+                handleDuplicate();
+              }}
               className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
             >
               <span aria-hidden="true">⎘</span>
@@ -213,7 +216,10 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
             </button>
             <button
               role="menuitem"
-              onClick={handleDelete}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent event bubbling to Card onClick
+                handleDelete();
+              }}
               className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
             >
               <span aria-hidden="true">🗑</span>
