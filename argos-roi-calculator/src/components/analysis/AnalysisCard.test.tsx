@@ -553,7 +553,7 @@ describe('AnalysisCard', () => {
       expect(analyses).toHaveLength(0);
     });
 
-    it('navigates to Dashboard when deleting last analysis', async () => {
+    it('stays on Dashboard when deleting last analysis (Story 3.6 fix)', async () => {
       const user = userEvent.setup();
       render(
         <MemoryRouter>
@@ -571,13 +571,15 @@ describe('AnalysisCard', () => {
       const modalDeleteButton = suppressButtons.find(btn => btn.textContent === 'Delete' && btn.className.includes('pfeiffer-red'));
       await user.click(modalDeleteButton!);
 
-      // Should navigate to Dashboard
+      // Story 3.6 fix: Should NOT navigate (already on Dashboard)
+      // Dashboard will show empty state automatically
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/');
+        expect(useAppStore.getState().analyses).toHaveLength(0);
       });
+      expect(mockNavigate).not.toHaveBeenCalled();
     });
 
-    it('navigates to first remaining analysis when deleting active analysis', async () => {
+    it('stays on Dashboard when deleting active analysis (Story 3.6 fix)', async () => {
       // Setup: 2 analyses, second is active
       const secondAnalysis: Analysis = {
         ...baseAnalysis,
@@ -606,10 +608,12 @@ describe('AnalysisCard', () => {
       const modalDeleteButton = suppressButtons.find(btn => btn.textContent === 'Delete' && btn.className.includes('pfeiffer-red'));
       await user.click(modalDeleteButton!);
 
-      // Should navigate to first analysis (baseAnalysis)
+      // Story 3.6 fix: Should NOT navigate (stay on Dashboard)
+      // AnalysisCard is used on Dashboard, so no navigation after delete
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith(`/analysis/${baseAnalysis.id}`);
+        expect(useAppStore.getState().analyses).toHaveLength(1);
       });
+      expect(mockNavigate).not.toHaveBeenCalled();
       expect(useAppStore.getState().activeAnalysisId).toBe(baseAnalysis.id);
     });
 

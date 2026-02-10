@@ -379,9 +379,10 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 ✅ **CRITICAL BUG FIXED:** Delete button now opens confirmation modal instead of navigating
 ✅ **Duplicate button protected:** Same fix applied to prevent future issues
-✅ **Zero regressions:** All existing tests pass
-✅ **Simple fix:** 2-line change (stopPropagation added to both menu buttons)
-✅ **Story 3.3 completion:** Original implementation now fully functional
+✅ **Zero regressions:** All existing tests pass (41/41 ✅)
+✅ **Navigation fix applied:** User stays on Dashboard after delete (per user feedback)
+✅ **Tests updated:** 2 tests updated to reflect new navigation behavior
+✅ **Simple fix:** Event propagation + navigation logic fixed
 
 ### File List
 
@@ -405,15 +406,25 @@ Successfully fixed CRITICAL BUG #2 from Epic 3 Retrospective. The delete button 
 
 ### Implementation Details
 
-**Root Cause:**
+**Root Cause #1 - Event Propagation:**
 - Delete and Duplicate buttons rendered inside Card component with onClick navigation handler
 - Events bubbled from menu buttons to Card onClick, triggering unwanted navigation
 - Three-dot menu button already had stopPropagation, but menu item buttons didn't
 
-**Fix Applied:**
+**Fix #1 - Event Propagation:**
 - Added inline onClick wrapper with `e.stopPropagation()` to both Delete and Duplicate buttons
 - Prevents event bubbling while preserving all existing functionality
-- Zero changes to store actions, modal components, or navigation logic (already working)
+
+**Root Cause #2 - Navigation Logic (User Feedback):**
+- After delete confirmation, code navigated to Focus Mode of first remaining analysis
+- User expected to stay on Dashboard after deleting from Dashboard
+- Navigation logic didn't consider user's current location
+
+**Fix #2 - Navigation Logic:**
+- Removed all navigation logic from handleDeleteConfirm
+- AnalysisCard is used only on Dashboard, so staying on Dashboard is correct behavior
+- Dashboard automatically re-renders when analysis is removed from store
+- Tests updated to verify no navigation occurs after delete
 
 **Validation:**
 - All 41 AnalysisCard tests pass ✅

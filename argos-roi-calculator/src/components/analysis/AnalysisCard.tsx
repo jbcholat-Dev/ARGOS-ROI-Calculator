@@ -147,23 +147,15 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
     setIsDeleteModalOpen(true);
   };
 
-  // Delete confirmation handler (Story 3.3 AC4)
+  // Delete confirmation handler (Story 3.6 fix: stay on Dashboard)
   const handleDeleteConfirm = () => {
-    const currentAnalyses = useAppStore.getState().analyses;
-    const wasActive = useAppStore.getState().activeAnalysisId === analysis.id;
-
     deleteAnalysis(analysis.id);
     setIsDeleteModalOpen(false);
 
-    // Navigation after delete (AC4)
-    if (wasActive) {
-      const newActiveId = useAppStore.getState().activeAnalysisId;
-      if (newActiveId) {
-        navigate(`/analysis/${newActiveId}`);
-      } else {
-        navigate('/'); // No analyses remain, go to Dashboard empty state
-      }
-    }
+    // Story 3.6 Navigation fix: AnalysisCard is used on Dashboard,
+    // so after delete we stay on Dashboard (no navigation needed).
+    // Dashboard will automatically re-render without the deleted card.
+    // The store's deleteAnalysis action handles activeAnalysisId updates.
   };
 
   return (
