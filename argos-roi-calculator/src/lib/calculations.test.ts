@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
+import type { Analysis, GlobalParams } from '@/types';
 import {
   calculateTotalFailureCost,
   calculateArgosServiceCost,
   calculateSavings,
   calculateROI,
   getROIColorClass,
+  calculateAggregatedMetrics,
 } from './calculations';
 
 // ============================================================================
@@ -384,6 +386,187 @@ describe('Integration - Full Calculation Pipeline', () => {
     const savings = calculateSavings(totalFailureCost, argosServiceCost, 70);
     calculateROI(savings, argosServiceCost);
     const duration = performance.now() - start;
+    expect(duration).toBeLessThan(100);
+  });
+});
+
+// ============================================================================
+// calculateAggregatedMetrics
+// ============================================================================
+
+function createAnalysis(overrides: Partial<Analysis> = {}): Analysis {
+  return {
+    id: crypto.randomUUID(),
+    name: 'Test Analysis',
+    pumpType: 'HiPace (turbo)',
+    pumpQuantity: 10,
+    failureRateMode: 'percentage',
+    failureRatePercentage: 10,
+    waferType: 'batch',
+    waferQuantity: 125,
+    waferCost: 8000,
+    downtimeDuration: 6,
+    downtimeCostPerHour: 500,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ...overrides,
+  };
+}
+
+const defaultGlobalParams: GlobalParams = {
+  detectionRate: 70,
+  serviceCostPerPump: 2500,
+};
+
+describe('calculateAggregatedMetrics', () => {
+  it('should return all zeros for 0 analyses', () => {
+    const result = calculateAggregatedMetrics([], defaultGlobalParams);
+
+    expect(result.totalSavings).toBe(0);
+    expect(result.totalServiceCost).toBe(0);
+    expect(result.totalFailureCost).toBe(0);
+    expect(result.totalPumps).toBe(0);
+    expect(result.overallROI).toBe(0);
+    expect(result.processCount).toBe(0);
+    expect(result.excludedCount).toBe(0);
+  });
+
+  it('should match single analysis values for 1 analysis', () => {
+    const analysis = createAnalysis();
+    const result = calculateAggregatedMetrics([analysis], defaultGlobalParams);
+
+    // Single analysis: 10 pumps, 10% failure, €8000/wafer, 125 batch, 6h, €500/h
+    // totalFailureCost = (10 * 0.10) * (8000*125 + 6*500) = 1 * 1,003,000 = 1,003,000
+    // serviceCost = 10 * 2500 = 25,000
+    // savings = 1,003,000 * 0.70 - 25,000 = 702,100 - 25,000 = 677,100
+    // ROI = (677,100 / 25,000) * 100 = 2,708.4
+    expect(result.totalFailureCost).toBe(1_003_000);
+    expect(result.totalServiceCost).toBe(25_000);
+    expect(result.totalSavings).toBe(677_100);
+    expect(result.overallROI).toBeCloseTo(2708.4);
+    expect(result.totalPumps).toBe(10);
+    expect(result.processCount).toBe(1);
+    expect(result.excludedCount).toBe(0);
+  });
+
+  it('should correctly sum 3 analyses', () => {
+    const analyses = [
+      createAnalysis({ pumpQuantity: 10 }),
+      createAnalysis({ pumpQuantity: 8 }),
+      createAnalysis({ pumpQuantity: 8 }),
+    ];
+    const result = calculateAggregatedMetrics(analyses, defaultGlobalParams);
+
+    // Analysis 1: 10 pumps → failureCost=1,003,000, serviceCost=25,000, savings=677,100
+    // Analysis 2: 8 pumps → failureCost=802,400, serviceCost=20,000, savings=541,680
+    // Analysis 3: 8 pumps → failureCost=802,400, serviceCost=20,000, savings=541,680
+    expect(result.totalPumps).toBe(26);
+    expect(result.totalFailureCost).toBe(1_003_000 + 802_400 + 802_400);
+    expect(result.totalServiceCost).toBe(25_000 + 20_000 + 20_000);
+    expect(result.totalSavings).toBe(677_100 + 541_680 + 541_680);
+    expect(result.processCount).toBe(3);
+    expect(result.excludedCount).toBe(0);
+    // overallROI = (totalSavings / totalServiceCost) * 100
+    const expectedROI = (result.totalSavings / result.totalServiceCost) * 100;
+    expect(result.overallROI).toBeCloseTo(expectedROI);
+  });
+
+  it('should exclude incomplete analyses (2 calculable + 1 incomplete)', () => {
+    const analyses = [
+      createAnalysis({ pumpQuantity: 10 }),
+      createAnalysis({ pumpQuantity: 8 }),
+      createAnalysis({ pumpQuantity: 0 }), // incomplete: pumpQuantity = 0
+    ];
+    const result = calculateAggregatedMetrics(analyses, defaultGlobalParams);
+
+    expect(result.processCount).toBe(2);
+    expect(result.excludedCount).toBe(1);
+    expect(result.totalPumps).toBe(18); // 10 + 8 (not 0)
+  });
+
+  it('should correctly aggregate 5 analyses (NFR-P6)', () => {
+    const analyses = [
+      createAnalysis({ pumpQuantity: 10 }),
+      createAnalysis({ pumpQuantity: 8 }),
+      createAnalysis({ pumpQuantity: 5 }),
+      createAnalysis({ pumpQuantity: 12 }),
+      createAnalysis({ pumpQuantity: 6 }),
+    ];
+    const result = calculateAggregatedMetrics(analyses, defaultGlobalParams);
+
+    expect(result.totalPumps).toBe(41);
+    expect(result.processCount).toBe(5);
+    expect(result.excludedCount).toBe(0);
+    expect(result.totalSavings).toBeGreaterThan(0);
+    expect(result.totalServiceCost).toBeGreaterThan(0);
+    expect(result.totalFailureCost).toBeGreaterThan(0);
+    expect(result.overallROI).toBeGreaterThan(0);
+  });
+
+  it('should return overallROI = 0 when totalServiceCost is 0 (division by zero)', () => {
+    // All analyses with 0 pumps → service cost = 0, but also won't be calculable
+    // Use an empty array instead since 0-pump analyses won't pass isAnalysisCalculable
+    const result = calculateAggregatedMetrics([], defaultGlobalParams);
+    expect(result.overallROI).toBe(0);
+  });
+
+  it('should handle negative savings correctly', () => {
+    // Create analysis with very low failure costs → savings will be negative
+    const analysis = createAnalysis({
+      pumpQuantity: 1,
+      failureRatePercentage: 1,
+      waferCost: 10,
+      waferQuantity: 1,
+      waferType: 'mono',
+      downtimeDuration: 1,
+      downtimeCostPerHour: 10,
+    });
+    const result = calculateAggregatedMetrics([analysis], defaultGlobalParams);
+
+    // failureCost = (1 * 0.01) * (10*1 + 1*10) = 0.01 * 20 = 0.2
+    // serviceCost = 1 * 2500 = 2500
+    // savings = 0.2 * 0.70 - 2500 = 0.14 - 2500 = -2499.86
+    expect(result.totalSavings).toBeLessThan(0);
+    expect(result.overallROI).toBeLessThan(0);
+  });
+
+  it('should use per-analysis detection rate when set', () => {
+    const analysis = createAnalysis({ detectionRate: 90 });
+    const result = calculateAggregatedMetrics([analysis], defaultGlobalParams);
+
+    // With 90% detection: savings = 1,003,000 * 0.90 - 25,000 = 902,700 - 25,000 = 877,700
+    expect(result.totalSavings).toBe(877_700);
+  });
+
+  it('should fall back to global detection rate when per-analysis is undefined', () => {
+    const analysis = createAnalysis({ detectionRate: undefined });
+    const result = calculateAggregatedMetrics([analysis], defaultGlobalParams);
+
+    // With 70% detection (global): savings = 1,003,000 * 0.70 - 25,000 = 677,100
+    expect(result.totalSavings).toBe(677_100);
+  });
+
+  it('should handle mono wafer type correctly', () => {
+    const analysis = createAnalysis({ waferType: 'mono', waferQuantity: 125 });
+    const result = calculateAggregatedMetrics([analysis], defaultGlobalParams);
+
+    // mono forces waferQuantity to 1 regardless of waferQuantity field
+    // failureCost = (10 * 0.10) * (8000*1 + 6*500) = 1 * (8000 + 3000) = 11,000
+    // serviceCost = 10 * 2500 = 25,000
+    // savings = 11,000 * 0.70 - 25,000 = 7,700 - 25,000 = -17,300
+    expect(result.totalFailureCost).toBe(11_000);
+    expect(result.totalSavings).toBe(-17_300);
+  });
+
+  it('should complete aggregation of 5 analyses within 100ms (NFR-P1)', () => {
+    const analyses = Array.from({ length: 5 }, (_, i) =>
+      createAnalysis({ pumpQuantity: 10 + i })
+    );
+
+    const start = performance.now();
+    calculateAggregatedMetrics(analyses, defaultGlobalParams);
+    const duration = performance.now() - start;
+
     expect(duration).toBeLessThan(100);
   });
 });

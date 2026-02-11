@@ -62,6 +62,20 @@ export interface GlobalParams {
 }
 
 /**
+ * Aggregated metrics across all calculable analyses
+ * Used in the Global Analysis view for the "power moment" display
+ */
+export interface AggregatedMetrics {
+  totalSavings: number;
+  totalServiceCost: number;
+  totalFailureCost: number;
+  totalPumps: number;
+  overallROI: number;
+  processCount: number;
+  excludedCount: number;
+}
+
+/**
  * ROI calculation results for a single analysis
  * Computed from Analysis data + GlobalParams
  */

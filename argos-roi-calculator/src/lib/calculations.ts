@@ -19,6 +19,7 @@
  *   calculateROI()              → CalculationResult.roiPercentage
  */
 
+import type { Analysis, AggregatedMetrics, GlobalParams } from '@/types';
 import {
   ROI_NEGATIVE_THRESHOLD,
   ROI_WARNING_THRESHOLD,
@@ -227,4 +228,65 @@ export function isAnalysisCalculable(analysis: {
     analysis.downtimeDuration > 0 &&
     analysis.downtimeCostPerHour > 0
   );
+}
+
+/**
+ * Calculates aggregated metrics across all calculable analyses.
+ * Filters out incomplete analyses and sums results for the Global Analysis view.
+ *
+ * @param analyses - All analyses in the current session
+ * @param globalParams - Global parameters (detection rate, service cost per pump)
+ * @returns Aggregated metrics including totals, counts, and overall ROI
+ */
+export function calculateAggregatedMetrics(
+  analyses: Analysis[],
+  globalParams: GlobalParams,
+): AggregatedMetrics {
+  const calculable = analyses.filter(isAnalysisCalculable);
+  const excludedCount = analyses.length - calculable.length;
+
+  let totalSavings = 0;
+  let totalServiceCost = 0;
+  let totalFailureCost = 0;
+  let totalPumps = 0;
+
+  for (const analysis of calculable) {
+    const waferQuantity = analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
+
+    const failureCost = calculateTotalFailureCost(
+      analysis.pumpQuantity,
+      analysis.failureRatePercentage,
+      analysis.waferCost,
+      waferQuantity,
+      analysis.downtimeDuration,
+      analysis.downtimeCostPerHour,
+    );
+
+    const serviceCost = calculateArgosServiceCost(
+      analysis.pumpQuantity,
+      globalParams.serviceCostPerPump,
+    );
+
+    const detectionRate = analysis.detectionRate ?? globalParams.detectionRate;
+    const savings = calculateSavings(failureCost, serviceCost, detectionRate);
+
+    totalFailureCost += failureCost;
+    totalServiceCost += serviceCost;
+    totalSavings += savings;
+    totalPumps += analysis.pumpQuantity;
+  }
+
+  const overallROI = totalServiceCost > 0
+    ? (totalSavings / totalServiceCost) * 100
+    : 0;
+
+  return {
+    totalSavings,
+    totalServiceCost,
+    totalFailureCost,
+    totalPumps,
+    overallROI,
+    processCount: calculable.length,
+    excludedCount,
+  };
 }

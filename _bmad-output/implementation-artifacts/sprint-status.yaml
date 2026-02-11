@@ -1,4 +1,4 @@
-# generated: 2026-02-09
+# generated: 2026-02-11
 # project: ROI Calculator
 # project_key: NOKEY
 # tracking_system: file-system
@@ -33,7 +33,7 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-02-09
+generated: 2026-02-11
 project: ROI Calculator
 project_key: NOKEY
 tracking_system: file-system
@@ -81,9 +81,9 @@ development_status:
   epic-3-retrospective: done
 
   # Epic 4: Global Analysis & Comparison (3 stories)
-  epic-4: backlog
-  4-1-global-analysis-view-with-aggregated-metrics: backlog
-  4-2-comparison-table-side-by-side: backlog
+  epic-4: in-progress
+  4-1-global-analysis-view-with-aggregated-metrics: done
+  4-2-comparison-table-side-by-side: ready-for-dev
   4-3-navigation-links-and-session-stability: backlog
   epic-4-retrospective: optional
 

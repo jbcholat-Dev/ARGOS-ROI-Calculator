@@ -63,7 +63,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
         expect(screen.getByRole('navigation')).toBeInTheDocument();
         expect(screen.getByRole('complementary')).toBeInTheDocument();
         expect(
-          screen.getByText(/No analyses - create one first/)
+          screen.getByText(/No analyses yet — create one first/)
         ).toBeInTheDocument();
       });
     });
@@ -219,7 +219,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(document.title).toBe('Global Analysis - ARGOS ROI Calculator');
+        expect(document.title).toBe('Global Analysis — ARGOS ROI Calculator');
       });
     });
 
