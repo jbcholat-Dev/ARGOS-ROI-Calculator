@@ -7,6 +7,8 @@ import {
   calculateROI,
   getROIColorClass,
   calculateAggregatedMetrics,
+  calculateAnalysisRow,
+  calculateAllAnalysisRows,
 } from './calculations';
 
 // ============================================================================
@@ -568,5 +570,100 @@ describe('calculateAggregatedMetrics', () => {
     const duration = performance.now() - start;
 
     expect(duration).toBeLessThan(100);
+  });
+});
+
+// ============================================================================
+// calculateAnalysisRow
+// ============================================================================
+
+describe('calculateAnalysisRow', () => {
+  it('should return correct AnalysisRowData for valid analysis', () => {
+    const analysis = createAnalysis({ name: 'Poly Etch' });
+    const result = calculateAnalysisRow(analysis, defaultGlobalParams);
+
+    expect(result).not.toBeNull();
+    expect(result!.id).toBe(analysis.id);
+    expect(result!.name).toBe('Poly Etch');
+    expect(result!.pumpQuantity).toBe(10);
+    expect(result!.failureRate).toBe(10);
+    expect(result!.totalFailureCost).toBe(1_003_000);
+    expect(result!.argosServiceCost).toBe(25_000);
+    expect(result!.savings).toBe(677_100);
+    expect(result!.roiPercentage).toBeCloseTo(2708.4);
+  });
+
+  it('should return null for incomplete analysis', () => {
+    const analysis = createAnalysis({ pumpQuantity: 0 });
+    const result = calculateAnalysisRow(analysis, defaultGlobalParams);
+
+    expect(result).toBeNull();
+  });
+
+  it('should use per-analysis detectionRate when set', () => {
+    const analysis = createAnalysis({ detectionRate: 90 });
+    const result = calculateAnalysisRow(analysis, defaultGlobalParams);
+
+    // savings = 1,003,000 * 0.90 - 25,000 = 902,700 - 25,000 = 877,700
+    expect(result!.savings).toBe(877_700);
+  });
+
+  it('should use globalParams.detectionRate when analysis.detectionRate is undefined', () => {
+    const analysis = createAnalysis({ detectionRate: undefined });
+    const result = calculateAnalysisRow(analysis, defaultGlobalParams);
+
+    // savings = 1,003,000 * 0.70 - 25,000 = 677,100
+    expect(result!.savings).toBe(677_100);
+  });
+
+  it('should handle mono wafer type correctly (forces waferQuantity to 1)', () => {
+    const analysis = createAnalysis({ waferType: 'mono', waferQuantity: 125 });
+    const result = calculateAnalysisRow(analysis, defaultGlobalParams);
+
+    // mono forces waferQuantity to 1 regardless of waferQuantity field
+    // failureCost = (10 * 0.10) * (8000*1 + 6*500) = 1 * (8000 + 3000) = 11,000
+    // serviceCost = 10 * 2500 = 25,000
+    // savings = 11,000 * 0.70 - 25,000 = 7,700 - 25,000 = -17,300
+    expect(result).not.toBeNull();
+    expect(result!.totalFailureCost).toBe(11_000);
+    expect(result!.savings).toBe(-17_300);
+  });
+});
+
+// ============================================================================
+// calculateAllAnalysisRows
+// ============================================================================
+
+describe('calculateAllAnalysisRows', () => {
+  it('should filter out incomplete analyses (mixed calculable + incomplete)', () => {
+    const analyses = [
+      createAnalysis({ name: 'Valid 1', pumpQuantity: 10 }),
+      createAnalysis({ name: 'Incomplete', pumpQuantity: 0 }),
+      createAnalysis({ name: 'Valid 2', pumpQuantity: 8 }),
+    ];
+    const result = calculateAllAnalysisRows(analyses, defaultGlobalParams);
+
+    expect(result).toHaveLength(2);
+    expect(result[0].name).toBe('Valid 1');
+    expect(result[1].name).toBe('Valid 2');
+  });
+
+  it('should return empty array for 0 analyses', () => {
+    const result = calculateAllAnalysisRows([], defaultGlobalParams);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should return 5 rows for 5 valid analyses (NFR-P6)', () => {
+    const analyses = Array.from({ length: 5 }, (_, i) =>
+      createAnalysis({ name: `Process ${i + 1}`, pumpQuantity: 10 + i })
+    );
+    const result = calculateAllAnalysisRows(analyses, defaultGlobalParams);
+
+    expect(result).toHaveLength(5);
+    result.forEach((row, i) => {
+      expect(row.name).toBe(`Process ${i + 1}`);
+      expect(row.pumpQuantity).toBe(10 + i);
+    });
   });
 });

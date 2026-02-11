@@ -1,8 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, within, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { GlobalAnalysisView } from './GlobalAnalysisView';
 import { useAppStore } from '@/stores/app-store';
 import type { Analysis } from '@/types';
+
+const mockNavigate = vi.hoisted(() => vi.fn());
+vi.mock('react-router-dom', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('react-router-dom')>();
+  return {
+    ...mod,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 function createTestAnalysis(overrides: Partial<Analysis> = {}): Analysis {
   return {
@@ -23,8 +34,17 @@ function createTestAnalysis(overrides: Partial<Analysis> = {}): Analysis {
   };
 }
 
+function renderView() {
+  return render(
+    <MemoryRouter>
+      <GlobalAnalysisView />
+    </MemoryRouter>,
+  );
+}
+
 describe('GlobalAnalysisView', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     useAppStore.setState({
       analyses: [],
       activeAnalysisId: null,
@@ -43,7 +63,7 @@ describe('GlobalAnalysisView', () => {
         ],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       expect(screen.getByText('Total Savings')).toBeInTheDocument();
       expect(screen.getByText('Overall ROI')).toBeInTheDocument();
@@ -56,12 +76,13 @@ describe('GlobalAnalysisView', () => {
         analyses: [createTestAnalysis({ pumpQuantity: 10 })],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       // savings = 1,003,000 * 0.70 - 25,000 = 677,100
-      const savingsText = screen.getByText(/677/);
-      expect(savingsText).toBeInTheDocument();
-      expect(savingsText.textContent).toContain('€');
+      const savingsHeading = screen.getByText('Total Savings');
+      const savingsValue = within(savingsHeading.parentElement!).getByText(/677/);
+      expect(savingsValue).toBeInTheDocument();
+      expect(savingsValue.textContent).toContain('€');
     });
 
     it('displays Overall ROI with percentage', () => {
@@ -69,12 +90,13 @@ describe('GlobalAnalysisView', () => {
         analyses: [createTestAnalysis({ pumpQuantity: 10 })],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       // ROI = (677,100 / 25,000) * 100 = 2708.4
-      const roiText = screen.getByText(/2[\s\u00a0]708/);
-      expect(roiText).toBeInTheDocument();
-      expect(roiText.textContent).toContain('%');
+      const roiHeading = screen.getByText('Overall ROI');
+      const roiValue = within(roiHeading.parentElement!).getByText(/2[\s\u00a0]708/);
+      expect(roiValue).toBeInTheDocument();
+      expect(roiValue.textContent).toContain('%');
     });
 
     it('displays Total Pumps sum', () => {
@@ -85,9 +107,10 @@ describe('GlobalAnalysisView', () => {
         ],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
-      expect(screen.getByText('18')).toBeInTheDocument();
+      const pumpsHeading = screen.getByText('Total Pumps Monitored');
+      expect(within(pumpsHeading.parentElement!).getByText('18')).toBeInTheDocument();
     });
 
     it('displays Processes Analyzed count', () => {
@@ -99,9 +122,10 @@ describe('GlobalAnalysisView', () => {
         ],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
-      expect(screen.getByText('3')).toBeInTheDocument();
+      const processesHeading = screen.getByText('Processes Analyzed');
+      expect(within(processesHeading.parentElement!).getByText('3')).toBeInTheDocument();
     });
   });
 
@@ -111,12 +135,13 @@ describe('GlobalAnalysisView', () => {
         analyses: [createTestAnalysis({ pumpQuantity: 10 })],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       expect(screen.getByText('Total Failure Cost')).toBeInTheDocument();
       // totalFailureCost = 1,003,000
-      const failureCostText = screen.getByText(/1[\s\u00a0]003[\s\u00a0]000/);
-      expect(failureCostText.textContent).toContain('€');
+      const failureCostHeading = screen.getByText('Total Failure Cost');
+      const failureCostValue = within(failureCostHeading.parentElement!).getByText(/1[\s\u00a0]003[\s\u00a0]000/);
+      expect(failureCostValue.textContent).toContain('€');
     });
 
     it('displays Total Service Cost formatted with EUR symbol', () => {
@@ -124,12 +149,12 @@ describe('GlobalAnalysisView', () => {
         analyses: [createTestAnalysis({ pumpQuantity: 10 })],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       expect(screen.getByText('Total Service Cost')).toBeInTheDocument();
-      // serviceCost = 25,000
-      const serviceCostText = screen.getByText(/25[\s\u00a0]000/);
-      expect(serviceCostText.textContent).toContain('€');
+      const serviceCostHeading = screen.getByText('Total Service Cost');
+      const serviceCostValue = within(serviceCostHeading.parentElement!).getByText(/25[\s\u00a0]000/);
+      expect(serviceCostValue.textContent).toContain('€');
     });
   });
 
@@ -139,11 +164,12 @@ describe('GlobalAnalysisView', () => {
         analyses: [createTestAnalysis({ pumpQuantity: 10 })],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       // ROI = 2708.4% → green
-      const roiText = screen.getByText(/2[\s\u00a0]708/);
-      expect(roiText).toHaveClass('text-green-600');
+      const roiHeading = screen.getByText('Overall ROI');
+      const roiValue = within(roiHeading.parentElement!).getByText(/2[\s\u00a0]708/);
+      expect(roiValue).toHaveClass('text-green-600');
     });
 
     it('displays negative ROI in red', () => {
@@ -161,38 +187,14 @@ describe('GlobalAnalysisView', () => {
         ],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
-      // Very low failure cost → negative savings → negative ROI
       const roiHeading = screen.getByText('Overall ROI');
       const roiValue = within(roiHeading.parentElement!).getByText(/%/);
       expect(roiValue).toHaveClass('text-red-600');
     });
 
     it('displays warning ROI in orange', () => {
-      // We need an analysis that produces ROI between 0 and 15%
-      // savings = failureCost * 0.70 - serviceCost
-      // ROI = savings / serviceCost * 100
-      // For ROI of ~10%: savings = 0.10 * serviceCost
-      // serviceCost = pumps * 2500
-      // We need: (failureCost * 0.70 - serviceCost) / serviceCost = 0.10
-      // failureCost * 0.70 = 1.10 * serviceCost
-      // failureCost = 1.10 * serviceCost / 0.70
-      // If pumps = 100, serviceCost = 250,000
-      // failureCost = 1.10 * 250,000 / 0.70 = 392,857
-      // (100 * rate/100) * (waferCost * 125 + 6 * 500) = 392,857
-      // rate * (waferCost * 125 + 3000) = 392,857
-      // Let rate = 10%, waferCost = 30, quantity = 1, downtime = 6h, cost = 500
-      // (100 * 0.10) * (30 * 1 + 6 * 500) = 10 * 3030 = 30,300
-      // That gives failureCost = 30,300
-      // savings = 30,300 * 0.70 - 250,000 = 21,210 - 250,000 = negative
-      // Need smaller serviceCost. pumps = 1, serviceCost = 2500
-      // failureCost = 1.10 * 2500 / 0.70 = 3928.57
-      // (1 * rate/100) * (waferCost * qty + downtime * costPerHour)
-      // rate = 100: (1 * 1) * (costPerFailure) = 3928
-      // waferCost=3428, qty=1, mono, downtime=1, costPerHour=500
-      // costPerFailure = 3428 + 500 = 3928 → savings = 3928*0.7 - 2500 = 2749.6 - 2500 = 249.6
-      // ROI = 249.6/2500 * 100 = 9.98% → orange!
       useAppStore.setState({
         analyses: [
           createTestAnalysis({
@@ -207,7 +209,7 @@ describe('GlobalAnalysisView', () => {
         ],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       const roiHeading = screen.getByText('Overall ROI');
       const roiValue = within(roiHeading.parentElement!).getByText(/%/);
@@ -220,11 +222,11 @@ describe('GlobalAnalysisView', () => {
       useAppStore.setState({
         analyses: [
           createTestAnalysis({ pumpQuantity: 10 }),
-          createTestAnalysis({ pumpQuantity: 0 }), // incomplete
+          createTestAnalysis({ pumpQuantity: 0 }),
         ],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       expect(screen.getByText('1 analysis excluded (incomplete data)')).toBeInTheDocument();
     });
@@ -238,7 +240,7 @@ describe('GlobalAnalysisView', () => {
         ],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       expect(screen.getByText('2 analyses excluded (incomplete data)')).toBeInTheDocument();
     });
@@ -251,7 +253,7 @@ describe('GlobalAnalysisView', () => {
         ],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       expect(screen.queryByText(/excluded/)).not.toBeInTheDocument();
     });
@@ -261,7 +263,7 @@ describe('GlobalAnalysisView', () => {
     it('renders nothing when 0 calculable analyses', () => {
       useAppStore.setState({ analyses: [] });
 
-      const { container } = render(<GlobalAnalysisView />);
+      const { container } = renderView();
 
       expect(container.innerHTML).toBe('');
     });
@@ -274,7 +276,7 @@ describe('GlobalAnalysisView', () => {
         ],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       expect(
         screen.getByText('2 analyses with incomplete data — fill in all required fields to see aggregated metrics'),
@@ -289,7 +291,7 @@ describe('GlobalAnalysisView', () => {
         analyses: [createTestAnalysis()],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       expect(screen.getByRole('region', { name: 'Aggregated ROI metrics' })).toBeInTheDocument();
     });
@@ -299,7 +301,7 @@ describe('GlobalAnalysisView', () => {
         analyses: [createTestAnalysis()],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       const region = screen.getByRole('region');
       expect(region).toHaveAttribute('aria-label', 'Aggregated ROI metrics');
@@ -310,10 +312,10 @@ describe('GlobalAnalysisView', () => {
         analyses: [createTestAnalysis()],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
       const headings = screen.getAllByRole('heading', { level: 2 });
-      expect(headings.length).toBeGreaterThanOrEqual(4); // Total Savings, Overall ROI, Total Pumps, Processes Analyzed, Total Failure Cost, Total Service Cost
+      expect(headings.length).toBeGreaterThanOrEqual(4);
     });
 
     it('color is not the only indicator — ROI shows numerical value alongside color', () => {
@@ -321,12 +323,71 @@ describe('GlobalAnalysisView', () => {
         analyses: [createTestAnalysis()],
       });
 
-      render(<GlobalAnalysisView />);
+      renderView();
 
-      // ROI value should be present as text content (not just color)
       const roiHeading = screen.getByText('Overall ROI');
       const roiValue = within(roiHeading.parentElement!).getByText(/%/);
       expect(roiValue.textContent).toMatch(/[\d,.\s]+%/);
+    });
+  });
+
+  describe('comparison table integration', () => {
+    it('renders ComparisonTable when analyses have data', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ name: 'Process A' }),
+          createTestAnalysis({ name: 'Process B' }),
+        ],
+      });
+
+      renderView();
+
+      expect(screen.getByRole('heading', { level: 2, name: 'Process Comparison' })).toBeInTheDocument();
+      expect(screen.getByRole('table')).toBeInTheDocument();
+    });
+
+    it('does not render ComparisonTable when 0 calculable analyses', () => {
+      useAppStore.setState({ analyses: [] });
+
+      renderView();
+
+      expect(screen.queryByText('Process Comparison')).not.toBeInTheDocument();
+    });
+
+    it('clicking process name in table triggers navigation', async () => {
+      const user = userEvent.setup();
+      const analysisId = 'test-nav-id';
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ id: analysisId, name: 'Clickable Process' })],
+      });
+
+      renderView();
+
+      await user.click(screen.getByRole('button', { name: 'Clickable Process' }));
+
+      expect(mockNavigate).toHaveBeenCalledWith(`/analysis/${analysisId}`);
+    });
+
+    it('table data updates when global params change', () => {
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ pumpQuantity: 10 })],
+      });
+
+      renderView();
+
+      // Initial service cost in table: 10 * 2500 = €25,000
+      expect(screen.getByRole('table')).toBeInTheDocument();
+
+      // Update global params
+      act(() => {
+        useAppStore.setState({
+          globalParams: { detectionRate: 70, serviceCostPerPump: 5000 },
+        });
+      });
+
+      // New service cost: 10 * 5000 = €50,000 → visible in hero and table
+      const matches = screen.getAllByText(/50[\s\u00a0]000/);
+      expect(matches.length).toBeGreaterThanOrEqual(1);
     });
   });
 });

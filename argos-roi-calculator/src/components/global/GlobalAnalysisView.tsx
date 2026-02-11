@@ -1,11 +1,28 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/stores/app-store';
-import { calculateAggregatedMetrics, getROIColorClass } from '@/lib/calculations';
+import { calculateAggregatedMetrics, calculateAllAnalysisRows, getROIColorClass } from '@/lib/calculations';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
+import { ComparisonTable } from './ComparisonTable';
 
 export function GlobalAnalysisView() {
   const analyses = useAppStore((state) => state.analyses);
   const globalParams = useAppStore((state) => state.globalParams);
+  const setActiveAnalysis = useAppStore((state) => state.setActiveAnalysis);
+  const navigate = useNavigate();
+
+  const rows = useMemo(
+    () => calculateAllAnalysisRows(analyses, globalParams),
+    [analyses, globalParams],
+  );
+
+  const handleNavigateToAnalysis = useCallback(
+    (id: string) => {
+      setActiveAnalysis(id);
+      navigate(`/analysis/${id}`);
+    },
+    [setActiveAnalysis, navigate],
+  );
 
   const aggregated = useMemo(
     () => calculateAggregatedMetrics(analyses, globalParams),
@@ -99,6 +116,13 @@ export function GlobalAnalysisView() {
         <p className="mt-4 text-sm text-gray-500">
           {`${aggregated.excludedCount} ${aggregated.excludedCount > 1 ? 'analyses' : 'analysis'} excluded (incomplete data)`}
         </p>
+      )}
+
+      {rows.length > 0 && (
+        <ComparisonTable
+          rows={rows}
+          onNavigateToAnalysis={handleNavigateToAnalysis}
+        />
       )}
     </section>
   );

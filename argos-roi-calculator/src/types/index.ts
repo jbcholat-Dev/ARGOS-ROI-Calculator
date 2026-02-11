@@ -76,6 +76,21 @@ export interface AggregatedMetrics {
 }
 
 /**
+ * Per-analysis row data for the ComparisonTable
+ * Computed from Analysis + GlobalParams for the Global Analysis view
+ */
+export interface AnalysisRowData {
+  id: string;
+  name: string;
+  pumpQuantity: number;
+  failureRate: number;
+  totalFailureCost: number;
+  argosServiceCost: number;
+  savings: number;
+  roiPercentage: number;
+}
+
+/**
  * ROI calculation results for a single analysis
  * Computed from Analysis data + GlobalParams
  */

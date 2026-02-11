@@ -83,7 +83,7 @@ development_status:
   # Epic 4: Global Analysis & Comparison (3 stories)
   epic-4: in-progress
   4-1-global-analysis-view-with-aggregated-metrics: done
-  4-2-comparison-table-side-by-side: ready-for-dev
+  4-2-comparison-table-side-by-side: done
   4-3-navigation-links-and-session-stability: backlog
   epic-4-retrospective: optional
 

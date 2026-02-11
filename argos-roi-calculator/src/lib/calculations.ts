@@ -19,7 +19,7 @@
  *   calculateROI()              → CalculationResult.roiPercentage
  */
 
-import type { Analysis, AggregatedMetrics, GlobalParams } from '@/types';
+import type { Analysis, AnalysisRowData, AggregatedMetrics, GlobalParams } from '@/types';
 import {
   ROI_NEGATIVE_THRESHOLD,
   ROI_WARNING_THRESHOLD,
@@ -231,6 +231,77 @@ export function isAnalysisCalculable(analysis: {
 }
 
 /**
+ * Returns the effective wafer quantity for an analysis.
+ * Mono wafer type forces quantity to 1 regardless of waferQuantity field.
+ */
+function getEffectiveWaferQuantity(analysis: Pick<Analysis, 'waferType' | 'waferQuantity'>): number {
+  return analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
+}
+
+/**
+ * Calculates per-analysis row data for the ComparisonTable.
+ * Returns null if the analysis is not calculable (incomplete data).
+ *
+ * @param analysis - Single analysis to compute row data for
+ * @param globalParams - Global parameters (detection rate, service cost per pump)
+ * @returns AnalysisRowData for the comparison table, or null if not calculable
+ */
+export function calculateAnalysisRow(
+  analysis: Analysis,
+  globalParams: GlobalParams,
+): AnalysisRowData | null {
+  if (!isAnalysisCalculable(analysis)) {
+    return null;
+  }
+
+  const totalFailureCost = calculateTotalFailureCost(
+    analysis.pumpQuantity,
+    analysis.failureRatePercentage,
+    analysis.waferCost,
+    getEffectiveWaferQuantity(analysis),
+    analysis.downtimeDuration,
+    analysis.downtimeCostPerHour,
+  );
+
+  const argosServiceCost = calculateArgosServiceCost(
+    analysis.pumpQuantity,
+    globalParams.serviceCostPerPump,
+  );
+
+  const detectionRate = analysis.detectionRate ?? globalParams.detectionRate;
+  const savings = calculateSavings(totalFailureCost, argosServiceCost, detectionRate);
+  const roiPercentage = calculateROI(savings, argosServiceCost);
+
+  return {
+    id: analysis.id,
+    name: analysis.name,
+    pumpQuantity: analysis.pumpQuantity,
+    failureRate: analysis.failureRatePercentage,
+    totalFailureCost,
+    argosServiceCost,
+    savings,
+    roiPercentage,
+  };
+}
+
+/**
+ * Calculates row data for all calculable analyses.
+ * Filters out incomplete analyses (returns empty array if none are calculable).
+ *
+ * @param analyses - All analyses in the current session
+ * @param globalParams - Global parameters (detection rate, service cost per pump)
+ * @returns Array of AnalysisRowData for calculable analyses only
+ */
+export function calculateAllAnalysisRows(
+  analyses: Analysis[],
+  globalParams: GlobalParams,
+): AnalysisRowData[] {
+  return analyses
+    .map((analysis) => calculateAnalysisRow(analysis, globalParams))
+    .filter((row): row is AnalysisRowData => row !== null);
+}
+
+/**
  * Calculates aggregated metrics across all calculable analyses.
  * Filters out incomplete analyses and sums results for the Global Analysis view.
  *
@@ -251,13 +322,11 @@ export function calculateAggregatedMetrics(
   let totalPumps = 0;
 
   for (const analysis of calculable) {
-    const waferQuantity = analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
-
     const failureCost = calculateTotalFailureCost(
       analysis.pumpQuantity,
       analysis.failureRatePercentage,
       analysis.waferCost,
-      waferQuantity,
+      getEffectiveWaferQuantity(analysis),
       analysis.downtimeDuration,
       analysis.downtimeCostPerHour,
     );
