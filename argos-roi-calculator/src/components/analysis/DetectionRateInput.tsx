@@ -8,7 +8,7 @@
  * - Process failures: ~50% detection rate
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useAppStore } from '@/stores/app-store';
 import { Input } from '@/components/ui/Input';
 import { validateDetectionRate } from '@/lib/validation/equipment-validation';
@@ -26,6 +26,8 @@ export interface DetectionRateInputProps {
  */
 export function DetectionRateInput({ analysisId }: DetectionRateInputProps) {
   const [error, setError] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [rawValue, setRawValue] = useState('');
 
   // MEDIUM-4 FIX: Optimized single selector for analysis data
   const analysis = useAppStore((state) =>
@@ -36,11 +38,27 @@ export function DetectionRateInput({ analysisId }: DetectionRateInputProps) {
   const detectionRate = analysis?.detectionRate ?? DEFAULT_DETECTION_RATE;
   const analysisExists = !!analysis;
 
+  // Sync local display value from store when not focused
+  useEffect(() => {
+    if (!isFocused) {
+      setRawValue(String(detectionRate));
+    }
+  }, [isFocused, detectionRate]);
+
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Number(e.target.value);
+      const inputValue = e.target.value;
+      setRawValue(inputValue);
 
-      // Check if value is NaN (happens when input is empty or invalid)
+      // Allow empty field while typing
+      if (inputValue.trim() === '') {
+        setError(null);
+        return;
+      }
+
+      const value = Number(inputValue);
+
+      // Check if value is NaN (happens when input is invalid)
       if (isNaN(value)) {
         return;
       }
@@ -62,6 +80,20 @@ export function DetectionRateInput({ analysisId }: DetectionRateInputProps) {
     [analysisId, updateAnalysis]
   );
 
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+    setRawValue(String(detectionRate));
+  }, [detectionRate]);
+
+  const handleBlur = useCallback(() => {
+    setIsFocused(false);
+    setError(null);
+    // If empty on blur, restore default
+    if (rawValue.trim() === '') {
+      updateAnalysis(analysisId, { detectionRate: DEFAULT_DETECTION_RATE });
+    }
+  }, [rawValue, analysisId, updateAnalysis]);
+
   // Return null if analysis not found
   if (!analysisExists) {
     return null;
@@ -81,8 +113,10 @@ export function DetectionRateInput({ analysisId }: DetectionRateInputProps) {
         min={0}
         max={100}
         step={1}
-        value={detectionRate}
+        value={isFocused ? rawValue : String(detectionRate)}
         onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         aria-describedby={`detection-rate-helper-${analysisId}`}
         aria-invalid={error ? 'true' : 'false'}
       />
