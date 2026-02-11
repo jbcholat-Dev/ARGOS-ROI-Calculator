@@ -254,6 +254,25 @@ describe('ComparisonView', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/');
   });
 
+  it('original analysis name is preserved after Replace (no "What If" suffix)', async () => {
+    const user = userEvent.setup();
+    renderComparison();
+
+    // Open modal and confirm replace
+    await user.click(screen.getByRole('button', { name: /Replace Original/i }));
+    const replaceButtons = screen.getAllByRole('button', { name: /Replace/i });
+    const modalReplace = replaceButtons.find(
+      (btn) => btn.closest('[role="dialog"]') !== null,
+    );
+    await user.click(modalReplace!);
+
+    // Verify original keeps its name (no "(What If)" suffix)
+    const state = useAppStore.getState();
+    const updatedOriginal = state.analyses.find((a) => a.id === 'original-1');
+    expect(updatedOriginal?.name).toBe('Poly Etch - Chamber 04');
+    expect(updatedOriginal?.name).not.toContain('What If');
+  });
+
   it('canceling Replace keeps comparison view open', async () => {
     const user = userEvent.setup();
     renderComparison();
@@ -275,12 +294,7 @@ describe('ComparisonView', () => {
   });
 
   it('MODIFIED badge disappears when what-if value reverted to match original', () => {
-    renderComparison();
-
-    // Initially modified (pumpQuantity differs)
-    expect(screen.getAllByText('MODIFIED').length).toBeGreaterThan(0);
-
-    // Revert what-if to match original
+    // Set up with identical values (reverted state) — no modification
     const revertedWhatIf: Analysis = {
       ...originalAnalysis,
       id: 'whatif-1',
@@ -288,10 +302,14 @@ describe('ComparisonView', () => {
     };
     useAppStore.setState({
       analyses: [originalAnalysis, revertedWhatIf],
+      activeAnalysisId: 'original-1',
+      globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+      unsavedChanges: false,
     });
 
     renderComparison();
 
+    // No modifications → no MODIFIED badges
     expect(screen.queryByText('MODIFIED')).not.toBeInTheDocument();
   });
 

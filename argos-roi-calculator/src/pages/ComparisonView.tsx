@@ -24,7 +24,9 @@ import {
 } from '@/components/analysis';
 import type { Analysis } from '@/types';
 
-function computeMetrics(analysis: { pumpQuantity: number; failureRatePercentage: number; waferCost: number; waferType: string; waferQuantity: number; downtimeDuration: number; downtimeCostPerHour: number; detectionRate?: number }, serviceCostPerPump: number, globalDetectionRate: number) {
+type MetricsInput = Pick<Analysis, 'pumpQuantity' | 'failureRatePercentage' | 'waferCost' | 'waferType' | 'waferQuantity' | 'downtimeDuration' | 'downtimeCostPerHour' | 'detectionRate'>;
+
+function computeMetrics(analysis: MetricsInput, serviceCostPerPump: number, globalDetectionRate: number) {
   const waferQuantity = analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
   const detectionRate = analysis.detectionRate ?? globalDetectionRate;
 
@@ -223,27 +225,27 @@ export function ComparisonView() {
         >
           <div className="mx-auto max-w-lg">
             <div className="flex flex-col gap-6">
-              <ModifiedFieldHighlight originalValue={!isEquipmentModified} currentValue={true}>
+              <ModifiedFieldHighlight isModified={isEquipmentModified}>
                 <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                   <EquipmentInputs analysisId={whatIfId} />
                 </div>
               </ModifiedFieldHighlight>
-              <ModifiedFieldHighlight originalValue={!isFailureRateModified} currentValue={true}>
+              <ModifiedFieldHighlight isModified={isFailureRateModified}>
                 <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                   <FailureRateInput analysisId={whatIfId} />
                 </div>
               </ModifiedFieldHighlight>
-              <ModifiedFieldHighlight originalValue={!isDetectionModified} currentValue={true}>
+              <ModifiedFieldHighlight isModified={isDetectionModified}>
                 <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                   <DetectionRateInput analysisId={whatIfId} />
                 </div>
               </ModifiedFieldHighlight>
-              <ModifiedFieldHighlight originalValue={!isWaferModified} currentValue={true}>
+              <ModifiedFieldHighlight isModified={isWaferModified}>
                 <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                   <WaferInputs analysisId={whatIfId} />
                 </div>
               </ModifiedFieldHighlight>
-              <ModifiedFieldHighlight originalValue={!isDowntimeModified} currentValue={true}>
+              <ModifiedFieldHighlight isModified={isDowntimeModified}>
                 <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                   <DowntimeInputs analysisId={whatIfId} />
                 </div>
