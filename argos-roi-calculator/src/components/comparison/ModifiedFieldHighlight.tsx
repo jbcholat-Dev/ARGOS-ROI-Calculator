@@ -18,25 +18,24 @@ export function ModifiedFieldHighlight({
 }: ModifiedFieldHighlightProps) {
   const isModified = isModifiedProp ?? originalValue !== currentValue;
 
-  if (!isModified) {
-    return <>{children}</>;
-  }
-
   return (
     <div
-      data-testid="modified-highlight"
-      className="relative rounded-lg p-0.5"
-      style={{
-        border: '2px solid #FF5800',
-        background: 'rgba(255, 88, 0, 0.05)',
-      }}
+      data-testid={isModified ? 'modified-highlight' : undefined}
+      className={isModified ? 'relative rounded-lg p-0.5' : undefined}
+      style={
+        isModified
+          ? { border: '2px solid #FF5800', background: 'rgba(255, 88, 0, 0.05)' }
+          : undefined
+      }
     >
-      <span
-        className="absolute -top-2 right-2 bg-orange-500 text-white text-[10px] px-1 py-0.5 rounded font-medium"
-        aria-label="Field modified from original value"
-      >
-        MODIFIED
-      </span>
+      {isModified && (
+        <span
+          className="absolute -top-2 right-2 bg-orange-500 text-white text-[10px] px-1 py-0.5 rounded font-medium"
+          aria-label="Field modified from original value"
+        >
+          MODIFIED
+        </span>
+      )}
       {children}
     </div>
   );
