@@ -1,6 +1,6 @@
 # Story 3.6: Fix Delete Function
 
-Status: review
+Status: done
 
 ## Story
 

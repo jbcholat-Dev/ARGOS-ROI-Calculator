@@ -24,7 +24,7 @@ describe('EditableAnalysisName', () => {
     const user = userEvent.setup();
     render(<EditableAnalysisName {...defaultProps} />);
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
 
     expect(screen.getByRole('textbox')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toHaveValue('Poly Etch - Chamber 04');
@@ -34,7 +34,7 @@ describe('EditableAnalysisName', () => {
     const user = userEvent.setup();
     render(<EditableAnalysisName {...defaultProps} />);
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
 
     await waitFor(() => {
       const input = screen.getByRole('textbox');
@@ -49,7 +49,7 @@ describe('EditableAnalysisName', () => {
     const user = userEvent.setup();
     render(<EditableAnalysisName {...defaultProps} onUpdate={handleUpdate} />);
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.type(input, 'New Process Name{Enter}');
@@ -68,7 +68,7 @@ describe('EditableAnalysisName', () => {
       </div>
     );
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.type(input, 'Blur Save Name');
@@ -82,7 +82,7 @@ describe('EditableAnalysisName', () => {
     const user = userEvent.setup();
     render(<EditableAnalysisName {...defaultProps} onUpdate={handleUpdate} />);
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.type(input, 'Different Name');
@@ -97,12 +97,12 @@ describe('EditableAnalysisName', () => {
     const user = userEvent.setup();
     render(<EditableAnalysisName {...defaultProps} />);
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.keyboard('{Enter}');
 
-    expect(screen.getByText('Le nom ne peut pas être vide')).toBeInTheDocument();
+    expect(screen.getByText('Name cannot be empty')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 
@@ -110,14 +110,14 @@ describe('EditableAnalysisName', () => {
     const user = userEvent.setup();
     render(<EditableAnalysisName {...defaultProps} />);
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
     // Use fireEvent.change to bypass HTML maxLength for validation testing
     const longName = 'A'.repeat(101);
     fireEvent.change(input, { target: { value: longName } });
     await user.keyboard('{Enter}');
 
-    expect(screen.getByText('Le nom ne peut pas dépasser 100 caractères')).toBeInTheDocument();
+    expect(screen.getByText('Name cannot exceed 100 characters')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 
@@ -125,12 +125,12 @@ describe('EditableAnalysisName', () => {
     const user = userEvent.setup();
     render(<EditableAnalysisName {...defaultProps} />);
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.type(input, 'cvd process{Enter}');
 
-    expect(screen.getByText('Ce nom existe déjà')).toBeInTheDocument();
+    expect(screen.getByText('This name already exists')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 
@@ -139,12 +139,12 @@ describe('EditableAnalysisName', () => {
     const user = userEvent.setup();
     render(<EditableAnalysisName {...defaultProps} onUpdate={handleUpdate} />);
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     // Just press Enter without changing the name
     await user.keyboard('{Enter}');
 
     // No error, no update called (name unchanged)
-    expect(screen.queryByText('Ce nom existe déjà')).not.toBeInTheDocument();
+    expect(screen.queryByText('This name already exists')).not.toBeInTheDocument();
     expect(handleUpdate).not.toHaveBeenCalled();
   });
 
@@ -153,7 +153,7 @@ describe('EditableAnalysisName', () => {
     const user = userEvent.setup();
     render(<EditableAnalysisName {...defaultProps} onUpdate={handleUpdate} />);
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.type(input, '  Trimmed Name  {Enter}');
@@ -165,7 +165,7 @@ describe('EditableAnalysisName', () => {
     const user = userEvent.setup();
     render(<EditableAnalysisName {...defaultProps} />);
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.keyboard('{Enter}');
@@ -179,22 +179,22 @@ describe('EditableAnalysisName', () => {
     render(<EditableAnalysisName {...defaultProps} />);
 
     // Trigger error
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.keyboard('{Enter}');
-    expect(screen.getByText('Le nom ne peut pas être vide')).toBeInTheDocument();
+    expect(screen.getByText('Name cannot be empty')).toBeInTheDocument();
 
     // Type valid input
     await user.type(input, 'Valid');
-    expect(screen.queryByText('Le nom ne peut pas être vide')).not.toBeInTheDocument();
+    expect(screen.queryByText('Name cannot be empty')).not.toBeInTheDocument();
   });
 
   it('edit mode persists when validation fails', async () => {
     const user = userEvent.setup();
     render(<EditableAnalysisName {...defaultProps} />);
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.keyboard('{Enter}');
@@ -206,19 +206,19 @@ describe('EditableAnalysisName', () => {
 
   it('renders badge when showActiveBadge is true', async () => {
     render(<EditableAnalysisName {...defaultProps} showActiveBadge={true} />);
-    expect(screen.getByText('Analyse active')).toBeInTheDocument();
+    expect(screen.getByText('Active Analysis')).toBeInTheDocument();
   });
 
   it('does not render badge when showActiveBadge is false', () => {
     render(<EditableAnalysisName {...defaultProps} showActiveBadge={false} />);
-    expect(screen.queryByText('Analyse active')).not.toBeInTheDocument();
+    expect(screen.queryByText('Active Analysis')).not.toBeInTheDocument();
   });
 
   it('has aria-describedby linking input to error', async () => {
     const user = userEvent.setup();
     render(<EditableAnalysisName {...defaultProps} />);
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.keyboard('{Enter}');

@@ -152,7 +152,7 @@ describe('FailureRateInput', () => {
       });
       renderComponent();
       expect(
-        screen.getByLabelText('Nombre de pannes (last year)'),
+        screen.getByLabelText('Failures Count (last year)'),
       ).toBeInTheDocument();
     });
 
@@ -186,11 +186,11 @@ describe('FailureRateInput', () => {
       renderComponent();
 
       const input = screen.getByLabelText(
-        'Nombre de pannes (last year)',
+        'Failures Count (last year)',
       );
       await user.type(input, '3');
 
-      expect(screen.getByText(/Taux calculé/)).toBeInTheDocument();
+      expect(screen.getByText(/Calculated rate/)).toBeInTheDocument();
       expect(screen.getByText(/37.5%/)).toBeInTheDocument();
     });
 
@@ -208,7 +208,7 @@ describe('FailureRateInput', () => {
       renderComponent();
 
       const input = screen.getByLabelText(
-        'Nombre de pannes (last year)',
+        'Failures Count (last year)',
       );
       await user.type(input, '3');
 
@@ -226,7 +226,7 @@ describe('FailureRateInput', () => {
       await user.click(screen.getByText('Failures Count/year'));
 
       expect(
-        screen.getByLabelText('Nombre de pannes (last year)'),
+        screen.getByLabelText('Failures Count (last year)'),
       ).toBeInTheDocument();
     });
 
@@ -271,7 +271,7 @@ describe('FailureRateInput', () => {
       renderComponent();
 
       expect(
-        screen.getByText("Entrez d'abord le Pump Quantity"),
+        screen.getByText("Enter pump quantity first"),
       ).toBeInTheDocument();
     });
 
@@ -315,7 +315,7 @@ describe('FailureRateInput', () => {
       });
       renderComponent();
       expect(
-        screen.getByLabelText('Nombre de pannes (last year)'),
+        screen.getByLabelText('Failures Count (last year)'),
       ).toBeInTheDocument();
     });
 
@@ -345,7 +345,7 @@ describe('FailureRateInput', () => {
       renderComponent();
 
       const input = screen.getByLabelText(
-        'Nombre de pannes (last year)',
+        'Failures Count (last year)',
       );
       expect(input).toHaveAttribute('aria-describedby');
       const describedById = input.getAttribute('aria-describedby');
@@ -367,7 +367,7 @@ describe('FailureRateInput', () => {
       renderComponent();
 
       const input = screen.getByLabelText(
-        'Nombre de pannes (last year)',
+        'Failures Count (last year)',
       );
       expect(input).not.toHaveAttribute('aria-describedby');
     });

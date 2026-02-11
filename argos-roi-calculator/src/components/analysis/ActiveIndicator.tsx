@@ -27,7 +27,7 @@ export function ActiveIndicator({
     return (
       <span
         role="status"
-        aria-label="Analyse active"
+        aria-label="Active Analysis"
         className={clsx(
           'inline-block rounded-full bg-green-600',
           dotSizes[size],
@@ -40,7 +40,7 @@ export function ActiveIndicator({
   return (
     <span
       role="status"
-      aria-label="Analyse active"
+      aria-label="Active Analysis"
       className={clsx(
         'inline-flex items-center rounded-full bg-green-600 text-white font-medium',
         badgeSizes[size],
@@ -61,7 +61,7 @@ export function ActiveIndicator({
       >
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
       </svg>
-      Analyse active
+      Active Analysis
     </span>
   );
 }

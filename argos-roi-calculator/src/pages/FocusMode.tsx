@@ -82,7 +82,7 @@ export function FocusMode() {
             analysisId={analysis.id}
             currentName={analysis.name}
             onUpdate={handleNameUpdate}
-            showActiveBadge={activeAnalysisId === analysis.id}
+            showActiveBadge={false}
             existingNames={allAnalysisNames}
           />
           <button

@@ -1,6 +1,6 @@
 # Story 3.7: Remove Detection Rate from Global Sidebar
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 

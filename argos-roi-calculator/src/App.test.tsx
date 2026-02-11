@@ -79,7 +79,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
         expect(screen.getByRole('navigation')).toBeInTheDocument();
         expect(screen.getByRole('complementary')).toBeInTheDocument();
         expect(
-          screen.getByText(/Complétez vos analyses ROI d'abord/)
+          screen.getByText(/Complete your ROI analyses first/)
         ).toBeInTheDocument();
       });
     });
@@ -98,9 +98,9 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       await waitFor(() => {
         expect(screen.getByRole('navigation')).toBeInTheDocument();
         expect(screen.getByRole('complementary')).toBeInTheDocument();
-        expect(
-          screen.getByText('Test Analysis')
-        ).toBeInTheDocument();
+        // Name appears in both header and sidebar MiniCard
+        const elements = screen.getAllByText('Test Analysis');
+        expect(elements.length).toBeGreaterThanOrEqual(1);
       });
     });
 
@@ -132,7 +132,8 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('UUID Analysis')).toBeInTheDocument();
+        const elements = screen.getAllByText('UUID Analysis');
+        expect(elements.length).toBeGreaterThanOrEqual(1);
       });
     });
 
@@ -148,7 +149,8 @@ describe('[ROUTER] App Routing Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Short ID Analysis')).toBeInTheDocument();
+        const elements = screen.getAllByText('Short ID Analysis');
+        expect(elements.length).toBeGreaterThanOrEqual(1);
       });
     });
 

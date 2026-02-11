@@ -63,8 +63,8 @@ development_status:
   2-9-detection-rate-per-analysis: done
   epic-2-retrospective: done
 
-  # Epic 3: Multi-Analysis Management (4 stories + 8 post-retro fixes, 3.10 split into 3.10+3.11)
-  epic-3: in-progress
+  # Epic 3: Multi-Analysis Management (4 stories + 9 post-retro fixes, 3.10 split into 3.10+3.11)
+  epic-3: done
   3-1-dashboard-grid-with-analysis-cards: done
   3-2-card-navigation-to-focus-mode: done
   3-3-analysis-duplicate-and-delete-actions: done
@@ -76,6 +76,8 @@ development_status:
   3-9-focus-sidebar-navigation: done
   3-10-what-if-scenario-comparison-mode: done
   3-11-what-if-enhanced-ux: done
+  3-12-fix-whatif-focus-loss: done
+  3-13-fix-french-badge-and-tests: done
   epic-3-retrospective: done
 
   # Epic 4: Global Analysis & Comparison (3 stories)

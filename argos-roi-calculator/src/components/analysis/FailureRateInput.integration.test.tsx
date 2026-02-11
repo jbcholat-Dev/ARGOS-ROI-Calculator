@@ -67,12 +67,12 @@ describe('FailureRateInput Integration', () => {
 
     // Enter "3" in count input
     const input = screen.getByLabelText(
-      'Nombre de pannes (last year)',
+      'Failures Count (last year)',
     );
     await user.type(input, '3');
 
     // Verify calculated percentage displays
-    expect(screen.getByText(/Taux calculé/)).toBeInTheDocument();
+    expect(screen.getByText(/Calculated rate/)).toBeInTheDocument();
     expect(screen.getByText(/37.5%/)).toBeInTheDocument();
 
     // Verify store updated
@@ -91,7 +91,7 @@ describe('FailureRateInput Integration', () => {
     // Switch to count mode and enter 3
     await user.click(screen.getByText('Failures Count/year'));
     const countInput = screen.getByLabelText(
-      'Nombre de pannes (last year)',
+      'Failures Count (last year)',
     );
     await user.type(countInput, '3');
 
@@ -166,7 +166,7 @@ describe('FailureRateInput Integration', () => {
 
     // Helper message should display
     expect(
-      screen.getByText("Entrez d'abord le Pump Quantity"),
+      screen.getByText("Enter pump quantity first"),
     ).toBeInTheDocument();
 
     // Percentage input should still be available
@@ -213,7 +213,7 @@ describe('FailureRateInput Integration', () => {
     render(<FailureRateInput analysisId="integration-failure-1" />);
 
     const input = screen.getByLabelText(
-      'Nombre de pannes (last year)',
+      'Failures Count (last year)',
     );
     await user.type(input, '3.5');
 

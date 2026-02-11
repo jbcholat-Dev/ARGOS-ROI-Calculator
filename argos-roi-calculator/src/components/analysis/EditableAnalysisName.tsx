@@ -10,9 +10,9 @@ export interface EditableAnalysisNameProps {
   existingNames?: string[];
 }
 
-const VALIDATION_ERROR_EMPTY = 'Le nom ne peut pas être vide';
-const VALIDATION_ERROR_MAX_LENGTH = 'Le nom ne peut pas dépasser 100 caractères';
-const VALIDATION_ERROR_DUPLICATE = 'Ce nom existe déjà';
+const VALIDATION_ERROR_EMPTY = 'Name cannot be empty';
+const VALIDATION_ERROR_MAX_LENGTH = 'Name cannot exceed 100 characters';
+const VALIDATION_ERROR_DUPLICATE = 'This name already exists';
 const MAX_NAME_LENGTH = 100;
 
 export function EditableAnalysisName({
@@ -128,7 +128,7 @@ export function EditableAnalysisName({
               'focus:outline-none focus:ring-2 focus:ring-pfeiffer-red focus:ring-offset-2',
               error ? 'border-red-600' : 'border-gray-300'
             )}
-            aria-label="Nom de l'analyse"
+            aria-label="Analysis name"
             aria-invalid={error ? 'true' : 'false'}
             aria-describedby={error ? errorId : undefined}
             maxLength={MAX_NAME_LENGTH}
@@ -160,7 +160,7 @@ export function EditableAnalysisName({
           'focus:outline-none focus:ring-2 focus:ring-pfeiffer-red focus:ring-offset-2',
           'rounded px-1'
         )}
-        aria-label={`Renommer l'analyse "${currentName}"`}
+        aria-label={`Rename analysis "${currentName}"`}
       >
         {currentName}
       </button>

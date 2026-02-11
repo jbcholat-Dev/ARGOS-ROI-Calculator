@@ -6,7 +6,7 @@ describe('ActiveIndicator', () => {
   it('renders badge variant with text and checkmark icon', () => {
     render(<ActiveIndicator variant="badge" />);
 
-    expect(screen.getByText('Analyse active')).toBeInTheDocument();
+    expect(screen.getByText('Active Analysis')).toBeInTheDocument();
     const status = screen.getByRole('status');
     expect(status).toBeInTheDocument();
     // SVG checkmark icon should be present
@@ -18,7 +18,7 @@ describe('ActiveIndicator', () => {
 
     const status = screen.getByRole('status');
     expect(status).toBeInTheDocument();
-    expect(screen.queryByText('Analyse active')).not.toBeInTheDocument();
+    expect(screen.queryByText('Active Analysis')).not.toBeInTheDocument();
     expect(status.querySelector('svg')).not.toBeInTheDocument();
   });
 
@@ -43,13 +43,13 @@ describe('ActiveIndicator', () => {
   it('has correct ARIA attributes for badge', () => {
     render(<ActiveIndicator variant="badge" />);
     const status = screen.getByRole('status');
-    expect(status).toHaveAttribute('aria-label', 'Analyse active');
+    expect(status).toHaveAttribute('aria-label', 'Active Analysis');
   });
 
   it('has correct ARIA attributes for dot', () => {
     render(<ActiveIndicator variant="dot" />);
     const status = screen.getByRole('status');
-    expect(status).toHaveAttribute('aria-label', 'Analyse active');
+    expect(status).toHaveAttribute('aria-label', 'Active Analysis');
   });
 
   it('renders with green background', () => {

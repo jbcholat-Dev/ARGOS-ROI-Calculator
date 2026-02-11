@@ -329,11 +329,11 @@ Reuse from `DeleteConfirmationModal` (existing in `src/components/analysis/`):
 ### Definition of Done Checklist
 
 - [ ] All tasks completed
-- [ ] All tests pass (unit + integration + Story 3.10 tests)
-- [ ] Code review completed, HIGH/MEDIUM issues fixed
-- [ ] **Manual browser test performed** (verify highlights + replace + accessibility)
-- [ ] **User validation:** JB confirms highlighting is readable and Replace works safely
-- [ ] Story file updated (Dev Notes, Code Review, Completion Notes)
+- [x] All tests pass (unit + integration + Story 3.10 tests)
+- [x] Code review completed, HIGH/MEDIUM issues fixed
+- [x] **Manual browser test performed** (verify highlights + replace + accessibility)
+- [x] **User validation:** JB confirms highlighting is readable and Replace works safely
+- [x] Story file updated (Dev Notes, Code Review, Completion Notes)
 - [ ] No console.log in code
 - [ ] Test count matches estimate (~806 tests)
 

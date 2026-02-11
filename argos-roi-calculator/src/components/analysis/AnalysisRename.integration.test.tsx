@@ -73,11 +73,12 @@ describe('Analysis Rename - Integration Tests', () => {
     const user = userEvent.setup();
     renderFocusMode('analysis-1');
 
-    // 1. Verify initial name
-    expect(screen.getByText('Process A')).toBeInTheDocument();
+    // 1. Verify initial name (may appear in both header and sidebar MiniCard)
+    const elements = screen.getAllByText('Process A');
+    expect(elements.length).toBeGreaterThanOrEqual(1);
 
     // 2. Click on name to enter edit mode
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
 
     // 3. Input enters edit mode with focus
     const input = screen.getByRole('textbox');
@@ -98,7 +99,8 @@ describe('Analysis Rename - Integration Tests', () => {
 
     // 7. UI displays new name (static text, not input)
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    expect(screen.getByText('Process C')).toBeInTheDocument();
+    const newNameElements = screen.getAllByText('Process C');
+    expect(newNameElements.length).toBeGreaterThanOrEqual(1);
   });
 
   it('completes validation flow: empty error → fix → save', async () => {
@@ -106,7 +108,7 @@ describe('Analysis Rename - Integration Tests', () => {
     renderFocusMode('analysis-1');
 
     // 1. Enter edit mode
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
 
     // 2. Clear name (empty)
     const input = screen.getByRole('textbox');
@@ -116,14 +118,14 @@ describe('Analysis Rename - Integration Tests', () => {
     await user.keyboard('{Enter}');
 
     // 4. Error displays, edit mode persists
-    expect(screen.getByText('Le nom ne peut pas être vide')).toBeInTheDocument();
+    expect(screen.getByText('Name cannot be empty')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
 
     // 5. Type valid name
     await user.type(input, 'Fixed Name');
 
     // 6. Error clears
-    expect(screen.queryByText('Le nom ne peut pas être vide')).not.toBeInTheDocument();
+    expect(screen.queryByText('Name cannot be empty')).not.toBeInTheDocument();
 
     // 7. Save succeeds
     await user.keyboard('{Enter}');
@@ -135,7 +137,7 @@ describe('Analysis Rename - Integration Tests', () => {
     renderFocusMode('analysis-1');
 
     // 1. Enter edit mode
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
 
     // 2. Type new name
     const input = screen.getByRole('textbox');
@@ -145,8 +147,9 @@ describe('Analysis Rename - Integration Tests', () => {
     // 3. Press Escape
     await user.keyboard('{Escape}');
 
-    // 4. Name reverts to original
-    expect(screen.getByText('Process A')).toBeInTheDocument();
+    // 4. Name reverts to original (appears in both header and sidebar)
+    const revertedElements = screen.getAllByText('Process A');
+    expect(revertedElements.length).toBeGreaterThanOrEqual(1);
 
     // 5. No store update (name unchanged)
     expect(useAppStore.getState().analyses.find((a) => a.id === 'analysis-1')?.name).toBe('Process A');
@@ -157,7 +160,7 @@ describe('Analysis Rename - Integration Tests', () => {
     renderFocusMode('analysis-1');
 
     // 1. Enter edit mode
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
 
     // 2. Try to rename to existing "Process B"
@@ -166,7 +169,7 @@ describe('Analysis Rename - Integration Tests', () => {
     await user.keyboard('{Enter}');
 
     // 3. Validation error shows
-    expect(screen.getByText('Ce nom existe déjà')).toBeInTheDocument();
+    expect(screen.getByText('This name already exists')).toBeInTheDocument();
 
     // 4. Fix: rename to "Process C" (unique)
     await user.clear(input);
@@ -217,6 +220,6 @@ describe('ActiveIndicator - Dashboard Usage Examples (Story 3.1 Reference)', () 
 
   it('dot variant has accessible aria-label', () => {
     render(<ActiveIndicator variant="dot" />);
-    expect(screen.getByLabelText('Analyse active')).toBeInTheDocument();
+    expect(screen.getByLabelText('Active Analysis')).toBeInTheDocument();
   });
 });

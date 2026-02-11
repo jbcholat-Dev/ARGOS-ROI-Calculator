@@ -90,14 +90,16 @@ describe('FocusMode - EditableAnalysisName Integration', () => {
 
   it('renders EditableAnalysisName with correct analysis name', () => {
     renderFocusMode('test-id-1');
-    expect(screen.getByText('Poly Etch - Chamber 04')).toBeInTheDocument();
+    // Name appears in both header (EditableAnalysisName) and sidebar (MiniCard)
+    const elements = screen.getAllByText('Poly Etch - Chamber 04');
+    expect(elements.length).toBeGreaterThanOrEqual(1);
   });
 
   it('updates analysis name in store when renamed', async () => {
     const user = userEvent.setup();
     renderFocusMode('test-id-1');
 
-    await user.click(screen.getByRole('button', { name: /Renommer/ }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
     const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.type(input, 'New Name{Enter}');
@@ -107,10 +109,10 @@ describe('FocusMode - EditableAnalysisName Integration', () => {
     expect(analysis?.name).toBe('New Name');
   });
 
-  it('shows active badge when analysis is active', () => {
+  it('does not show active badge in Focus Mode (removed per retro decision)', () => {
     useAppStore.setState({ activeAnalysisId: 'test-id-1' });
     renderFocusMode('test-id-1');
-    expect(screen.getByText('Analyse active')).toBeInTheDocument();
+    expect(screen.queryByText('Active Analysis')).not.toBeInTheDocument();
   });
 
   it('sets activeAnalysisId on mount', async () => {
@@ -118,14 +120,6 @@ describe('FocusMode - EditableAnalysisName Integration', () => {
 
     await waitFor(() => {
       expect(useAppStore.getState().activeAnalysisId).toBe('test-id-1');
-    });
-  });
-
-  it('shows active badge after mount sets active state', async () => {
-    renderFocusMode('test-id-1');
-
-    await waitFor(() => {
-      expect(screen.getByText('Analyse active')).toBeInTheDocument();
     });
   });
 });

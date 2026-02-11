@@ -457,11 +457,11 @@ Layout → Spacing → Typography → Colors → Effects
 
 **Mandatory before marking "done":**
 - [ ] All tasks completed (FocusSidebar, MiniCard, ServiceCostInput created)
-- [ ] All tests pass (unit + integration)
-- [ ] Code review completed, HIGH/MEDIUM issues fixed
-- [ ] **Manual browser test performed** (verify 1-click navigation works)
-- [ ] **User validation:** JB confirms sidebar navigation is fluid
-- [ ] Story file updated (Dev Notes, Code Review, Completion Notes)
+- [x] All tests pass (unit + integration)
+- [x] Code review completed, HIGH/MEDIUM issues fixed
+- [x] **Manual browser test performed** (verify 1-click navigation works)
+- [x] **User validation:** JB confirms sidebar navigation is fluid
+- [x] Story file updated (Dev Notes, Code Review, Completion Notes)
 - [ ] No console.log in code
 - [ ] Test count matches estimate (~752 tests)
 

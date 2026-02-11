@@ -9,7 +9,7 @@ export function Solutions() {
 
   return (
     <AppLayout>
-      <PlaceholderMessage message="Complétez vos analyses ROI d'abord" />
+      <PlaceholderMessage message="Complete your ROI analyses first" />
     </AppLayout>
   );
 }
