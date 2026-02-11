@@ -478,6 +478,82 @@ describe('AnalysisCard', () => {
     });
   });
 
+  describe('What If Action (Story 3.10 AC1)', () => {
+    beforeEach(() => {
+      mockNavigate.mockClear();
+      useAppStore.setState({
+        analyses: [baseAnalysis],
+        activeAnalysisId: baseAnalysis.id,
+      });
+    });
+
+    afterEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('renders "What If" menu item', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
+      await user.click(menuButton);
+
+      expect(screen.getByRole('menuitem', { name: /What If/i })).toBeInTheDocument();
+    });
+
+    it('What If click triggers duplication and navigation to comparison route', async () => {
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={baseAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
+      await user.click(menuButton);
+
+      const whatIfButton = screen.getByRole('menuitem', { name: /What If/i });
+      await user.click(whatIfButton);
+
+      // Verify duplicate was created with "(What If)" suffix
+      const analyses = useAppStore.getState().analyses;
+      expect(analyses).toHaveLength(2);
+      expect(analyses[1].name).toBe('CVD Chamber 04 (What If)');
+
+      // Verify navigation to comparison route
+      const newId = analyses[1].id;
+      expect(mockNavigate).toHaveBeenCalledWith(`/compare/${baseAnalysis.id}/${newId}`);
+    });
+
+    it('What If is disabled when analysis data is incomplete', async () => {
+      const incompleteAnalysis: Analysis = {
+        ...baseAnalysis,
+        pumpQuantity: 0,
+      };
+      useAppStore.setState({
+        analyses: [incompleteAnalysis],
+        activeAnalysisId: incompleteAnalysis.id,
+      });
+
+      const user = userEvent.setup();
+      render(
+        <MemoryRouter>
+          <AnalysisCard analysis={incompleteAnalysis} isActive={false} />
+        </MemoryRouter>,
+      );
+
+      const menuButton = screen.getByLabelText(/Actions for analysis CVD Chamber 04/i);
+      await user.click(menuButton);
+
+      const whatIfButton = screen.getByRole('menuitem', { name: /What If/i });
+      expect(whatIfButton).toBeDisabled();
+    });
+  });
+
   describe('Delete Action (Story 3.3 AC3-AC4)', () => {
     beforeEach(() => {
       mockNavigate.mockClear();

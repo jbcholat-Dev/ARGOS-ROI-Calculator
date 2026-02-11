@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useCallback } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
-import { ROUTES } from '@/lib/constants';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
+import { ROUTES, buildComparisonRoute } from '@/lib/constants';
+import { isAnalysisCalculable } from '@/lib/calculations';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { EditableAnalysisName, EquipmentInputs, FailureRateInput, DetectionRateInput, WaferInputs, DowntimeInputs, ResultsPanel } from '@/components/analysis';
 import { useAppStore } from '@/stores/app-store';
@@ -14,11 +15,13 @@ const isValidAnalysisId = (id: string): boolean => {
 
 export function FocusMode() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const analysis = useAppStore((state) =>
     state.analyses.find((a) => a.id === id)
   );
   const activeAnalysisId = useAppStore((state) => state.activeAnalysisId);
   const updateAnalysis = useAppStore((state) => state.updateAnalysis);
+  const duplicateAnalysis = useAppStore((state) => state.duplicateAnalysis);
   const setActiveAnalysis = useAppStore((state) => state.setActiveAnalysis);
   const analyses = useAppStore((state) => state.analyses);
   const allAnalysisNames = useMemo(
@@ -60,10 +63,21 @@ export function FocusMode() {
     [analysis.id, updateAnalysis]
   );
 
+  const handleWhatIf = useCallback(() => {
+    duplicateAnalysis(analysis.id);
+    const newId = useAppStore.getState().activeAnalysisId;
+    if (newId) {
+      updateAnalysis(newId, { name: `${analysis.name} (What If)` });
+      navigate(buildComparisonRoute(analysis.id, newId));
+    }
+  }, [analysis.id, analysis.name, duplicateAnalysis, updateAnalysis, navigate]);
+
+  const canWhatIf = isAnalysisCalculable(analysis);
+
   return (
     <AppLayout>
       <div className="mx-auto max-w-3xl p-6">
-        <div className="mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <EditableAnalysisName
             analysisId={analysis.id}
             currentName={analysis.name}
@@ -71,6 +85,13 @@ export function FocusMode() {
             showActiveBadge={activeAnalysisId === analysis.id}
             existingNames={allAnalysisNames}
           />
+          <button
+            onClick={handleWhatIf}
+            disabled={!canWhatIf}
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            What If
+          </button>
         </div>
         <div className="flex flex-col gap-6">
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">

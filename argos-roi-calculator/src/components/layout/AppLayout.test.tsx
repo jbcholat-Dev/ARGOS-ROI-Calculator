@@ -98,6 +98,9 @@ describe('AppLayout', () => {
       const sidebar = screen.getByRole('complementary');
       expect(sidebar).toHaveAttribute('aria-label', 'Global Parameters');
     });
+
+    // Note: ComparisonView does not use AppLayout (has its own full-screen layout).
+    // Sidebar suppression is achieved by not wrapping in AppLayout, not by route detection.
   });
 
   describe('semantic HTML', () => {

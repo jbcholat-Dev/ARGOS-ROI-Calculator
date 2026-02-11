@@ -16,6 +16,9 @@ const GlobalAnalysis = lazy(() =>
 const Solutions = lazy(() =>
   import('@/pages/Solutions').then((m) => ({ default: m.Solutions }))
 );
+const ComparisonView = lazy(() =>
+  import('@/pages/ComparisonView').then((m) => ({ default: m.ComparisonView }))
+);
 const NotFound = lazy(() =>
   import('@/pages/NotFound').then((m) => ({ default: m.NotFound }))
 );
@@ -26,6 +29,7 @@ export function AppRoutes() {
       <Routes>
         <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
         <Route path={ROUTES.FOCUS_MODE} element={<FocusMode />} />
+        <Route path={ROUTES.COMPARISON} element={<ComparisonView />} />
         <Route path={ROUTES.GLOBAL_ANALYSIS} element={<GlobalAnalysis />} />
         <Route path={ROUTES.SOLUTIONS} element={<Solutions />} />
         <Route path="*" element={<NotFound />} />

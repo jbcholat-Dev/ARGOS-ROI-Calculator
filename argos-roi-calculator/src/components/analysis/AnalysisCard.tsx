@@ -8,9 +8,10 @@ import {
   calculateSavings,
   calculateROI,
   getROIColorClass,
+  isAnalysisCalculable,
 } from '@/lib/calculations';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
-import { DEFAULT_DETECTION_RATE, DEFAULT_SERVICE_COST_PER_PUMP } from '@/lib/constants';
+import { DEFAULT_DETECTION_RATE, DEFAULT_SERVICE_COST_PER_PUMP, buildComparisonRoute } from '@/lib/constants';
 import { useAppStore } from '@/stores/app-store';
 import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 import type { Analysis } from '@/types';
@@ -45,9 +46,10 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Store actions (Story 3.3: duplicate/delete)
+  // Store actions (Story 3.3: duplicate/delete, Story 3.10: what-if)
   const duplicateAnalysis = useAppStore((state) => state.duplicateAnalysis);
   const deleteAnalysis = useAppStore((state) => state.deleteAnalysis);
+  const updateAnalysis = useAppStore((state) => state.updateAnalysis);
   const navigate = useNavigate();
 
   // Calculate wafer quantity based on type
@@ -141,6 +143,19 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
     }
   };
 
+  // What-If handler (Story 3.10 AC1)
+  const handleWhatIf = () => {
+    setIsMenuOpen(false);
+    duplicateAnalysis(analysis.id);
+    const newId = useAppStore.getState().activeAnalysisId;
+    if (newId) {
+      updateAnalysis(newId, { name: `${analysis.name} (What If)` });
+      navigate(buildComparisonRoute(analysis.id, newId));
+    }
+  };
+
+  const canWhatIf = isAnalysisCalculable(analysis);
+
   // Delete handler - opens confirmation modal (Story 3.3 AC3)
   const handleDelete = () => {
     setIsMenuOpen(false);
@@ -198,7 +213,7 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
             <button
               role="menuitem"
               onClick={(e) => {
-                e.stopPropagation(); // Prevent event bubbling to Card onClick
+                e.stopPropagation();
                 handleDuplicate();
               }}
               className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
@@ -209,7 +224,24 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
             <button
               role="menuitem"
               onClick={(e) => {
-                e.stopPropagation(); // Prevent event bubbling to Card onClick
+                e.stopPropagation();
+                handleWhatIf();
+              }}
+              disabled={!canWhatIf}
+              className={clsx(
+                'w-full px-4 py-2 text-left text-sm transition-colors flex items-center gap-2',
+                canWhatIf
+                  ? 'text-gray-700 hover:bg-gray-100'
+                  : 'text-gray-400 cursor-not-allowed',
+              )}
+            >
+              <span aria-hidden="true">&#x26A1;</span>
+              What If
+            </button>
+            <button
+              role="menuitem"
+              onClick={(e) => {
+                e.stopPropagation();
                 handleDelete();
               }}
               className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"

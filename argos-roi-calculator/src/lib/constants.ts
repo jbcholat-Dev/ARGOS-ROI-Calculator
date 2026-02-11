@@ -18,11 +18,23 @@ export const ROUTES = {
   FOCUS_MODE_BASE: '/analysis',
   GLOBAL_ANALYSIS: '/global',
   SOLUTIONS: '/solutions',
+  COMPARISON: '/compare/:originalId/:whatIfId',
 } as const;
 
 // Helper to build focus mode route with ID
 export const buildFocusModeRoute = (id: string): string =>
   `/analysis/${id}`;
+
+// Helper to build comparison route with both IDs
+export const buildComparisonRoute = (originalId: string, whatIfId: string): string =>
+  `/compare/${originalId}/${whatIfId}`;
+
+// What-If Color Constants
+export const WHATIF_MODIFIED_BORDER = '#FF5800';
+export const WHATIF_MODIFIED_BG = 'rgba(255, 88, 0, 0.05)';
+export const DELTA_POSITIVE_COLOR = '#28A745';
+export const DELTA_NEGATIVE_COLOR = '#CC0000';
+export const DELTA_NEUTRAL_COLOR = '#6B7280';
 
 // Pump Type Suggestions (from V9 reference categories)
 export const PUMP_TYPE_SUGGESTIONS = [

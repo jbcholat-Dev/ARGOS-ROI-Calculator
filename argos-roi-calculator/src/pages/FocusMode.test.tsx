@@ -6,6 +6,16 @@ import { FocusMode } from './FocusMode';
 import { useAppStore } from '@/stores/app-store';
 import type { Analysis } from '@/types';
 
+// Mock navigate
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
 // Mock EquipmentInputs to keep tests focused
 vi.mock('@/components/analysis/EquipmentInputs', () => ({
   EquipmentInputs: ({ analysisId }: { analysisId: string }) => (
@@ -190,5 +200,50 @@ describe('FocusMode - ResultsPanel Integration', () => {
     // Results should come after downtime inputs
     const position = downtime.compareDocumentPosition(results);
     expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
+
+describe('FocusMode - What If Button (Story 3.10)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockNavigate.mockClear();
+    useAppStore.setState({
+      analyses: [createTestAnalysis()],
+      activeAnalysisId: null,
+      globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+      unsavedChanges: false,
+    });
+  });
+
+  it('renders What If button in Focus Mode header', () => {
+    renderFocusMode('test-id-1');
+    expect(screen.getByRole('button', { name: /What If/i })).toBeInTheDocument();
+  });
+
+  it('What If button is disabled when analysis data is incomplete', () => {
+    useAppStore.setState({
+      analyses: [createTestAnalysis({ pumpQuantity: 0 })],
+    });
+
+    renderFocusMode('test-id-1');
+    const btn = screen.getByRole('button', { name: /What If/i });
+    expect(btn).toBeDisabled();
+  });
+
+  it('What If button click triggers comparison flow', async () => {
+    const user = userEvent.setup();
+    renderFocusMode('test-id-1');
+
+    const btn = screen.getByRole('button', { name: /What If/i });
+    await user.click(btn);
+
+    // Should have created a duplicate
+    const analyses = useAppStore.getState().analyses;
+    expect(analyses).toHaveLength(2);
+    expect(analyses[1].name).toBe('Poly Etch - Chamber 04 (What If)');
+
+    // Should navigate to comparison route
+    const newId = analyses[1].id;
+    expect(mockNavigate).toHaveBeenCalledWith(`/compare/test-id-1/${newId}`);
   });
 });

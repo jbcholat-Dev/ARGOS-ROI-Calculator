@@ -37,9 +37,14 @@ export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const isFocusMode = location.pathname.startsWith('/analysis/');
 
+  const renderSidebar = () => {
+    if (isFocusMode) return <ConnectedFocusSidebar />;
+    return <GlobalSidebar />;
+  };
+
   return (
     <div className="flex h-screen overflow-hidden">
-      {isFocusMode ? <ConnectedFocusSidebar /> : <GlobalSidebar />}
+      {renderSidebar()}
       <div className="flex flex-col flex-1">
         <NavigationBar />
         <main
