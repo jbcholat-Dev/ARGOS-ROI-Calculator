@@ -51,15 +51,43 @@
 
 ---
 
-## Epic 3 Feedback
+## Epic 3 Feedback (2026-02-11)
 
-_To be captured after Epic 3 retrospective_
+### What-If Split-Screen
+- [ ] **Grid layout sans scroll** - Tout doit être visible à l'écran sans scroll dans le split-screen What-If
+  - Current: Panneaux avec scroll synchronisé, hauteurs différentes entre read-only et editable
+  - Proposed: Grid layout compact, tous les paramètres visibles d'un coup
+  - Impact: Fluidité en réunion client, comparaison instantanée sans manipulation
 
-### Areas to Watch:
-- Dashboard Grid card design
-- Analysis card interaction patterns
-- Navigation flow between Dashboard and Focus Mode
-- GlobalSidebar with multiple analyses displayed
+- [ ] **Badge MODIFIED des deux côtés** - Quand un paramètre est modifié à droite, badge visible à gauche ET à droite
+  - Current: Badge MODIFIED uniquement sur le panneau What-If (droite)
+  - Proposed: Badge sur les deux côtés pour lien visuel immédiat entre scénarios
+  - Impact: Le client voit exactement quel paramètre change sans chercher
+
+### Sidebar
+- [ ] **Service Cost toujours en bas** - Position cohérente entre Dashboard et Focus Mode
+  - Current: En haut dans GlobalSidebar (Dashboard), en bas dans FocusSidebar (Focus Mode)
+  - Problem: Le champ saute de haut en bas lors de la navigation, effet déstabilisant
+  - Proposed: Toujours en bas, comme en Focus Mode
+  - Impact: Cohérence visuelle, pas de saut lors des transitions
+
+### Dashboard Cards
+- [ ] **Badges ROI colorés par carte** - Classification visuelle des analyses par ROI sur le Dashboard
+  - Current: Pas de badge de classification sur les cartes Dashboard
+  - Proposed: Badges colorés (traffic-light) indiquant la pertinence du segment par ROI
+  - Categories: À définir (ex: "Strong ROI", "Marginal", "Negative")
+  - Impact: Marc voit immédiatement quels segments sont rentables
+
+- [ ] **Supprimer badge "Analyse active" en Focus Mode** - Redondant
+  - Current: Badge vert "Analyse active" affiché en Focus Mode (en français)
+  - Problem: En Focus Mode on sait déjà quelle analyse est active, info redondante
+  - Proposed: Supprimer ce badge du Focus Mode
+  - Note: Le badge est aussi en français (manqué par Story 3-5)
+
+### Epic 2 Feedback Still Applicable
+- Grid 2x3 InputPanel (reduce scrolling) — aligns with What-If grid vision
+- FAB button for "New Analysis" — still relevant
+- Overall modern aesthetic — still the long-term goal
 
 ---
 
@@ -129,5 +157,5 @@ _To be captured after Epic 6 retrospective_
 
 ---
 
-**Last Updated:** 2026-02-09 (Epic 2 Retrospective)
-**Next Update:** After Epic 3 Retrospective
+**Last Updated:** 2026-02-11 (Epic 3 Retrospective — Phase 2)
+**Next Update:** After Epic 4 Retrospective
