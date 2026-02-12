@@ -241,3 +241,80 @@ describe('FocusMode - What If Button (Story 3.10)', () => {
     expect(mockNavigate).toHaveBeenCalledWith(`/compare/test-id-1/${newId}`);
   });
 });
+
+/**
+ * Story 4.3: Navigation Links and Session Stability
+ * Task 6: Invalid Navigation Recovery Tests (AC: 8)
+ *
+ * Verifies that invalid analysis IDs in URL params trigger redirect to Dashboard.
+ */
+describe('FocusMode - Invalid Navigation Recovery (AC: 8)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAppStore.setState({
+      analyses: [createTestAnalysis()],
+      activeAnalysisId: null,
+      globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+      unsavedChanges: false,
+    });
+  });
+
+  it('redirects to Dashboard when analysis ID does not exist in store', () => {
+    renderFocusMode('nonexistent-analysis-id');
+
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+  });
+
+  it('redirects to Dashboard for empty ID segment', () => {
+    render(
+      <MemoryRouter initialEntries={['/analysis/']}>
+        <Routes>
+          <Route path="/analysis/:id" element={<FocusMode />} />
+          <Route path="/analysis" element={<div>Dashboard</div>} />
+          <Route path="/" element={<div>Dashboard</div>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    // With empty segment, router may not match :id, fallback to dashboard
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+  });
+
+  it('redirects to Dashboard for ID with special characters', () => {
+    renderFocusMode('invalid@id!test');
+
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+  });
+
+  it('redirects to Dashboard for ID exceeding 100 characters', () => {
+    const longId = 'a'.repeat(101);
+    renderFocusMode(longId);
+
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+  });
+
+  it('redirects to Dashboard for ID with spaces', () => {
+    renderFocusMode('invalid id with spaces');
+
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+  });
+
+  it('does NOT redirect for valid format ID that exists in store', () => {
+    renderFocusMode('test-id-1');
+
+    // Should render FocusMode content, not Dashboard
+    expect(screen.queryByText('Dashboard')).not.toBeInTheDocument();
+    expect(screen.getByTestId('equipment-inputs')).toBeInTheDocument();
+  });
+
+  it('store state is not corrupted after invalid navigation attempt', () => {
+    const stateBefore = useAppStore.getState();
+    const analysesBefore = [...stateBefore.analyses];
+
+    renderFocusMode('nonexistent-id');
+
+    const stateAfter = useAppStore.getState();
+    expect(stateAfter.analyses).toHaveLength(analysesBefore.length);
+    expect(stateAfter.analyses[0].id).toBe(analysesBefore[0].id);
+  });
+});
