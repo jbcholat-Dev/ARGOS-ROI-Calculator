@@ -87,19 +87,23 @@ development_status:
   4-3-navigation-links-and-session-stability: done
   epic-4-retrospective: done
 
+  # Epic 6: Solutions Module (V11) (5 stories)
+  # PRIORITY NOTE: Epic 6 executed before Epic 5 — Solution content must exist
+  # before PDF Export can include it. Story 6.5 (Unified PDF) depends on Epic 5
+  # infrastructure and will be executed AFTER Epic 5 is complete.
+  epic-6: backlog
+  6-1-solutions-navigation-from-global-analysis: backlog
+  6-2-pre-filled-context-from-roi-analyses: backlog
+  6-3-technical-specifications-form: backlog
+  6-4-argos-architecture-diagram: backlog
+  6-5-unified-pdf-export-v10-v11: backlog  # DEPENDENCY: Execute after Epic 5 (needs PDF pipeline)
+  epic-6-retrospective: optional
+
   # Epic 5: PDF Export & Reporting (4 stories)
+  # Executed after Epic 6 stories 6.1-6.4, before story 6.5
   epic-5: backlog
   5-1-pdf-export-button-with-progress-state: backlog
   5-2-pdf-template-with-pfeiffer-branding: backlog
   5-3-pdf-content-structure-executive-summary-breakdown-assumptions: backlog
   5-4-pdf-generation-error-handling: backlog
   epic-5-retrospective: optional
-
-  # Epic 6: Solutions Module (V11) (5 stories)
-  epic-6: backlog
-  6-1-solutions-navigation-from-global-analysis: backlog
-  6-2-pre-filled-context-from-roi-analyses: backlog
-  6-3-technical-specifications-form: backlog
-  6-4-argos-architecture-diagram: backlog
-  6-5-unified-pdf-export-v10-v11: backlog
-  epic-6-retrospective: optional
