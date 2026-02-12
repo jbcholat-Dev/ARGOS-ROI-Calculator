@@ -81,11 +81,11 @@ development_status:
   epic-3-retrospective: done
 
   # Epic 4: Global Analysis & Comparison (3 stories)
-  epic-4: in-progress
+  epic-4: done
   4-1-global-analysis-view-with-aggregated-metrics: done
   4-2-comparison-table-side-by-side: done
   4-3-navigation-links-and-session-stability: done
-  epic-4-retrospective: optional
+  epic-4-retrospective: done
 
   # Epic 5: PDF Export & Reporting (4 stories)
   epic-5: backlog
