@@ -4,12 +4,12 @@ import { PlaceholderMessage } from '@/components/PlaceholderMessage';
 
 export function Solutions() {
   useEffect(() => {
-    document.title = 'Solutions - ARGOS ROI Calculator';
+    document.title = 'Solutions \u2014 ARGOS ROI Calculator';
   }, []);
 
   return (
     <AppLayout>
-      <PlaceholderMessage message="Complete your ROI analyses first" />
+      <PlaceholderMessage message="Solutions module — ready for configuration" />
     </AppLayout>
   );
 }

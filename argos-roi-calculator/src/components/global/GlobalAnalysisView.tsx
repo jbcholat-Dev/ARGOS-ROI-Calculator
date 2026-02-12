@@ -4,6 +4,8 @@ import { useAppStore } from '@/stores/app-store';
 import { calculateAggregatedMetrics, calculateAllAnalysisRows, getROIColorClass } from '@/lib/calculations';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { ComparisonTable } from './ComparisonTable';
+import { Button } from '@/components/ui';
+import { ROUTES } from '@/lib/constants';
 
 export function GlobalAnalysisView() {
   const analyses = useAppStore((state) => state.analyses);
@@ -23,6 +25,10 @@ export function GlobalAnalysisView() {
     },
     [setActiveAnalysis, navigate],
   );
+
+  const handleNavigateToSolutions = useCallback(() => {
+    navigate(ROUTES.SOLUTIONS);
+  }, [navigate]);
 
   const aggregated = useMemo(
     () => calculateAggregatedMetrics(analyses, globalParams),
@@ -124,6 +130,16 @@ export function GlobalAnalysisView() {
           onNavigateToAnalysis={handleNavigateToAnalysis}
         />
       )}
+
+      <div className="flex justify-center mt-10">
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={handleNavigateToSolutions}
+        >
+          Configure ARGOS Solution
+        </Button>
+      </div>
     </section>
   );
 }

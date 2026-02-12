@@ -331,6 +331,136 @@ describe('GlobalAnalysisView', () => {
     });
   });
 
+  describe('Solutions CTA button', () => {
+    it('renders CTA button when analyses have complete data', () => {
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ pumpQuantity: 10 })],
+      });
+
+      renderView();
+
+      expect(screen.getByRole('button', { name: 'Configure ARGOS Solution' })).toBeInTheDocument();
+    });
+
+    it('navigates to /solutions on click', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ pumpQuantity: 10 })],
+      });
+
+      renderView();
+
+      await user.click(screen.getByRole('button', { name: 'Configure ARGOS Solution' }));
+      expect(mockNavigate).toHaveBeenCalledWith('/solutions');
+    });
+
+    it('is not visible when 0 analyses', () => {
+      useAppStore.setState({ analyses: [] });
+
+      renderView();
+
+      expect(screen.queryByRole('button', { name: 'Configure ARGOS Solution' })).not.toBeInTheDocument();
+    });
+
+    it('is not visible when all analyses have incomplete data', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ pumpQuantity: 0 }),
+          createTestAnalysis({ pumpQuantity: 0 }),
+        ],
+      });
+
+      renderView();
+
+      expect(screen.queryByRole('button', { name: 'Configure ARGOS Solution' })).not.toBeInTheDocument();
+    });
+
+    it('navigates on Enter key press', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ pumpQuantity: 10 })],
+      });
+
+      renderView();
+
+      const button = screen.getByRole('button', { name: 'Configure ARGOS Solution' });
+      button.focus();
+      await user.keyboard('{Enter}');
+      expect(mockNavigate).toHaveBeenCalledWith('/solutions');
+    });
+
+    it('navigates on Space key press', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ pumpQuantity: 10 })],
+      });
+
+      renderView();
+
+      const button = screen.getByRole('button', { name: 'Configure ARGOS Solution' });
+      button.focus();
+      await user.keyboard(' ');
+      expect(mockNavigate).toHaveBeenCalledWith('/solutions');
+    });
+  });
+
+  describe('data integrity after Solutions navigation', () => {
+    it('store state unchanged after navigation to Solutions', async () => {
+      const user = userEvent.setup();
+      const analysis = createTestAnalysis({ pumpQuantity: 10 });
+      const globalParams = { detectionRate: 80, serviceCostPerPump: 3000 };
+      useAppStore.setState({
+        analyses: [analysis],
+        globalParams,
+      });
+
+      renderView();
+
+      const analysesBefore = useAppStore.getState().analyses;
+      const paramsBefore = useAppStore.getState().globalParams;
+      await user.click(screen.getByRole('button', { name: 'Configure ARGOS Solution' }));
+
+      expect(useAppStore.getState().analyses).toBe(analysesBefore);
+      expect(useAppStore.getState().globalParams).toBe(paramsBefore);
+    });
+
+    it('analyses array identical after Solutions navigation with 3 analyses', async () => {
+      const user = userEvent.setup();
+      const analyses = [
+        createTestAnalysis({ name: 'Process A', pumpQuantity: 10 }),
+        createTestAnalysis({ name: 'Process B', pumpQuantity: 8 }),
+        createTestAnalysis({ name: 'Process C', pumpQuantity: 5 }),
+      ];
+      useAppStore.setState({ analyses });
+
+      renderView();
+
+      await user.click(screen.getByRole('button', { name: 'Configure ARGOS Solution' }));
+
+      expect(useAppStore.getState().analyses).toHaveLength(3);
+      expect(useAppStore.getState().analyses.map(a => a.name)).toEqual([
+        'Process A',
+        'Process B',
+        'Process C',
+      ]);
+    });
+
+    it('global params preserved after Solutions navigation', async () => {
+      const user = userEvent.setup();
+      const customParams = { detectionRate: 85, serviceCostPerPump: 4000 };
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ pumpQuantity: 10 })],
+        globalParams: customParams,
+      });
+
+      renderView();
+
+      await user.click(screen.getByRole('button', { name: 'Configure ARGOS Solution' }));
+
+      expect(useAppStore.getState().globalParams).toEqual(customParams);
+    });
+  });
+
   describe('comparison table integration', () => {
     it('renders ComparisonTable when analyses have data', () => {
       useAppStore.setState({
