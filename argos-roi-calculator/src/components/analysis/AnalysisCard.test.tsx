@@ -608,6 +608,17 @@ describe('AnalysisCard', () => {
     });
 
     it('deletes analysis when confirming deletion', async () => {
+      // AC9: Need at least 2 analyses so the last one isn't protected
+      const secondAnalysis: Analysis = {
+        ...baseAnalysis,
+        id: 'second-id',
+        name: 'Process 2',
+      };
+      useAppStore.setState({
+        analyses: [baseAnalysis, secondAnalysis],
+        activeAnalysisId: baseAnalysis.id,
+      });
+
       const user = userEvent.setup();
       render(
         <MemoryRouter>
@@ -624,12 +635,13 @@ describe('AnalysisCard', () => {
       const confirmButton = screen.getByRole('button', { name: /Delete/i });
       await user.click(confirmButton);
 
-      // Analysis should be deleted
+      // Analysis should be deleted (second one remains)
       const analyses = useAppStore.getState().analyses;
-      expect(analyses).toHaveLength(0);
+      expect(analyses).toHaveLength(1);
+      expect(analyses[0].id).toBe('second-id');
     });
 
-    it('stays on Dashboard when deleting last analysis (Story 3.6 fix)', async () => {
+    it('does not delete last analysis — AC9 store guard (Story 3.6 + 4.4 fix)', async () => {
       const user = userEvent.setup();
       render(
         <MemoryRouter>
@@ -647,11 +659,9 @@ describe('AnalysisCard', () => {
       const modalDeleteButton = suppressButtons.find(btn => btn.textContent === 'Delete' && btn.className.includes('pfeiffer-red'));
       await user.click(modalDeleteButton!);
 
-      // Story 3.6 fix: Should NOT navigate (already on Dashboard)
-      // Dashboard will show empty state automatically
-      await waitFor(() => {
-        expect(useAppStore.getState().analyses).toHaveLength(0);
-      });
+      // AC9: Store guard prevents deletion of last analysis
+      expect(useAppStore.getState().analyses).toHaveLength(1);
+      expect(useAppStore.getState().analyses[0].id).toBe(baseAnalysis.id);
       expect(mockNavigate).not.toHaveBeenCalled();
     });
 

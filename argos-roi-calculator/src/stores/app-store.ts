@@ -19,11 +19,19 @@ import type { Analysis, GlobalParams } from '@/types';
  * Application state interface
  * Contains all analyses, active analysis tracking, and global parameters
  */
+export type DeploymentMode = 'pilot' | 'production';
+export type ConnectionType = 'ethernet' | 'rs485' | 'wifi';
+
 export interface AppState {
   // Core Data
   analyses: Analysis[]; // All ROI analyses in current session
   activeAnalysisId: string | null; // Currently focused/active analysis ID
   globalParams: GlobalParams; // Shared parameters across all analyses
+  excludedFromGlobal: Set<string>; // Analysis IDs excluded from Global Analysis calculations
+
+  // Diagram State (Story 6.4)
+  deploymentMode: DeploymentMode; // Pilot or Production topology
+  connectionType: ConnectionType; // Pump-to-infrastructure connection type
 
   // UI State
   unsavedChanges: boolean; // Tracks if there are unsaved changes (future: session persistence)
@@ -34,9 +42,14 @@ export interface AppState {
   deleteAnalysis: (id: string) => void;
   duplicateAnalysis: (id: string) => void;
   setActiveAnalysis: (id: string | null) => void;
+  toggleExcludeFromGlobal: (analysisId: string) => void;
 
   // Actions - Global Parameters
   updateGlobalParams: (params: Partial<GlobalParams>) => void;
+
+  // Actions - Diagram (Story 6.4)
+  setDeploymentMode: (mode: DeploymentMode) => void;
+  setConnectionType: (type: ConnectionType) => void;
 }
 
 /**
@@ -67,6 +80,9 @@ export const useAppStore = create<AppState>((set) => ({
     detectionRate: 70, // Default: 70% detection rate (FR31)
     serviceCostPerPump: 2500, // Default: EUR 2,500/year per pump (FR33)
   },
+  excludedFromGlobal: new Set<string>(),
+  deploymentMode: 'pilot' as DeploymentMode, // Default: Pilot topology (Story 6.4)
+  connectionType: 'ethernet' as ConnectionType, // Default: Ethernet connection (Story 6.4)
   unsavedChanges: false, // NOTE: Not actively used in Story 1.2, reserved for future session persistence
 
   // ========== Analysis Actions ==========
@@ -184,6 +200,11 @@ export const useAppStore = create<AppState>((set) => ({
    */
   deleteAnalysis: (id) =>
     set((state) => {
+      // AC9: At least one analysis must always exist in the calculator
+      if (state.analyses.length <= 1) {
+        return state;
+      }
+
       const newAnalyses = state.analyses.filter((a) => a.id !== id);
       let newActiveId = state.activeAnalysisId;
 
@@ -192,9 +213,14 @@ export const useAppStore = create<AppState>((set) => ({
         newActiveId = newAnalyses.length > 0 ? newAnalyses[0].id : null;
       }
 
+      // Clean up excludedFromGlobal set (remove orphan ID)
+      const newExcluded = new Set(state.excludedFromGlobal);
+      newExcluded.delete(id);
+
       return {
         analyses: newAnalyses,
         activeAnalysisId: newActiveId,
+        excludedFromGlobal: newExcluded,
       };
     }),
 
@@ -222,6 +248,32 @@ export const useAppStore = create<AppState>((set) => ({
         analyses: [...state.analyses, duplicate],
         activeAnalysisId: duplicate.id, // Auto-focus duplicated analysis
       };
+    }),
+
+  /**
+   * Toggle an analysis ID in/out of the excludedFromGlobal set.
+   * Excluded analyses are not counted in Global Analysis KPI calculations.
+   * Cannot exclude the last active (non-excluded) analysis.
+   *
+   * @param analysisId - Analysis ID to toggle exclusion for
+   */
+  toggleExcludeFromGlobal: (analysisId) =>
+    set((state) => {
+      const newExcluded = new Set(state.excludedFromGlobal);
+      if (newExcluded.has(analysisId)) {
+        // Re-include: always allowed
+        newExcluded.delete(analysisId);
+      } else {
+        // Exclude: protect last active process
+        const activeCount = state.analyses.filter(
+          (a) => !state.excludedFromGlobal.has(a.id),
+        ).length;
+        if (activeCount <= 1) {
+          return state; // Cannot exclude the last active process
+        }
+        newExcluded.add(analysisId);
+      }
+      return { excludedFromGlobal: newExcluded };
     }),
 
   /**
@@ -276,4 +328,10 @@ export const useAppStore = create<AppState>((set) => ({
         globalParams: { ...state.globalParams, ...params },
       };
     }),
+
+  // ========== Diagram Actions (Story 6.4) ==========
+
+  setDeploymentMode: (mode) => set({ deploymentMode: mode }),
+
+  setConnectionType: (type) => set({ connectionType: type }),
 }));

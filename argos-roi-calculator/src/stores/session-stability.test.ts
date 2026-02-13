@@ -45,22 +45,24 @@ describe('Session Stability — Store Stress Tests (AC: 3)', () => {
   it('50 add/delete cycles preserve store integrity', () => {
     const state = useAppStore.getState();
 
-    for (let i = 0; i < 50; i++) {
-      const analysis = createTestAnalysis({ id: `stress-${i}`, name: `Stress ${i}` });
-      state.addAnalysis(analysis);
+    // AC9: At least one analysis must remain, so we cycle by adding then deleting previous
+    state.addAnalysis(createTestAnalysis({ id: 'stress-0', name: 'Stress 0' }));
+    expect(useAppStore.getState().analyses).toHaveLength(1);
 
+    for (let i = 1; i < 50; i++) {
+      state.addAnalysis(createTestAnalysis({ id: `stress-${i}`, name: `Stress ${i}` }));
+      expect(useAppStore.getState().analyses).toHaveLength(2);
+
+      state.deleteAnalysis(`stress-${i - 1}`);
       const current = useAppStore.getState();
       expect(current.analyses).toHaveLength(1);
       expect(current.analyses[0].id).toBe(`stress-${i}`);
-
-      state.deleteAnalysis(`stress-${i}`);
-      expect(useAppStore.getState().analyses).toHaveLength(0);
     }
 
-    // Final state: empty store, no corruption
+    // Final state: 1 analysis remaining (AC9), no corruption
     const finalState = useAppStore.getState();
-    expect(finalState.analyses).toHaveLength(0);
-    expect(finalState.activeAnalysisId).toBeNull();
+    expect(finalState.analyses).toHaveLength(1);
+    expect(finalState.analyses[0].id).toBe('stress-49');
   });
 
   it('100 sequential setActiveAnalysis calls produce correct final state', () => {
@@ -139,15 +141,15 @@ describe('Session Stability — Store Stress Tests (AC: 3)', () => {
     }
     expect(useAppStore.getState().analyses).toHaveLength(5);
 
-    // Delete all
+    // Delete all — AC9 guard preserves the last one
     for (let i = 0; i < 5; i++) {
       state.deleteAnalysis(`grow-${i}`);
     }
 
-    // Should be empty, no orphaned data
+    // AC9: Last analysis preserved, no orphaned data
     const finalState = useAppStore.getState();
-    expect(finalState.analyses).toHaveLength(0);
-    expect(finalState.activeAnalysisId).toBeNull();
+    expect(finalState.analyses).toHaveLength(1);
+    expect(finalState.analyses[0].id).toBe('grow-4');
   });
 
   it('calculated values remain accurate after many state mutations', () => {

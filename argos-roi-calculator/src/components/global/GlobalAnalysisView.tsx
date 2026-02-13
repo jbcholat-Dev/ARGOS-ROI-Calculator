@@ -1,21 +1,34 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/stores/app-store';
 import { calculateAggregatedMetrics, calculateAllAnalysisRows, getROIColorClass } from '@/lib/calculations';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { ComparisonTable } from './ComparisonTable';
 import { Button } from '@/components/ui';
+import { Modal } from '@/components/ui/Modal';
 import { ROUTES } from '@/lib/constants';
 
 export function GlobalAnalysisView() {
   const analyses = useAppStore((state) => state.analyses);
   const globalParams = useAppStore((state) => state.globalParams);
   const setActiveAnalysis = useAppStore((state) => state.setActiveAnalysis);
+  const excludedFromGlobal = useAppStore((state) => state.excludedFromGlobal);
+  const toggleExcludeFromGlobal = useAppStore((state) => state.toggleExcludeFromGlobal);
+  const deleteAnalysis = useAppStore((state) => state.deleteAnalysis);
   const navigate = useNavigate();
 
-  const rows = useMemo(
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+
+  // All rows (including excluded) for the table display
+  const allRows = useMemo(
     () => calculateAllAnalysisRows(analyses, globalParams),
     [analyses, globalParams],
+  );
+
+  // Filtered analyses for KPI calculations (exclude user-excluded processes)
+  const includedAnalyses = useMemo(
+    () => analyses.filter((a) => !excludedFromGlobal.has(a.id)),
+    [analyses, excludedFromGlobal],
   );
 
   const handleNavigateToAnalysis = useCallback(
@@ -30,9 +43,28 @@ export function GlobalAnalysisView() {
     navigate(ROUTES.SOLUTIONS);
   }, [navigate]);
 
+  const handleDeleteRequest = useCallback((id: string) => {
+    const row = allRows.find((r) => r.id === id);
+    if (row) {
+      setDeleteTarget({ id: row.id, name: row.name });
+    }
+  }, [allRows]);
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (deleteTarget) {
+      deleteAnalysis(deleteTarget.id);
+      setDeleteTarget(null);
+    }
+  }, [deleteTarget, deleteAnalysis]);
+
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteTarget(null);
+  }, []);
+
+  // Aggregated metrics use only included (non-excluded) analyses
   const aggregated = useMemo(
-    () => calculateAggregatedMetrics(analyses, globalParams),
-    [analyses, globalParams],
+    () => calculateAggregatedMetrics(includedAnalyses, globalParams),
+    [includedAnalyses, globalParams],
   );
 
   const roiColorClass = getROIColorClass(aggregated.overallROI);
@@ -43,7 +75,12 @@ export function GlobalAnalysisView() {
         ? 'text-red-600'
         : 'text-gray-700';
 
-  if (aggregated.processCount === 0) {
+  // Process counter: active vs total calculable
+  const totalCalculableCount = allRows.length;
+  const activeProcessCount = allRows.filter((r) => !excludedFromGlobal.has(r.id)).length;
+  const hasExcludedProcesses = activeProcessCount < totalCalculableCount;
+
+  if (aggregated.processCount === 0 && !hasExcludedProcesses) {
     if (aggregated.excludedCount > 0) {
       return (
         <p className="text-center text-gray-500">
@@ -57,6 +94,12 @@ export function GlobalAnalysisView() {
   return (
     <section role="region" aria-label="Aggregated ROI metrics">
       <div className="rounded-xl bg-gray-50 p-8 md:p-12">
+        {hasExcludedProcesses && (
+          <p className="mb-6 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg px-4 py-2" aria-live="polite">
+            {`${activeProcessCount}/${totalCalculableCount} processes selected`}
+          </p>
+        )}
+
         <div className="grid grid-cols-2 gap-8 md:gap-12">
           <div>
             <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
@@ -124,10 +167,14 @@ export function GlobalAnalysisView() {
         </p>
       )}
 
-      {rows.length > 0 && (
+      {allRows.length > 0 && (
         <ComparisonTable
-          rows={rows}
+          rows={allRows}
           onNavigateToAnalysis={handleNavigateToAnalysis}
+          excludedIds={excludedFromGlobal}
+          onToggleExclude={toggleExcludeFromGlobal}
+          onDeleteAnalysis={handleDeleteRequest}
+          totalAnalysesCount={analyses.length}
         />
       )}
 
@@ -140,6 +187,28 @@ export function GlobalAnalysisView() {
           Configure ARGOS Solution
         </Button>
       </div>
+
+      {deleteTarget && (
+        <Modal
+          isOpen={true}
+          onClose={handleDeleteCancel}
+          title={`Supprimer l'analyse ${deleteTarget.name} ?`}
+          footer={
+            <div className="flex gap-3 justify-end">
+              <Button variant="secondary" onClick={handleDeleteCancel}>
+                Annuler
+              </Button>
+              <Button variant="danger" onClick={handleDeleteConfirm}>
+                Supprimer
+              </Button>
+            </div>
+          }
+        >
+          <p className="text-gray-700">
+            Cette action supprimera d&eacute;finitivement l&apos;analyse et ses donn&eacute;es du calculateur. Cette action est irr&eacute;versible.
+          </p>
+        </Modal>
+      )}
     </section>
   );
 }

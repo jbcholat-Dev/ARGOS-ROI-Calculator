@@ -49,6 +49,7 @@ describe('GlobalAnalysisView', () => {
       analyses: [],
       activeAnalysisId: null,
       globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+      excludedFromGlobal: new Set<string>(),
       unsavedChanges: false,
     });
   });
@@ -518,6 +519,370 @@ describe('GlobalAnalysisView', () => {
       // New service cost: 10 * 5000 = €50,000 → visible in hero and table
       const matches = screen.getAllByText(/50[\s\u00a0]000/);
       expect(matches.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  // Story 4.4: Process Selection Filter & Deletion
+  describe('process exclusion from Global Analysis (Story 4.4)', () => {
+    it('renders checkboxes in comparison table', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+        ],
+      });
+
+      renderView();
+
+      expect(screen.getByLabelText('Include Process A in global analysis')).toBeInTheDocument();
+      expect(screen.getByLabelText('Include Process B in global analysis')).toBeInTheDocument();
+    });
+
+    it('unchecking a process excludes it from KPI calculations (AC2)', () => {
+      const analysisA = createTestAnalysis({ id: 'a1', name: 'Process A', pumpQuantity: 10 });
+      const analysisB = createTestAnalysis({ id: 'a2', name: 'Process B', pumpQuantity: 8 });
+      useAppStore.setState({
+        analyses: [analysisA, analysisB],
+      });
+
+      renderView();
+
+      // Total pumps before exclusion: 10 + 8 = 18
+      const pumpsHeading = screen.getByText('Total Pumps Monitored');
+      expect(within(pumpsHeading.parentElement!).getByText('18')).toBeInTheDocument();
+
+      // Exclude Process A
+      act(() => {
+        useAppStore.getState().toggleExcludeFromGlobal('a1');
+      });
+
+      // After exclusion: only Process B = 8 pumps
+      expect(within(pumpsHeading.parentElement!).getByText('8')).toBeInTheDocument();
+    });
+
+    it('re-checking a process re-includes it in KPI calculations (AC3)', () => {
+      const analysisA = createTestAnalysis({ id: 'a1', name: 'Process A', pumpQuantity: 10 });
+      const analysisB = createTestAnalysis({ id: 'a2', name: 'Process B', pumpQuantity: 8 });
+      useAppStore.setState({
+        analyses: [analysisA, analysisB],
+      });
+
+      renderView();
+
+      // Exclude then re-include
+      act(() => {
+        useAppStore.getState().toggleExcludeFromGlobal('a1');
+      });
+
+      const pumpsHeading = screen.getByText('Total Pumps Monitored');
+      expect(within(pumpsHeading.parentElement!).getByText('8')).toBeInTheDocument();
+
+      act(() => {
+        useAppStore.getState().toggleExcludeFromGlobal('a1');
+      });
+
+      // Back to 18
+      expect(within(pumpsHeading.parentElement!).getByText('18')).toBeInTheDocument();
+    });
+
+    it('shows process counter when processes are excluded (AC4)', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+          createTestAnalysis({ id: 'a3', name: 'Process C' }),
+        ],
+      });
+
+      renderView();
+
+      // No counter when all included
+      expect(screen.queryByText(/processes selected/)).not.toBeInTheDocument();
+
+      // Exclude one
+      act(() => {
+        useAppStore.getState().toggleExcludeFromGlobal('a1');
+      });
+
+      expect(screen.getByText('2/3 processes selected')).toBeInTheDocument();
+    });
+
+    it('process counter updates in real time (AC4)', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+          createTestAnalysis({ id: 'a3', name: 'Process C' }),
+        ],
+      });
+
+      renderView();
+
+      act(() => {
+        useAppStore.getState().toggleExcludeFromGlobal('a1');
+      });
+
+      expect(screen.getByText('2/3 processes selected')).toBeInTheDocument();
+
+      act(() => {
+        useAppStore.getState().toggleExcludeFromGlobal('a2');
+      });
+
+      expect(screen.getByText('1/3 processes selected')).toBeInTheDocument();
+    });
+
+    it('process counter has aria-live for screen readers', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+        ],
+      });
+
+      renderView();
+
+      act(() => {
+        useAppStore.getState().toggleExcludeFromGlobal('a1');
+      });
+
+      const counter = screen.getByText(/processes selected/);
+      expect(counter).toHaveAttribute('aria-live', 'polite');
+    });
+  });
+
+  describe('delete confirmation modal (Story 4.4 AC7)', () => {
+    it('shows confirmation modal when delete is triggered on excluded row', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+        ],
+        excludedFromGlobal: new Set(['a1']),
+      });
+
+      renderView();
+
+      await user.click(screen.getByLabelText('Supprimer Process A'));
+
+      // Modal should appear with French text
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getByText(/Supprimer l'analyse Process A/)).toBeInTheDocument();
+    });
+
+    it('modal has correct French body text (AC7)', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+        ],
+        excludedFromGlobal: new Set(['a1']),
+      });
+
+      renderView();
+
+      await user.click(screen.getByLabelText('Supprimer Process A'));
+
+      expect(screen.getByText(/Cette action supprimera/)).toBeInTheDocument();
+      expect(screen.getByText(/irr/)).toBeInTheDocument();
+    });
+
+    it('modal has Annuler and Supprimer buttons (AC7)', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+        ],
+        excludedFromGlobal: new Set(['a1']),
+      });
+
+      renderView();
+
+      await user.click(screen.getByLabelText('Supprimer Process A'));
+
+      expect(screen.getByRole('button', { name: 'Annuler' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Supprimer' })).toBeInTheDocument();
+    });
+
+    it('clicking Annuler closes modal without deleting (AC7)', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+        ],
+        excludedFromGlobal: new Set(['a1']),
+      });
+
+      renderView();
+
+      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByRole('button', { name: 'Annuler' }));
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(useAppStore.getState().analyses).toHaveLength(2);
+    });
+
+    it('clicking Supprimer deletes the analysis (AC8)', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+        ],
+        excludedFromGlobal: new Set(['a1']),
+      });
+
+      renderView();
+
+      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByRole('button', { name: 'Supprimer' }));
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(useAppStore.getState().analyses).toHaveLength(1);
+      expect(useAppStore.getState().analyses[0].id).toBe('a2');
+    });
+
+    it('deletion cleans up excludedFromGlobal set (AC8)', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+        ],
+        excludedFromGlobal: new Set(['a1']),
+      });
+
+      renderView();
+
+      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByRole('button', { name: 'Supprimer' }));
+
+      expect(useAppStore.getState().excludedFromGlobal.has('a1')).toBe(false);
+    });
+
+    it('KPIs do not change after deleting excluded process (AC8)', async () => {
+      const user = userEvent.setup();
+      const analysisA = createTestAnalysis({ id: 'a1', name: 'Process A', pumpQuantity: 10 });
+      const analysisB = createTestAnalysis({ id: 'a2', name: 'Process B', pumpQuantity: 8 });
+      useAppStore.setState({
+        analyses: [analysisA, analysisB],
+        excludedFromGlobal: new Set(['a1']),
+      });
+
+      renderView();
+
+      // Before deletion: KPIs only count Process B (8 pumps)
+      const pumpsHeading = screen.getByText('Total Pumps Monitored');
+      expect(within(pumpsHeading.parentElement!).getByText('8')).toBeInTheDocument();
+
+      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByRole('button', { name: 'Supprimer' }));
+
+      // After deletion: still 8 pumps (Process A was already excluded)
+      expect(within(pumpsHeading.parentElement!).getByText('8')).toBeInTheDocument();
+    });
+
+    it('Escape key closes modal (AC7)', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+        ],
+        excludedFromGlobal: new Set(['a1']),
+      });
+
+      renderView();
+
+      await user.click(screen.getByLabelText('Supprimer Process A'));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+      await user.keyboard('{Escape}');
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(useAppStore.getState().analyses).toHaveLength(2);
+    });
+
+    it('modal has aria-describedby attribute (AC7)', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+        ],
+        excludedFromGlobal: new Set(['a1']),
+      });
+
+      renderView();
+
+      await user.click(screen.getByLabelText('Supprimer Process A'));
+
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toHaveAttribute('aria-describedby');
+      expect(dialog).toHaveAttribute('aria-labelledby');
+    });
+
+    it('focus is trapped within modal: Tab and Shift+Tab cycle (AC7)', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ id: 'a1', name: 'Process A' }),
+          createTestAnalysis({ id: 'a2', name: 'Process B' }),
+        ],
+        excludedFromGlobal: new Set(['a1']),
+      });
+
+      renderView();
+
+      await user.click(screen.getByLabelText('Supprimer Process A'));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+      const closeButton = screen.getByLabelText('Close modal');
+      const annulerButton = screen.getByRole('button', { name: 'Annuler' });
+      const supprimerButton = screen.getByRole('button', { name: 'Supprimer' });
+
+      // Focus the last focusable element
+      supprimerButton.focus();
+      expect(document.activeElement).toBe(supprimerButton);
+
+      // Tab from last element should wrap to first (focus trap)
+      await user.tab();
+      expect(document.activeElement).toBe(closeButton);
+
+      // Shift+Tab from first element should wrap to last (backward focus trap)
+      await user.tab({ shift: true });
+      expect(document.activeElement).toBe(supprimerButton);
+    });
+  });
+
+  describe('delete cascade to Solutions module (Story 4.4 AC8)', () => {
+    it('deleted analysis is removed from analyses array used by Solutions (AC8)', async () => {
+      const user = userEvent.setup();
+      const analysisA = createTestAnalysis({ id: 'a1', name: 'Process A', pumpQuantity: 10 });
+      const analysisB = createTestAnalysis({ id: 'a2', name: 'Process B', pumpQuantity: 8 });
+      useAppStore.setState({
+        analyses: [analysisA, analysisB],
+        excludedFromGlobal: new Set(['a1']),
+      });
+
+      renderView();
+
+      // Verify both analyses exist before deletion
+      expect(useAppStore.getState().analyses).toHaveLength(2);
+
+      // Delete excluded analysis
+      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByRole('button', { name: 'Supprimer' }));
+
+      // Solutions module reads from analyses array — verify the deleted analysis
+      // is completely removed from the store (no orphaned references)
+      const state = useAppStore.getState();
+      expect(state.analyses).toHaveLength(1);
+      expect(state.analyses.find((a) => a.id === 'a1')).toBeUndefined();
+      expect(state.excludedFromGlobal.has('a1')).toBe(false);
     });
   });
 });

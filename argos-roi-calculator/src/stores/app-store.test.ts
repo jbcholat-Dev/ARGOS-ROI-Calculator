@@ -17,6 +17,9 @@ describe('AppStore', () => {
         detectionRate: 70,
         serviceCostPerPump: 2500,
       },
+      excludedFromGlobal: new Set<string>(),
+      deploymentMode: 'pilot',
+      connectionType: 'ethernet',
       unsavedChanges: false,
     });
   });
@@ -282,9 +285,9 @@ describe('AppStore', () => {
   describe('deleteAnalysis', () => {
     it('should remove analysis from store', () => {
       const state = useAppStore.getState();
-      const analysis: Analysis = {
+      const analysis1: Analysis = {
         id: 'test-id-1',
-        name: 'Test',
+        name: 'Test 1',
         pumpType: 'A3004XN',
         pumpQuantity: 2,
         failureRateMode: 'percentage',
@@ -297,15 +300,32 @@ describe('AppStore', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
+      const analysis2: Analysis = {
+        id: 'test-id-2',
+        name: 'Test 2',
+        pumpType: 'A3004XN',
+        pumpQuantity: 3,
+        failureRateMode: 'percentage',
+        failureRatePercentage: 10,
+        waferType: 'batch',
+        waferQuantity: 125,
+        waferCost: 5000,
+        downtimeDuration: 4,
+        downtimeCostPerHour: 1000,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-      state.addAnalysis(analysis);
+      state.addAnalysis(analysis1);
+      state.addAnalysis(analysis2);
       state.deleteAnalysis('test-id-1');
 
       const updatedState = useAppStore.getState();
-      expect(updatedState.analyses).toHaveLength(0);
+      expect(updatedState.analyses).toHaveLength(1);
+      expect(updatedState.analyses[0].id).toBe('test-id-2');
     });
 
-    it('should clear activeAnalysisId when deleting last remaining analysis', () => {
+    it('should not delete the last remaining analysis (AC9)', () => {
       const state = useAppStore.getState();
       const analysis: Analysis = {
         id: 'test-id-1',
@@ -326,9 +346,10 @@ describe('AppStore', () => {
       state.addAnalysis(analysis);
       expect(useAppStore.getState().activeAnalysisId).toBe('test-id-1');
 
-      // Story 3.3: Deleting last analysis should set activeAnalysisId to null
+      // AC9: At least one analysis must always exist
       state.deleteAnalysis('test-id-1');
-      expect(useAppStore.getState().activeAnalysisId).toBeNull();
+      expect(useAppStore.getState().analyses).toHaveLength(1);
+      expect(useAppStore.getState().activeAnalysisId).toBe('test-id-1');
     });
 
     it('should set first remaining analysis as active when deleting active analysis (Story 3.3)', () => {
@@ -794,6 +815,201 @@ describe('AppStore', () => {
 
       state.setActiveAnalysis(null);
       expect(useAppStore.getState().activeAnalysisId).toBeNull();
+    });
+  });
+
+  // Story 4.4: excludedFromGlobal and toggleExcludeFromGlobal
+  describe('excludedFromGlobal (Story 4.4)', () => {
+    const createAnalysis = (id: string, name: string): Analysis => ({
+      id,
+      name,
+      pumpType: 'A3004XN',
+      pumpQuantity: 10,
+      failureRateMode: 'percentage',
+      failureRatePercentage: 10,
+      waferType: 'batch',
+      waferQuantity: 125,
+      waferCost: 5000,
+      downtimeDuration: 4,
+      downtimeCostPerHour: 1000,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    it('should have empty excludedFromGlobal set initially', () => {
+      const state = useAppStore.getState();
+      expect(state.excludedFromGlobal.size).toBe(0);
+    });
+
+    it('should exclude an analysis from global calculations', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('a1', 'Process A'));
+      state.addAnalysis(createAnalysis('a2', 'Process B'));
+
+      state.toggleExcludeFromGlobal('a1');
+
+      expect(useAppStore.getState().excludedFromGlobal.has('a1')).toBe(true);
+      expect(useAppStore.getState().excludedFromGlobal.size).toBe(1);
+    });
+
+    it('should re-include an excluded analysis', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('a1', 'Process A'));
+      state.addAnalysis(createAnalysis('a2', 'Process B'));
+
+      state.toggleExcludeFromGlobal('a1');
+      expect(useAppStore.getState().excludedFromGlobal.has('a1')).toBe(true);
+
+      state.toggleExcludeFromGlobal('a1');
+      expect(useAppStore.getState().excludedFromGlobal.has('a1')).toBe(false);
+      expect(useAppStore.getState().excludedFromGlobal.size).toBe(0);
+    });
+
+    it('should prevent excluding the last active process', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('a1', 'Process A'));
+
+      state.toggleExcludeFromGlobal('a1');
+
+      // Should be no-op: a1 is the only analysis
+      expect(useAppStore.getState().excludedFromGlobal.has('a1')).toBe(false);
+    });
+
+    it('should prevent excluding when only one active process remains', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('a1', 'Process A'));
+      state.addAnalysis(createAnalysis('a2', 'Process B'));
+      state.addAnalysis(createAnalysis('a3', 'Process C'));
+
+      state.toggleExcludeFromGlobal('a1');
+      state.toggleExcludeFromGlobal('a2');
+
+      expect(useAppStore.getState().excludedFromGlobal.size).toBe(2);
+
+      // Try to exclude the last active one
+      state.toggleExcludeFromGlobal('a3');
+
+      // Should be no-op
+      expect(useAppStore.getState().excludedFromGlobal.has('a3')).toBe(false);
+      expect(useAppStore.getState().excludedFromGlobal.size).toBe(2);
+    });
+
+    it('should allow re-including even when only one active remains', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('a1', 'Process A'));
+      state.addAnalysis(createAnalysis('a2', 'Process B'));
+
+      state.toggleExcludeFromGlobal('a1');
+      expect(useAppStore.getState().excludedFromGlobal.size).toBe(1);
+
+      // Re-include should always work
+      state.toggleExcludeFromGlobal('a1');
+      expect(useAppStore.getState().excludedFromGlobal.size).toBe(0);
+    });
+
+    it('should clean up excludedFromGlobal when deleting an excluded analysis', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('a1', 'Process A'));
+      state.addAnalysis(createAnalysis('a2', 'Process B'));
+
+      state.toggleExcludeFromGlobal('a1');
+      expect(useAppStore.getState().excludedFromGlobal.has('a1')).toBe(true);
+
+      state.deleteAnalysis('a1');
+
+      expect(useAppStore.getState().excludedFromGlobal.has('a1')).toBe(false);
+      expect(useAppStore.getState().excludedFromGlobal.size).toBe(0);
+    });
+
+    it('should not affect excludedFromGlobal when deleting a non-excluded analysis', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('a1', 'Process A'));
+      state.addAnalysis(createAnalysis('a2', 'Process B'));
+      state.addAnalysis(createAnalysis('a3', 'Process C'));
+
+      state.toggleExcludeFromGlobal('a1');
+
+      state.deleteAnalysis('a2');
+
+      expect(useAppStore.getState().excludedFromGlobal.has('a1')).toBe(true);
+      expect(useAppStore.getState().excludedFromGlobal.size).toBe(1);
+    });
+
+    it('should create new Set reference on each toggle (Zustand reactivity)', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('a1', 'Process A'));
+      state.addAnalysis(createAnalysis('a2', 'Process B'));
+
+      const setBefore = useAppStore.getState().excludedFromGlobal;
+      state.toggleExcludeFromGlobal('a1');
+      const setAfter = useAppStore.getState().excludedFromGlobal;
+
+      expect(setBefore).not.toBe(setAfter);
+    });
+  });
+
+  // Story 6.4: Diagram Store Slice
+  describe('Diagram State (Story 6.4)', () => {
+    it('should have default deploymentMode set to pilot', () => {
+      const state = useAppStore.getState();
+      expect(state.deploymentMode).toBe('pilot');
+    });
+
+    it('should have default connectionType set to ethernet', () => {
+      const state = useAppStore.getState();
+      expect(state.connectionType).toBe('ethernet');
+    });
+
+    it('should update deploymentMode to production', () => {
+      const state = useAppStore.getState();
+      state.setDeploymentMode('production');
+      expect(useAppStore.getState().deploymentMode).toBe('production');
+    });
+
+    it('should update deploymentMode back to pilot', () => {
+      const state = useAppStore.getState();
+      state.setDeploymentMode('production');
+      state.setDeploymentMode('pilot');
+      expect(useAppStore.getState().deploymentMode).toBe('pilot');
+    });
+
+    it('should update connectionType to rs485', () => {
+      const state = useAppStore.getState();
+      state.setConnectionType('rs485');
+      expect(useAppStore.getState().connectionType).toBe('rs485');
+    });
+
+    it('should update connectionType to wifi', () => {
+      const state = useAppStore.getState();
+      state.setConnectionType('wifi');
+      expect(useAppStore.getState().connectionType).toBe('wifi');
+    });
+
+    it('should not affect other state when changing deploymentMode', () => {
+      const analysis: Analysis = {
+        id: 'test-id',
+        name: 'Test',
+        pumpType: 'A3004XN',
+        pumpQuantity: 2,
+        failureRateMode: 'percentage',
+        failureRatePercentage: 10,
+        waferType: 'batch',
+        waferQuantity: 125,
+        waferCost: 5000,
+        downtimeDuration: 4,
+        downtimeCostPerHour: 1000,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const state = useAppStore.getState();
+      state.addAnalysis(analysis);
+      state.setDeploymentMode('production');
+
+      const updated = useAppStore.getState();
+      expect(updated.analyses).toHaveLength(1);
+      expect(updated.activeAnalysisId).toBe('test-id');
+      expect(updated.connectionType).toBe('ethernet');
     });
   });
 });

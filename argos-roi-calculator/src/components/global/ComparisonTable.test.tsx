@@ -354,4 +354,301 @@ describe('ComparisonTable', () => {
       expect(container.innerHTML).toBe('');
     });
   });
+
+  // Story 4.4: Process Selection Filter & Deletion
+  describe('checkbox exclusion (Story 4.4)', () => {
+    const mockToggleExclude = vi.fn();
+    const mockDeleteAnalysis = vi.fn();
+
+    afterEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('renders checkboxes when exclusion feature is enabled', () => {
+      render(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set()}
+          onToggleExclude={mockToggleExclude}
+        />,
+      );
+
+      const checkboxes = screen.getAllByRole('checkbox');
+      expect(checkboxes).toHaveLength(3);
+    });
+
+    it('does not render checkboxes when exclusion feature is disabled', () => {
+      render(
+        <ComparisonTable rows={defaultRows} onNavigateToAnalysis={mockNavigate} />,
+      );
+
+      expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+    });
+
+    it('all checkboxes checked by default (no exclusions)', () => {
+      render(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set()}
+          onToggleExclude={mockToggleExclude}
+        />,
+      );
+
+      const checkboxes = screen.getAllByRole('checkbox');
+      checkboxes.forEach((cb) => {
+        expect(cb).toBeChecked();
+      });
+    });
+
+    it('excluded row has unchecked checkbox', () => {
+      render(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set(['a1'])}
+          onToggleExclude={mockToggleExclude}
+        />,
+      );
+
+      const checkbox = screen.getByLabelText(/Include Poly Etch/);
+      expect(checkbox).not.toBeChecked();
+    });
+
+    it('excluded row has opacity-50 styling', () => {
+      const { container } = render(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set(['a1'])}
+          onToggleExclude={mockToggleExclude}
+        />,
+      );
+
+      const tbody = container.querySelector('tbody');
+      const rows = tbody!.querySelectorAll('tr');
+      // Poly Etch is sorted first (highest savings), and is excluded
+      const polyEtchRow = Array.from(rows).find((row) =>
+        row.textContent?.includes('Poly Etch'),
+      );
+      expect(polyEtchRow?.className).toContain('opacity-50');
+    });
+
+    it('clicking checkbox calls onToggleExclude with correct ID', async () => {
+      const user = userEvent.setup();
+      render(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set()}
+          onToggleExclude={mockToggleExclude}
+        />,
+      );
+
+      const checkbox = screen.getByLabelText(/Include Poly Etch/);
+      await user.click(checkbox);
+
+      expect(mockToggleExclude).toHaveBeenCalledWith('a1');
+    });
+
+    it('checkbox is keyboard accessible (Space toggles)', async () => {
+      const user = userEvent.setup();
+      render(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set()}
+          onToggleExclude={mockToggleExclude}
+        />,
+      );
+
+      const checkbox = screen.getByLabelText(/Include Poly Etch/);
+      checkbox.focus();
+      await user.keyboard(' ');
+
+      expect(mockToggleExclude).toHaveBeenCalledWith('a1');
+    });
+
+    it('checkbox has aria-label with process name', () => {
+      render(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set()}
+          onToggleExclude={mockToggleExclude}
+        />,
+      );
+
+      expect(screen.getByLabelText('Include Poly Etch in global analysis')).toBeInTheDocument();
+      expect(screen.getByLabelText('Include Metal Dep in global analysis')).toBeInTheDocument();
+      expect(screen.getByLabelText('Include CMP Batch in global analysis')).toBeInTheDocument();
+    });
+  });
+
+  describe('last active process protection (Story 4.4 AC5)', () => {
+    const mockToggleExclude = vi.fn();
+
+    afterEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('disables checkbox when only one active process remains', () => {
+      const rows = [
+        createRow({ id: 'a1', name: 'Only Active' }),
+        createRow({ id: 'a2', name: 'Excluded One' }),
+      ];
+
+      render(
+        <ComparisonTable
+          rows={rows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set(['a2'])}
+          onToggleExclude={mockToggleExclude}
+        />,
+      );
+
+      const activeCheckbox = screen.getByLabelText(/Include Only Active/);
+      expect(activeCheckbox).toBeDisabled();
+    });
+
+    it('shows tooltip on disabled checkbox', () => {
+      const rows = [
+        createRow({ id: 'a1', name: 'Only Active' }),
+        createRow({ id: 'a2', name: 'Excluded One' }),
+      ];
+
+      render(
+        <ComparisonTable
+          rows={rows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set(['a2'])}
+          onToggleExclude={mockToggleExclude}
+        />,
+      );
+
+      const activeCheckbox = screen.getByLabelText(/Include Only Active/);
+      expect(activeCheckbox).toHaveAttribute('title', 'At least one process must remain active');
+    });
+
+    it('does not disable checkboxes when multiple active processes exist', () => {
+      render(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set()}
+          onToggleExclude={mockToggleExclude}
+        />,
+      );
+
+      const checkboxes = screen.getAllByRole('checkbox');
+      checkboxes.forEach((cb) => {
+        expect(cb).not.toBeDisabled();
+      });
+    });
+  });
+
+  describe('delete button on excluded rows (Story 4.4 AC6)', () => {
+    const mockToggleExclude = vi.fn();
+    const mockDeleteAnalysis = vi.fn();
+
+    afterEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('shows delete button on excluded rows', () => {
+      render(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set(['a1'])}
+          onToggleExclude={mockToggleExclude}
+          onDeleteAnalysis={mockDeleteAnalysis}
+          totalAnalysesCount={3}
+        />,
+      );
+
+      expect(screen.getByLabelText('Supprimer Poly Etch')).toBeInTheDocument();
+    });
+
+    it('does not show delete button on active (checked) rows', () => {
+      render(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set(['a1'])}
+          onToggleExclude={mockToggleExclude}
+          onDeleteAnalysis={mockDeleteAnalysis}
+          totalAnalysesCount={3}
+        />,
+      );
+
+      expect(screen.queryByLabelText('Supprimer Metal Dep')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Supprimer CMP Batch')).not.toBeInTheDocument();
+    });
+
+    it('clicking delete button calls onDeleteAnalysis with correct ID', async () => {
+      const user = userEvent.setup();
+      render(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set(['a1'])}
+          onToggleExclude={mockToggleExclude}
+          onDeleteAnalysis={mockDeleteAnalysis}
+          totalAnalysesCount={3}
+        />,
+      );
+
+      await user.click(screen.getByLabelText('Supprimer Poly Etch'));
+
+      expect(mockDeleteAnalysis).toHaveBeenCalledWith('a1');
+    });
+
+    it('does not show delete button when only one analysis remains (AC9)', () => {
+      const rows = [createRow({ id: 'a1', name: 'Last One' })];
+
+      render(
+        <ComparisonTable
+          rows={rows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set(['a1'])}
+          onToggleExclude={mockToggleExclude}
+          onDeleteAnalysis={mockDeleteAnalysis}
+          totalAnalysesCount={1}
+        />,
+      );
+
+      expect(screen.queryByLabelText('Supprimer Last One')).not.toBeInTheDocument();
+    });
+
+    it('delete button disappears when row is re-checked (AC3)', () => {
+      const { rerender } = render(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set(['a1'])}
+          onToggleExclude={mockToggleExclude}
+          onDeleteAnalysis={mockDeleteAnalysis}
+          totalAnalysesCount={3}
+        />,
+      );
+
+      expect(screen.getByLabelText('Supprimer Poly Etch')).toBeInTheDocument();
+
+      // Re-render with a1 no longer excluded (simulating re-check)
+      rerender(
+        <ComparisonTable
+          rows={defaultRows}
+          onNavigateToAnalysis={mockNavigate}
+          excludedIds={new Set()}
+          onToggleExclude={mockToggleExclude}
+          onDeleteAnalysis={mockDeleteAnalysis}
+          totalAnalysesCount={3}
+        />,
+      );
+
+      expect(screen.queryByLabelText('Supprimer Poly Etch')).not.toBeInTheDocument();
+    });
+  });
 });
