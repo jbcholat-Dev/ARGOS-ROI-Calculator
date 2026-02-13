@@ -79,7 +79,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
         expect(screen.getByRole('navigation')).toBeInTheDocument();
         expect(screen.getByRole('complementary')).toBeInTheDocument();
         expect(
-          screen.getByText(/Solutions module — ready for configuration/)
+          screen.getByRole('region', { name: 'Pre-filled context from ROI analyses' })
         ).toBeInTheDocument();
       });
     });

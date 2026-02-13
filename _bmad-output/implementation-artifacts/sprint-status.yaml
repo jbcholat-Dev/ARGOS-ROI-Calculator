@@ -87,15 +87,20 @@ development_status:
   4-3-navigation-links-and-session-stability: done
   epic-4-retrospective: done
 
-  # Epic 6: Solutions Module (V11) (5 stories)
+  # Epic 6: Solutions Module (V11) (5 stories + 1 spike)
   # PRIORITY NOTE: Epic 6 executed before Epic 5 — Solution content must exist
   # before PDF Export can include it. Story 6.5 (Unified PDF) depends on Epic 5
   # infrastructure and will be executed AFTER Epic 5 is complete.
+  # UPDATED 2026-02-13: Added spike for architecture diagram design (from PO feedback).
+  # Story 6.4 rewritten: static diagram → interactive with Pilot/Production topologies.
+  # Story 6.3 may need revision after spike (overlap with diagram controls).
+  # Execution order: 6.2 // spike (parallel) → 6.4 (blocked by spike) → 6.3 (may simplify) → 6.5
   epic-6: in-progress
   6-1-solutions-navigation-from-global-analysis: done
-  6-2-pre-filled-context-from-roi-analyses: backlog
-  6-3-technical-specifications-form: backlog
-  6-4-argos-architecture-diagram: backlog
+  6-2-pre-filled-context-from-roi-analyses: done  # UPDATED: Added pump model clustering (PO feedback 2026-02-13)
+  6-spike-architecture-diagram-design: ready-for-dev  # NEW: UX design spike, run parallel with 6.2
+  6-3-technical-specifications-form: backlog  # NOTE: May be simplified after spike (overlap with diagram controls)
+  6-4-interactive-architecture-diagram: backlog  # REWRITTEN: Static → Interactive with Pilot/Production toggle. BLOCKED BY spike.
   6-5-unified-pdf-export-v10-v11: backlog  # DEPENDENCY: Execute after Epic 5 (needs PDF pipeline)
   epic-6-retrospective: optional
 
