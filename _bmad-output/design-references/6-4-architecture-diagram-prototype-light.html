@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARGOS Architecture Diagram — Spike Prototype (Light)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pfeiffer-red: #CC0000;
+  --pfeiffer-red-dark: #A50000;
+  --pfeiffer-red-glow: rgba(204, 0, 0, 0.15);
+  --pfeiffer-red-soft: rgba(204, 0, 0, 0.06);
+  --bg-deep: #F5F6F8;
+  --bg-panel: #FFFFFF;
+  --bg-card: #F0F1F4;
+  --bg-elevated: #F7F8FA;
+  --border-dim: rgba(0,0,0,0.06);
+  --border-subtle: rgba(0,0,0,0.10);
+  --border-active: rgba(204, 0, 0, 0.3);
+  --text-primary: #1A1D26;
+  --text-secondary: #5A6478;
+  --text-dim: #8B95A8;
+  --cloud-blue: #1A6FD4;
+  --cloud-blue-glow: rgba(26, 111, 212, 0.12);
+  --mqtt-green: #00946A;
+  --pilot-amber: #C88400;
+  --pilot-amber-glow: rgba(200, 132, 0, 0.12);
+  --production-cyan: #0097B8;
+  --production-cyan-glow: rgba(0, 151, 184, 0.12);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-medium: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-topology: 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.blueprint-bg {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(204,0,0,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(204,0,0,0.03) 1px, transparent 1px),
+    linear-gradient(rgba(204,0,0,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(204,0,0,0.015) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+}
+.noise-overlay {
+  position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.02;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.app-container {
+  position: relative; z-index: 2;
+  max-width: 1480px; margin: 0 auto; padding: 28px 36px;
+}
+
+/* Header */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-dim);
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.argos-mark {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--pfeiffer-red), var(--pfeiffer-red-dark));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px var(--pfeiffer-red-glow);
+}
+.argos-mark svg { width: 20px; height: 20px; fill: white; }
+.header-title {
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary);
+}
+.header-title span { color: var(--text-primary); font-weight: 600; }
+.header-badge {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 400;
+  letter-spacing: 0.06em; color: var(--text-dim); padding: 5px 10px;
+  border: 1px solid var(--border-subtle); border-radius: 100px;
+}
+
+/* Controls Bar */
+.controls-bar {
+  display: flex; align-items: center; gap: 20px; margin-bottom: 20px;
+  padding: 12px 18px; background: var(--bg-panel);
+  border: 1px solid var(--border-dim); border-radius: var(--radius-lg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.control-group { display: flex; align-items: center; gap: 8px; }
+.control-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); white-space: nowrap;
+}
+.deployment-toggle {
+  position: relative; display: flex; background: var(--bg-deep);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 3px; gap: 2px;
+}
+.toggle-option {
+  position: relative; z-index: 2; padding: 7px 18px; flex: 1; text-align: center;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+  color: var(--text-dim); background: none; border: none; border-radius: 7px;
+  cursor: pointer; transition: color var(--transition-fast); white-space: nowrap;
+}
+.toggle-option:hover { color: var(--text-secondary); }
+.toggle-option.active { color: white; }
+.toggle-slider {
+  position: absolute; top: 3px; height: calc(100% - 6px);
+  border-radius: 7px; transition: all var(--transition-medium); z-index: 1;
+}
+.toggle-slider.pilot {
+  background: linear-gradient(135deg, #E09000, #C07800);
+  box-shadow: 0 2px 8px var(--pilot-amber-glow);
+}
+.toggle-slider.production {
+  background: linear-gradient(135deg, #0097B8, #007A96);
+  box-shadow: 0 2px 8px var(--production-cyan-glow);
+}
+.connection-select-wrap { position: relative; }
+.connection-select {
+  appearance: none; background: var(--bg-deep); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: 7px 32px 7px 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+  color: var(--text-primary); cursor: pointer; outline: none;
+  transition: border-color var(--transition-fast);
+}
+.connection-select:hover, .connection-select:focus { border-color: var(--border-active); }
+.connection-select option { background: var(--bg-panel); color: var(--text-primary); }
+.select-arrow {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  pointer-events: none; color: var(--text-dim);
+}
+.controls-separator { width: 1px; height: 24px; background: var(--border-subtle); flex-shrink: 0; }
+.stat-inline-value {
+  font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700;
+  color: var(--text-primary); line-height: 1;
+}
+.stats-inline { gap: 5px; }
+.mode-badge {
+  display: flex; align-items: center; gap: 7px; margin-left: auto;
+  padding: 5px 12px; border-radius: 100px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.04em; transition: all var(--transition-medium);
+}
+.mode-badge.pilot { background: rgba(200,132,0,0.08); border: 1px solid rgba(200,132,0,0.20); color: var(--pilot-amber); }
+.mode-badge.production { background: rgba(0,151,184,0.08); border: 1px solid rgba(0,151,184,0.20); color: var(--production-cyan); }
+.mode-badge-dot { width: 5px; height: 5px; border-radius: 50%; animation: pulse-dot 2s ease-in-out infinite; }
+.mode-badge.pilot .mode-badge-dot { background: var(--pilot-amber); }
+.mode-badge.production .mode-badge-dot { background: var(--production-cyan); }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+
+/* Diagram Canvas */
+.diagram-canvas {
+  position: relative; background: var(--bg-panel);
+  border: 1px solid var(--border-dim); border-radius: var(--radius-xl); overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.diagram-canvas::before {
+  content: ''; position: absolute; inset: 0; border-radius: var(--radius-xl); padding: 1px;
+  background: linear-gradient(135deg, transparent 30%, var(--pfeiffer-red-soft) 50%, transparent 70%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none; opacity: 0.3; transition: opacity var(--transition-medium);
+}
+.diagram-canvas:hover::before { opacity: 0.6; }
+.diagram-svg { width: 100%; height: 100%; display: block; }
+
+/* SVG classes */
+.pump-cluster-bg { fill: var(--bg-card); stroke: var(--border-subtle); stroke-width: 1; rx: 10; }
+.pump-cluster-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase; fill: var(--text-dim);
+}
+.pump-cluster-count { font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 700; fill: var(--text-primary); }
+.pump-cluster-model { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 400; fill: var(--text-secondary); }
+.argos-box-indicator { fill: var(--pfeiffer-red); opacity: 0.9; }
+.connection-line { stroke-width: 1.8; fill: none; transition: all var(--transition-topology); }
+.connection-line.wired { stroke-dasharray: none; }
+.connection-line.wireless { stroke-dasharray: 6 4; }
+.connection-line.pilot-line { stroke: var(--pilot-amber); filter: none; }
+.connection-line.production-line { stroke: var(--production-cyan); filter: none; }
+.connection-line.cloud-line { stroke: var(--cloud-blue); filter: none; }
+.conn-type-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 8px; font-weight: 500;
+  fill: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase;
+}
+.infra-node { transition: all var(--transition-topology); }
+.infra-node-bg { fill: #FFFFFF; stroke: rgba(0,0,0,0.12); stroke-width: 1.5; rx: 10; transition: all var(--transition-fast); }
+.infra-node:hover .infra-node-bg { stroke: var(--border-active); }
+.infra-node-title { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; fill: var(--text-primary); }
+.infra-node-subtitle { font-family: 'IBM Plex Mono', monospace; font-size: 8px; font-weight: 400; fill: var(--text-dim); letter-spacing: 0.04em; }
+.topology-element { transition: opacity var(--transition-topology); }
+.topology-element.hidden { opacity: 0; pointer-events: none; }
+.topology-element.visible { opacity: 1; }
+.cloud-bg { fill: rgba(26,111,212,0.03); stroke: rgba(26,111,212,0.15); stroke-width: 1.5; rx: 14; }
+.cloud-label { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; fill: var(--cloud-blue); }
+.cloud-sublabel { font-family: 'IBM Plex Mono', monospace; font-size: 8px; font-weight: 400; fill: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
+.mqtt-badge { fill: rgba(0,148,106,0.08); stroke: rgba(0,148,106,0.25); stroke-width: 1; rx: 4; }
+.mqtt-label { font-family: 'IBM Plex Mono', monospace; font-size: 8px; font-weight: 600; fill: var(--mqtt-green); letter-spacing: 0.05em; }
+.sync-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: 0.04em; }
+.sync-label.manual { fill: var(--pilot-amber); }
+.sync-label.auto { fill: var(--production-cyan); }
+
+/* Bottom bar */
+.bottom-bar {
+  display: flex; gap: 12px; margin-top: 14px;
+}
+.legend {
+  display: flex; align-items: center; gap: 16px; flex: 1;
+  padding: 10px 16px; background: var(--bg-panel);
+  border: 1px solid var(--border-dim); border-radius: var(--radius-md);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-line { width: 20px; height: 2px; border-radius: 1px; }
+.legend-line.wired { background: var(--text-secondary); }
+.legend-line.wireless { background: repeating-linear-gradient(90deg, var(--text-secondary) 0px, var(--text-secondary) 4px, transparent 4px, transparent 8px); }
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+.legend-text { font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 400; color: var(--text-dim); letter-spacing: 0.04em; }
+.stats-footer {
+  display: flex; gap: 1px; background: var(--border-dim); border-radius: var(--radius-md); overflow: hidden;
+}
+.stat-card { flex: 1; padding: 10px 14px; background: var(--bg-panel); }
+.stat-card:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+.stat-card:last-child { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+.stat-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 8px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 2px;
+}
+.stat-value { font-family: 'DM Sans', sans-serif; font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.stat-value .unit { font-size: 10px; font-weight: 400; color: var(--text-secondary); margin-left: 3px; }
+
+@keyframes dash-flow { to { stroke-dashoffset: -20; } }
+.flow-animated { animation: dash-flow 1s linear infinite; }
+.flow-animated-slow { animation: dash-flow 2s linear infinite; }
+
+@media (max-width: 1024px) {
+  .app-container { padding: 16px; }
+  .controls-bar { flex-wrap: wrap; gap: 10px; }
+  .mode-badge { margin-left: 0; }
+  .bottom-bar { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<div class="blueprint-bg"></div>
+<div class="noise-overlay"></div>
+
+<div class="app-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="argos-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="header-title"><span>ARGOS</span> &mdash; Architecture Diagram</div>
+    </div>
+    <div class="header-badge">Spike 6.4 &bull; Design Prototype</div>
+  </div>
+
+  <!-- Controls Bar -->
+  <div class="controls-bar">
+    <div class="control-group">
+      <span class="control-label">Deployment</span>
+      <div class="deployment-toggle" role="radiogroup" aria-label="Deployment mode">
+        <div class="toggle-slider pilot" id="toggleSlider"></div>
+        <button class="toggle-option active" id="btnPilot" role="radio" aria-checked="true" onclick="setMode('pilot')">Pilot</button>
+        <button class="toggle-option" id="btnProduction" role="radio" aria-checked="false" onclick="setMode('production')">Production</button>
+      </div>
+    </div>
+    <div class="controls-separator"></div>
+    <div class="control-group">
+      <span class="control-label">Connection</span>
+      <div class="connection-select-wrap">
+        <select class="connection-select" id="connectionType" onchange="setConnection(this.value)" aria-label="Connection type">
+          <option value="rs485">RS-485 (Wired)</option>
+          <option value="ethernet">Ethernet (Wired)</option>
+          <option value="wifi">WiFi (Wireless)</option>
+        </select>
+        <svg class="select-arrow" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="controls-separator"></div>
+    <div class="control-group stats-inline">
+      <span class="control-label">Pumps</span>
+      <span class="stat-inline-value">18</span>
+    </div>
+    <div class="control-group stats-inline">
+      <span class="control-label">Models</span>
+      <span class="stat-inline-value">3</span>
+    </div>
+    <div class="control-group stats-inline">
+      <span class="control-label">Processes</span>
+      <span class="stat-inline-value">3</span>
+    </div>
+    <div class="control-group stats-inline">
+      <span class="control-label" id="infraLabel">Micro-PCs</span>
+      <span class="stat-inline-value" id="infraValue">3</span>
+    </div>
+    <div class="control-group stats-inline">
+      <span class="control-label" id="syncLabel">Sync</span>
+      <span class="stat-inline-value" id="syncValue">Daily</span>
+    </div>
+
+    <div id="modeBadge" class="mode-badge pilot">
+      <div class="mode-badge-dot"></div>
+      <span id="modeBadgeText">Pilot Mode &mdash; Operational Day 1</span>
+    </div>
+  </div>
+
+  <!-- ============ DIAGRAM ============ -->
+  <div class="diagram-canvas">
+    <svg class="diagram-svg" viewBox="0 0 1400 590" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowAmber" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+          <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#C88400" stroke-width="1"/>
+        </marker>
+        <marker id="arrowCyan" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+          <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#0097B8" stroke-width="1"/>
+        </marker>
+        <marker id="arrowBlue" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+          <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#1A6FD4" stroke-width="1"/>
+        </marker>
+      </defs>
+
+      <!-- ========== ZONE LABELS ========== -->
+      <text x="36" y="30" class="pump-cluster-label" style="font-size:10px">SUB-FAB ENVIRONMENT</text>
+      <line x1="190" y1="24" x2="290" y2="24" stroke="var(--border-dim)" stroke-width="1"/>
+
+      <text x="370" y="30" class="pump-cluster-label" style="font-size:10px">INFRASTRUCTURE</text>
+      <line x1="480" y1="24" x2="590" y2="24" stroke="var(--border-dim)" stroke-width="1"/>
+
+      <text x="670" y="30" class="pump-cluster-label" style="font-size:10px">DATA TRANSFER</text>
+      <line x1="770" y1="24" x2="870" y2="24" stroke="var(--border-dim)" stroke-width="1"/>
+
+      <text x="940" y="30" class="pump-cluster-label" style="font-size:10px">CLOUD PLATFORM</text>
+      <line x1="1040" y1="24" x2="1360" y2="24" stroke="var(--border-dim)" stroke-width="1"/>
+
+      <!-- ========== PUMP CLUSTER 1 ========== -->
+      <g class="pump-cluster" transform="translate(36, 50)">
+        <rect class="pump-cluster-bg" width="250" height="150"/>
+        <g transform="translate(14, 18)">
+          <g transform="translate(0,0)">
+            <rect x="0" y="16" width="44" height="56" rx="3" fill="var(--bg-deep)" stroke="var(--border-subtle)" stroke-width="1"/>
+            <circle cx="22" cy="38" r="10" fill="none" stroke="var(--text-dim)" stroke-width="1"/>
+            <line x1="16" y1="38" x2="28" y2="38" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <line x1="22" y1="32" x2="22" y2="44" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <rect x="6" y="0" width="32" height="14" rx="2" fill="#2A2A2A" stroke="var(--pfeiffer-red)" stroke-width="1.2"/>
+            <rect x="8" y="2" width="12" height="10" rx="1" fill="white" opacity="0.2"/>
+            <circle cx="30" cy="7" r="2.5" fill="none" stroke="var(--pfeiffer-red)" stroke-width="0.8" opacity="0.7"/>
+            <path d="M22,14 Q22,16 22,16" stroke="var(--text-dim)" stroke-width="0.6" fill="none"/>
+          </g>
+          <g transform="translate(54,0)">
+            <rect x="0" y="16" width="44" height="56" rx="3" fill="var(--bg-deep)" stroke="var(--border-subtle)" stroke-width="1"/>
+            <circle cx="22" cy="38" r="10" fill="none" stroke="var(--text-dim)" stroke-width="1"/>
+            <line x1="16" y1="38" x2="28" y2="38" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <line x1="22" y1="32" x2="22" y2="44" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <rect x="6" y="0" width="32" height="14" rx="2" fill="#2A2A2A" stroke="var(--pfeiffer-red)" stroke-width="1.2"/>
+            <rect x="8" y="2" width="12" height="10" rx="1" fill="white" opacity="0.2"/>
+            <circle cx="30" cy="7" r="2.5" fill="none" stroke="var(--pfeiffer-red)" stroke-width="0.8" opacity="0.7"/>
+          </g>
+          <g transform="translate(108,0)">
+            <rect x="0" y="16" width="44" height="56" rx="3" fill="var(--bg-deep)" stroke="var(--border-subtle)" stroke-width="1"/>
+            <circle cx="22" cy="38" r="10" fill="none" stroke="var(--text-dim)" stroke-width="1"/>
+            <line x1="16" y1="38" x2="28" y2="38" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <line x1="22" y1="32" x2="22" y2="44" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <rect x="6" y="0" width="32" height="14" rx="2" fill="#2A2A2A" stroke="var(--pfeiffer-red)" stroke-width="1.2"/>
+            <rect x="8" y="2" width="12" height="10" rx="1" fill="white" opacity="0.2"/>
+            <circle cx="30" cy="7" r="2.5" fill="none" stroke="var(--pfeiffer-red)" stroke-width="0.8" opacity="0.7"/>
+          </g>
+          <g transform="translate(162,0)">
+            <rect x="0" y="16" width="44" height="56" rx="3" fill="var(--bg-deep)" stroke="var(--border-subtle)" stroke-width="1"/>
+            <circle cx="22" cy="38" r="10" fill="none" stroke="var(--text-dim)" stroke-width="1"/>
+            <line x1="16" y1="38" x2="28" y2="38" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <line x1="22" y1="32" x2="22" y2="44" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <rect x="6" y="0" width="32" height="14" rx="2" fill="#2A2A2A" stroke="var(--pfeiffer-red)" stroke-width="1.2"/>
+            <rect x="8" y="2" width="12" height="10" rx="1" fill="white" opacity="0.2"/>
+            <circle cx="30" cy="7" r="2.5" fill="none" stroke="var(--pfeiffer-red)" stroke-width="0.8" opacity="0.7"/>
+          </g>
+        </g>
+        <text x="14" y="108" class="pump-cluster-count">8<tspan class="pump-cluster-model" dx="4" style="font-size:10px">pumps</tspan></text>
+        <text x="14" y="124" class="pump-cluster-model">A3004XN</text>
+        <text x="14" y="140" class="pump-cluster-label" style="font-size:8px">ETCH PROCESS</text>
+      </g>
+
+      <!-- ========== PUMP CLUSTER 2 ========== -->
+      <g class="pump-cluster" transform="translate(36, 220)">
+        <rect class="pump-cluster-bg" width="250" height="150"/>
+        <g transform="translate(14, 18)">
+          <g transform="translate(0,0)">
+            <rect x="0" y="16" width="44" height="56" rx="3" fill="var(--bg-deep)" stroke="var(--border-subtle)" stroke-width="1"/>
+            <circle cx="22" cy="38" r="10" fill="none" stroke="var(--text-dim)" stroke-width="1"/>
+            <line x1="16" y1="38" x2="28" y2="38" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <line x1="22" y1="32" x2="22" y2="44" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <rect x="6" y="0" width="32" height="14" rx="2" fill="#2A2A2A" stroke="var(--pfeiffer-red)" stroke-width="1.2"/>
+            <rect x="8" y="2" width="12" height="10" rx="1" fill="white" opacity="0.2"/>
+            <circle cx="30" cy="7" r="2.5" fill="none" stroke="var(--pfeiffer-red)" stroke-width="0.8" opacity="0.7"/>
+          </g>
+          <g transform="translate(54,0)">
+            <rect x="0" y="16" width="44" height="56" rx="3" fill="var(--bg-deep)" stroke="var(--border-subtle)" stroke-width="1"/>
+            <circle cx="22" cy="38" r="10" fill="none" stroke="var(--text-dim)" stroke-width="1"/>
+            <line x1="16" y1="38" x2="28" y2="38" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <line x1="22" y1="32" x2="22" y2="44" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <rect x="6" y="0" width="32" height="14" rx="2" fill="#2A2A2A" stroke="var(--pfeiffer-red)" stroke-width="1.2"/>
+            <rect x="8" y="2" width="12" height="10" rx="1" fill="white" opacity="0.2"/>
+            <circle cx="30" cy="7" r="2.5" fill="none" stroke="var(--pfeiffer-red)" stroke-width="0.8" opacity="0.7"/>
+          </g>
+          <g transform="translate(108,0)">
+            <rect x="0" y="16" width="44" height="56" rx="3" fill="var(--bg-deep)" stroke="var(--border-subtle)" stroke-width="1"/>
+            <circle cx="22" cy="38" r="10" fill="none" stroke="var(--text-dim)" stroke-width="1"/>
+            <line x1="16" y1="38" x2="28" y2="38" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <line x1="22" y1="32" x2="22" y2="44" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <rect x="6" y="0" width="32" height="14" rx="2" fill="#2A2A2A" stroke="var(--pfeiffer-red)" stroke-width="1.2"/>
+            <rect x="8" y="2" width="12" height="10" rx="1" fill="white" opacity="0.2"/>
+            <circle cx="30" cy="7" r="2.5" fill="none" stroke="var(--pfeiffer-red)" stroke-width="0.8" opacity="0.7"/>
+          </g>
+        </g>
+        <text x="14" y="108" class="pump-cluster-count">6<tspan class="pump-cluster-model" dx="4" style="font-size:10px">pumps</tspan></text>
+        <text x="14" y="124" class="pump-cluster-model">A1803H</text>
+        <text x="14" y="140" class="pump-cluster-label" style="font-size:8px">CVD PROCESS</text>
+      </g>
+
+      <!-- ========== PUMP CLUSTER 3 ========== -->
+      <g class="pump-cluster" transform="translate(36, 390)">
+        <rect class="pump-cluster-bg" width="250" height="140"/>
+        <g transform="translate(14, 18)">
+          <g transform="translate(0,0)">
+            <rect x="0" y="16" width="44" height="56" rx="3" fill="var(--bg-deep)" stroke="var(--border-subtle)" stroke-width="1"/>
+            <circle cx="22" cy="38" r="10" fill="none" stroke="var(--text-dim)" stroke-width="1"/>
+            <line x1="16" y1="38" x2="28" y2="38" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <line x1="22" y1="32" x2="22" y2="44" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <rect x="6" y="0" width="32" height="14" rx="2" fill="#2A2A2A" stroke="var(--pfeiffer-red)" stroke-width="1.2"/>
+            <rect x="8" y="2" width="12" height="10" rx="1" fill="white" opacity="0.2"/>
+            <circle cx="30" cy="7" r="2.5" fill="none" stroke="var(--pfeiffer-red)" stroke-width="0.8" opacity="0.7"/>
+          </g>
+          <g transform="translate(54,0)">
+            <rect x="0" y="16" width="44" height="56" rx="3" fill="var(--bg-deep)" stroke="var(--border-subtle)" stroke-width="1"/>
+            <circle cx="22" cy="38" r="10" fill="none" stroke="var(--text-dim)" stroke-width="1"/>
+            <line x1="16" y1="38" x2="28" y2="38" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <line x1="22" y1="32" x2="22" y2="44" stroke="var(--text-dim)" stroke-width="0.8"/>
+            <rect x="6" y="0" width="32" height="14" rx="2" fill="#2A2A2A" stroke="var(--pfeiffer-red)" stroke-width="1.2"/>
+            <rect x="8" y="2" width="12" height="10" rx="1" fill="white" opacity="0.2"/>
+            <circle cx="30" cy="7" r="2.5" fill="none" stroke="var(--pfeiffer-red)" stroke-width="0.8" opacity="0.7"/>
+          </g>
+        </g>
+        <text x="14" y="100" class="pump-cluster-count">4<tspan class="pump-cluster-model" dx="4" style="font-size:10px">pumps</tspan></text>
+        <text x="14" y="116" class="pump-cluster-model">A2104LM</text>
+        <text x="14" y="132" class="pump-cluster-label" style="font-size:8px">PVD PROCESS</text>
+      </g>
+
+      <!-- ========== CONNECTION LINES ========== -->
+      <path id="conn-p1-pilot" class="connection-line pilot-line wired topology-element pilot-only visible" d="M 286,125 L 370,110" marker-end="url(#arrowAmber)"/>
+      <text id="connLabel1Pilot" class="conn-type-label topology-element pilot-only visible" x="318" y="106" text-anchor="middle">RS-485</text>
+
+      <path id="conn-p2-pilot" class="connection-line pilot-line wired topology-element pilot-only visible" d="M 286,295 L 370,295" marker-end="url(#arrowAmber)"/>
+      <text id="connLabel2Pilot" class="conn-type-label topology-element pilot-only visible" x="328" y="286" text-anchor="middle">RS-485</text>
+
+      <path id="conn-p3-pilot" class="connection-line pilot-line wired topology-element pilot-only visible" d="M 286,460 L 370,450" marker-end="url(#arrowAmber)"/>
+      <text id="connLabel3Pilot" class="conn-type-label topology-element pilot-only visible" x="318" y="444" text-anchor="middle">RS-485</text>
+
+      <path id="conn-p1-prod" class="connection-line production-line wired topology-element production-only hidden" d="M 286,125 C 340,125 360,170 400,180" marker-end="url(#arrowCyan)"/>
+      <text id="connLabel1Prod" class="conn-type-label topology-element production-only hidden" x="335" y="138" text-anchor="middle">RS-485</text>
+
+      <path id="conn-p2-prod" class="connection-line production-line wired topology-element production-only hidden" d="M 286,295 C 340,295 370,280 400,270" marker-end="url(#arrowCyan)"/>
+      <text id="connLabel2Prod" class="conn-type-label topology-element production-only hidden" x="335" y="275" text-anchor="middle">RS-485</text>
+
+      <path id="conn-p3-prod" class="connection-line production-line wired topology-element production-only hidden" d="M 286,460 C 340,460 370,380 400,350" marker-end="url(#arrowCyan)"/>
+      <text id="connLabel3Prod" class="conn-type-label topology-element production-only hidden" x="335" y="388" text-anchor="middle">RS-485</text>
+
+      <!-- ========== PILOT: Micro-PCs ========== -->
+      <g class="infra-node topology-element pilot-only visible" id="microPC1" transform="translate(370, 50)">
+        <rect class="infra-node-bg" width="200" height="120"/>
+        <g transform="translate(14, 14)">
+          <rect x="0" y="0" width="26" height="18" rx="3" fill="none" stroke="var(--pilot-amber)" stroke-width="1.3"/>
+          <line x1="5" y1="22" x2="21" y2="22" stroke="var(--pilot-amber)" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="13" y1="18" x2="13" y2="22" stroke="var(--pilot-amber)" stroke-width="1.3"/>
+        </g>
+        <text x="50" y="26" class="infra-node-title">Micro-PC</text>
+        <text x="50" y="38" class="infra-node-subtitle">NEAR TOOL CLUSTER 1</text>
+        <rect class="mqtt-badge" x="14" y="52" width="60" height="20"/>
+        <text class="mqtt-label" x="22" y="65">MQTT</text>
+        <text x="84" y="65" class="infra-node-subtitle">LOCAL BROKER</text>
+        <text x="14" y="96" class="infra-node-subtitle">8 PUMPS CONNECTED</text>
+        <g transform="translate(140, 86)">
+          <rect x="0" y="0" width="8" height="6" rx="1" fill="none" stroke="var(--text-dim)" stroke-width="0.8"/>
+          <rect x="12" y="0" width="8" height="6" rx="1" fill="none" stroke="var(--text-dim)" stroke-width="0.8"/>
+          <text x="0" y="16" class="infra-node-subtitle" style="font-size:6px">ETH  RS485</text>
+        </g>
+      </g>
+
+      <g class="infra-node topology-element pilot-only visible" id="microPC2" transform="translate(370, 220)">
+        <rect class="infra-node-bg" width="200" height="120"/>
+        <g transform="translate(14, 14)">
+          <rect x="0" y="0" width="26" height="18" rx="3" fill="none" stroke="var(--pilot-amber)" stroke-width="1.3"/>
+          <line x1="5" y1="22" x2="21" y2="22" stroke="var(--pilot-amber)" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="13" y1="18" x2="13" y2="22" stroke="var(--pilot-amber)" stroke-width="1.3"/>
+        </g>
+        <text x="50" y="26" class="infra-node-title">Micro-PC</text>
+        <text x="50" y="38" class="infra-node-subtitle">NEAR TOOL CLUSTER 2</text>
+        <rect class="mqtt-badge" x="14" y="52" width="60" height="20"/>
+        <text class="mqtt-label" x="22" y="65">MQTT</text>
+        <text x="84" y="65" class="infra-node-subtitle">LOCAL BROKER</text>
+        <text x="14" y="96" class="infra-node-subtitle">6 PUMPS CONNECTED</text>
+        <g transform="translate(140, 86)">
+          <rect x="0" y="0" width="8" height="6" rx="1" fill="none" stroke="var(--text-dim)" stroke-width="0.8"/>
+          <rect x="12" y="0" width="8" height="6" rx="1" fill="none" stroke="var(--text-dim)" stroke-width="0.8"/>
+          <text x="0" y="16" class="infra-node-subtitle" style="font-size:6px">ETH  RS485</text>
+        </g>
+      </g>
+
+      <g class="infra-node topology-element pilot-only visible" id="microPC3" transform="translate(370, 390)">
+        <rect class="infra-node-bg" width="200" height="120"/>
+        <g transform="translate(14, 14)">
+          <rect x="0" y="0" width="26" height="18" rx="3" fill="none" stroke="var(--pilot-amber)" stroke-width="1.3"/>
+          <line x1="5" y1="22" x2="21" y2="22" stroke="var(--pilot-amber)" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="13" y1="18" x2="13" y2="22" stroke="var(--pilot-amber)" stroke-width="1.3"/>
+        </g>
+        <text x="50" y="26" class="infra-node-title">Micro-PC</text>
+        <text x="50" y="38" class="infra-node-subtitle">NEAR TOOL CLUSTER 3</text>
+        <rect class="mqtt-badge" x="14" y="52" width="60" height="20"/>
+        <text class="mqtt-label" x="22" y="65">MQTT</text>
+        <text x="84" y="65" class="infra-node-subtitle">LOCAL BROKER</text>
+        <text x="14" y="96" class="infra-node-subtitle">4 PUMPS CONNECTED</text>
+        <g transform="translate(140, 86)">
+          <rect x="0" y="0" width="8" height="6" rx="1" fill="none" stroke="var(--text-dim)" stroke-width="0.8"/>
+          <rect x="12" y="0" width="8" height="6" rx="1" fill="none" stroke="var(--text-dim)" stroke-width="0.8"/>
+          <text x="0" y="16" class="infra-node-subtitle" style="font-size:6px">ETH  RS485</text>
+        </g>
+      </g>
+
+      <!-- ========== PRODUCTION: Centralized Server ========== -->
+      <g class="infra-node topology-element production-only hidden" id="centralServer" transform="translate(400, 50)">
+        <rect class="infra-node-bg" width="220" height="360" style="stroke: rgba(0,151,184,0.25)"/>
+        <g transform="translate(14, 16)">
+          <rect x="0" y="0" width="30" height="10" rx="2" fill="none" stroke="var(--production-cyan)" stroke-width="1.3"/>
+          <circle cx="5" cy="5" r="1.5" fill="var(--production-cyan)"/>
+          <rect x="0" y="14" width="30" height="10" rx="2" fill="none" stroke="var(--production-cyan)" stroke-width="1.3"/>
+          <circle cx="5" cy="19" r="1.5" fill="var(--production-cyan)"/>
+          <rect x="0" y="28" width="30" height="10" rx="2" fill="none" stroke="var(--production-cyan)" stroke-width="1.3"/>
+          <circle cx="5" cy="33" r="1.5" fill="var(--production-cyan)"/>
+        </g>
+        <text x="54" y="28" class="infra-node-title">Central Server</text>
+        <text x="54" y="42" class="infra-node-subtitle">ON-PREMISE DATA CENTER</text>
+        <rect class="mqtt-badge" x="14" y="68" width="76" height="20"/>
+        <text class="mqtt-label" x="22" y="82">MQTT BROKER</text>
+        <text x="14" y="112" class="infra-node-subtitle">VIRTUAL MACHINES</text>
+        <rect x="14" y="118" width="192" height="26" rx="4" fill="rgba(0,151,184,0.04)" stroke="rgba(0,151,184,0.12)" stroke-width="1"/>
+        <text x="24" y="134" style="font-family:'IBM Plex Mono',monospace; font-size:9px; fill:var(--production-cyan); font-weight:500;">VM-ARGOS-01</text>
+        <text x="120" y="134" class="infra-node-subtitle">VLAN</text>
+        <rect x="14" y="150" width="192" height="26" rx="4" fill="rgba(0,151,184,0.04)" stroke="rgba(0,151,184,0.12)" stroke-width="1"/>
+        <text x="24" y="166" style="font-family:'IBM Plex Mono',monospace; font-size:9px; fill:var(--production-cyan); font-weight:500;">VM-ARGOS-02</text>
+        <text x="120" y="166" class="infra-node-subtitle">BACKUP</text>
+        <text x="14" y="200" class="infra-node-subtitle">NETWORK INTEGRATION</text>
+        <rect x="14" y="206" width="192" height="26" rx="4" fill="rgba(204,0,0,0.03)" stroke="rgba(204,0,0,0.10)" stroke-width="1"/>
+        <g transform="translate(24, 214)">
+          <rect x="0" y="0" width="10" height="10" rx="1.5" fill="none" stroke="var(--pfeiffer-red)" stroke-width="0.8" opacity="0.6"/>
+          <line x1="0" y1="5" x2="10" y2="5" stroke="var(--pfeiffer-red)" stroke-width="0.8" opacity="0.6"/>
+        </g>
+        <text x="40" y="222" style="font-family:'IBM Plex Mono',monospace; font-size:9px; fill:var(--pfeiffer-red); font-weight:500; opacity:0.7;">Firewall Rules</text>
+        <text x="130" y="222" class="infra-node-subtitle">PORT 8883</text>
+        <rect x="14" y="240" width="192" height="26" rx="4" fill="rgba(0,0,0,0.02)" stroke="var(--border-subtle)" stroke-width="1"/>
+        <text x="24" y="256" class="infra-node-subtitle" style="fill:var(--text-secondary)">CLIENT IT VALIDATION</text>
+        <text x="150" y="256" class="infra-node-subtitle">REQUIRED</text>
+        <line x1="14" y1="284" x2="206" y2="284" stroke="var(--border-dim)" stroke-width="1"/>
+        <text x="14" y="302" class="infra-node-subtitle">18 PUMPS &bull; 3 PROCESSES</text>
+        <text x="14" y="318" class="infra-node-subtitle">AUTOMATED DATA COLLECTION</text>
+        <rect x="14" y="334" width="192" height="18" rx="3" fill="rgba(0,151,184,0.06)" stroke="rgba(0,151,184,0.12)" stroke-width="0.8"/>
+        <text x="24" y="346" style="font-family:'IBM Plex Mono',monospace; font-size:8px; font-weight:600; fill:var(--production-cyan); letter-spacing:0.04em;">DEPLOYMENT: 3-6 MONTHS (IT APPROVAL)</text>
+      </g>
+
+      <!-- ========== PILOT: Micro-PCs to Manual Sync ========== -->
+      <path class="connection-line pilot-line topology-element pilot-only visible flow-animated-slow" d="M 570,110 C 620,110 640,210 670,220" stroke-dasharray="4 6" marker-end="url(#arrowAmber)"/>
+      <path class="connection-line pilot-line topology-element pilot-only visible flow-animated-slow" d="M 570,280 C 620,280 640,270 670,265" stroke-dasharray="4 6" marker-end="url(#arrowAmber)"/>
+      <path class="connection-line pilot-line topology-element pilot-only visible flow-animated-slow" d="M 570,450 C 620,450 640,330 670,310" stroke-dasharray="4 6" marker-end="url(#arrowAmber)"/>
+
+      <!-- ========== PILOT: Manual Sync Node ========== -->
+      <g class="topology-element pilot-only visible" id="manualSync" transform="translate(670, 200)">
+        <rect x="0" y="0" width="170" height="110" rx="10" fill="var(--bg-elevated)" stroke="rgba(200,132,0,0.20)" stroke-width="1"/>
+        <g transform="translate(16, 14)">
+          <circle cx="10" cy="5" r="5" fill="none" stroke="var(--pilot-amber)" stroke-width="1.3"/>
+          <path d="M0,20 C0,13 20,13 20,20" fill="none" stroke="var(--pilot-amber)" stroke-width="1.3"/>
+        </g>
+        <g transform="translate(48, 16)">
+          <rect x="0" y="0" width="14" height="18" rx="2" fill="none" stroke="var(--pilot-amber)" stroke-width="1"/>
+          <rect x="3" y="0" width="8" height="4" rx="1" fill="var(--pilot-amber)" opacity="0.3"/>
+        </g>
+        <text x="16" y="50" class="sync-label manual">Manual Retrieval</text>
+        <text x="16" y="64" class="infra-node-subtitle">DAILY BY ON-SITE TEAM</text>
+        <text x="16" y="78" class="infra-node-subtitle">USB / PORTABLE DEVICE</text>
+        <rect x="16" y="88" width="138" height="14" rx="3" fill="rgba(200,132,0,0.06)" stroke="rgba(200,132,0,0.12)" stroke-width="0.8"/>
+        <text x="26" y="98" style="font-family:'IBM Plex Mono',monospace; font-size:7px; font-weight:600; fill:var(--pilot-amber); letter-spacing:0.04em;">DEPLOYMENT: 2-3 DAYS</text>
+      </g>
+
+      <!-- Pilot: Manual Sync to Cloud -->
+      <path class="connection-line cloud-line topology-element pilot-only visible flow-animated-slow" d="M 840,255 C 880,255 900,255 930,255" stroke-dasharray="4 6" marker-end="url(#arrowBlue)"/>
+
+      <!-- ========== PRODUCTION: Server to Auto Pipeline ========== -->
+      <path class="connection-line production-line topology-element production-only hidden flow-animated" d="M 620,260 C 650,260 660,260 670,260" stroke-dasharray="2 4" marker-end="url(#arrowCyan)"/>
+
+      <!-- ========== PRODUCTION: Auto Pipeline Node ========== -->
+      <g class="topology-element production-only hidden" id="autoPipeline" transform="translate(670, 200)">
+        <rect x="0" y="0" width="170" height="110" rx="10" fill="var(--bg-elevated)" stroke="rgba(0,151,184,0.20)" stroke-width="1"/>
+        <g transform="translate(16, 12)">
+          <path d="M20,4 A10,10 0 0,1 20,24" fill="none" stroke="var(--production-cyan)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M17,5 L20,2 L23,5" fill="none" stroke="var(--production-cyan)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20,24 A10,10 0 0,1 20,4" fill="none" stroke="var(--production-cyan)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M23,23 L20,26 L17,23" fill="none" stroke="var(--production-cyan)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="20" cy="14" r="3" fill="var(--production-cyan)" opacity="0.2"/>
+          <circle cx="20" cy="14" r="1.5" fill="var(--production-cyan)" opacity="0.4"/>
+        </g>
+        <text x="16" y="50" class="sync-label auto">Auto Pipeline</text>
+        <text x="16" y="64" class="infra-node-subtitle">EVERY 15 MINUTES</text>
+        <text x="16" y="78" class="infra-node-subtitle">TLS ENCRYPTED TRANSFER</text>
+        <rect x="16" y="88" width="138" height="14" rx="3" fill="rgba(0,151,184,0.06)" stroke="rgba(0,151,184,0.12)" stroke-width="0.8"/>
+        <text x="26" y="98" style="font-family:'IBM Plex Mono',monospace; font-size:7px; font-weight:600; fill:var(--production-cyan); letter-spacing:0.04em;">AUTOMATED &bull; NO HUMAN NEEDED</text>
+      </g>
+
+      <!-- Production: Auto Pipeline to Cloud -->
+      <path class="connection-line cloud-line topology-element production-only hidden flow-animated" d="M 840,255 C 880,255 900,240 930,230" stroke-dasharray="2 4" marker-end="url(#arrowBlue)"/>
+
+      <!-- ========== CLOUD PLATFORM ========== -->
+      <g transform="translate(930, 50)">
+        <rect class="cloud-bg" width="440" height="310"/>
+        <g transform="translate(20, 20)">
+          <path d="M7,24 C-2,24 -2,14 5,12 C3,3 15,0 20,7 C27,2 36,7 34,14 C43,14 43,24 34,24 Z" fill="none" stroke="var(--cloud-blue)" stroke-width="1.3" opacity="0.4"/>
+        </g>
+        <text x="68" y="36" class="cloud-label">ARGOS Cloud</text>
+        <text x="68" y="50" class="cloud-sublabel">PFEIFFER VACUUM SaaS PLATFORM</text>
+        <rect x="20" y="70" width="400" height="70" rx="8" fill="rgba(26,111,212,0.03)" stroke="rgba(26,111,212,0.10)" stroke-width="1"/>
+        <g transform="translate(34, 84)">
+          <circle cx="10" cy="10" r="9" fill="none" stroke="var(--cloud-blue)" stroke-width="1" opacity="0.4"/>
+          <path d="M6,7 Q10,3 14,7 M6,10 L14,10 M6,13 Q10,17 14,13" fill="none" stroke="var(--cloud-blue)" stroke-width="1"/>
+        </g>
+        <text x="62" y="96" style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; fill:var(--cloud-blue);">Prediction Models</text>
+        <text x="62" y="110" class="cloud-sublabel">AI/ML ANOMALY DETECTION</text>
+        <text x="62" y="124" class="infra-node-subtitle">Vibration &bull; Temperature &bull; Power consumption</text>
+        <rect x="20" y="156" width="400" height="46" rx="7" fill="rgba(204,0,0,0.02)" stroke="rgba(204,0,0,0.08)" stroke-width="1"/>
+        <g transform="translate(34, 168)">
+          <path d="M8,0 L16,14 L0,14 Z" fill="none" stroke="var(--pfeiffer-red)" stroke-width="1" opacity="0.4"/>
+          <line x1="8" y1="5" x2="8" y2="9" stroke="var(--pfeiffer-red)" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="8" cy="11.5" r="0.8" fill="var(--pfeiffer-red)"/>
+        </g>
+        <text x="58" y="182" style="font-family:'DM Sans',sans-serif; font-size:10px; font-weight:500; fill:var(--pfeiffer-red); opacity:0.8">Alert Engine</text>
+        <text x="58" y="194" class="infra-node-subtitle">PREDICTIVE MAINTENANCE NOTIFICATIONS</text>
+        <rect x="20" y="218" width="400" height="52" rx="7" fill="rgba(0,148,106,0.03)" stroke="rgba(0,148,106,0.10)" stroke-width="1"/>
+        <g transform="translate(34, 232)">
+          <circle cx="8" cy="8" r="7" fill="none" stroke="var(--mqtt-green)" stroke-width="1" opacity="0.4"/>
+          <path d="M4,8 L7,11 L12,5" fill="none" stroke="var(--mqtt-green)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <text x="56" y="246" style="font-family:'DM Sans',sans-serif; font-size:10px; font-weight:500; fill:var(--mqtt-green); opacity:0.9">Predictive Maintenance Output</text>
+        <text x="56" y="260" class="infra-node-subtitle">ANOMALY SCORE &bull; RECOMMENDED ACTIONS</text>
+        <text x="20" y="290" style="font-family:'IBM Plex Mono',monospace; font-size:7px; font-weight:400; fill:var(--text-dim); letter-spacing:0.08em; opacity:0.5;">
+          PFEIFFER VACUUM &bull; DIGITAL SERVICES &bull; ARGOS PLATFORM
+        </text>
+      </g>
+
+      <!-- ========== Deployment badges ========== -->
+      <g class="topology-element pilot-only visible" id="pilotSpeed" transform="translate(370, 524)">
+        <rect x="0" y="0" width="200" height="50" rx="7" fill="rgba(200,132,0,0.05)" stroke="rgba(200,132,0,0.15)" stroke-width="1"/>
+        <text x="14" y="18" style="font-family:'IBM Plex Mono',monospace; font-size:8px; font-weight:500; fill:var(--pilot-amber); letter-spacing:0.06em;">TOTAL DEPLOYMENT</text>
+        <text x="14" y="38" style="font-family:'DM Sans',sans-serif; font-size:18px; font-weight:700; fill:var(--pilot-amber);">2-3 days</text>
+        <text x="110" y="38" class="infra-node-subtitle" style="fill:var(--pilot-amber); opacity:0.6">NO IT NEEDED</text>
+      </g>
+
+      <g class="topology-element production-only hidden" id="prodSpeed" transform="translate(670, 340)">
+        <rect x="0" y="0" width="170" height="50" rx="7" fill="rgba(0,151,184,0.05)" stroke="rgba(0,151,184,0.15)" stroke-width="1"/>
+        <text x="14" y="18" style="font-family:'IBM Plex Mono',monospace; font-size:8px; font-weight:500; fill:var(--production-cyan); letter-spacing:0.06em;">TOTAL DEPLOYMENT</text>
+        <text x="14" y="38" style="font-family:'DM Sans',sans-serif; font-size:18px; font-weight:700; fill:var(--production-cyan);">3-6 months</text>
+      </g>
+
+    </svg>
+  </div>
+
+  <!-- Bottom Bar -->
+  <div class="bottom-bar">
+    <div class="legend">
+      <div class="legend-item">
+        <div style="width:14px; height:8px; border-radius:1px; background:#2A2A2A; border:1px solid var(--pfeiffer-red);"></div>
+        <span class="legend-text">ARGOS Box</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line wired"></div>
+        <span class="legend-text">Wired</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line wireless"></div>
+        <span class="legend-text">Wireless</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background: var(--mqtt-green);"></div>
+        <span class="legend-text">MQTT</span>
+      </div>
+      <div class="legend-item" id="legendPilot">
+        <div class="legend-dot" style="background: var(--pilot-amber);"></div>
+        <span class="legend-text">Pilot</span>
+      </div>
+      <div class="legend-item" id="legendProd" style="display:none;">
+        <div class="legend-dot" style="background: var(--production-cyan);"></div>
+        <span class="legend-text">Production</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentMode = 'pilot';
+let currentConnection = 'rs485';
+
+function setMode(mode) {
+  if (mode === currentMode) return;
+  currentMode = mode;
+  const btnPilot = document.getElementById('btnPilot');
+  const btnProd = document.getElementById('btnProduction');
+  const slider = document.getElementById('toggleSlider');
+  btnPilot.classList.toggle('active', mode === 'pilot');
+  btnProd.classList.toggle('active', mode === 'production');
+  btnPilot.setAttribute('aria-checked', mode === 'pilot');
+  btnProd.setAttribute('aria-checked', mode === 'production');
+  slider.className = 'toggle-slider ' + mode;
+  positionSlider(mode === 'pilot' ? btnPilot : btnProd);
+
+  const badge = document.getElementById('modeBadge');
+  const badgeText = document.getElementById('modeBadgeText');
+  badge.className = 'mode-badge ' + mode;
+  badgeText.innerHTML = mode === 'pilot'
+    ? 'Pilot Mode &mdash; Operational Day 1'
+    : 'Production Mode &mdash; Full Integration';
+
+  document.querySelectorAll('.topology-element.pilot-only').forEach(el => {
+    el.classList.toggle('visible', mode === 'pilot');
+    el.classList.toggle('hidden', mode !== 'pilot');
+  });
+  document.querySelectorAll('.topology-element.production-only').forEach(el => {
+    el.classList.toggle('visible', mode === 'production');
+    el.classList.toggle('hidden', mode !== 'production');
+  });
+
+  document.getElementById('legendPilot').style.display = mode === 'pilot' ? 'flex' : 'none';
+  document.getElementById('legendProd').style.display = mode === 'production' ? 'flex' : 'none';
+
+  if (mode === 'pilot') {
+    document.getElementById('infraLabel').textContent = 'Micro-PCs';
+    document.getElementById('infraValue').textContent = '3';
+    document.getElementById('syncValue').textContent = 'Daily';
+  } else {
+    document.getElementById('infraLabel').textContent = 'Servers';
+    document.getElementById('infraValue').textContent = '1';
+    document.getElementById('syncValue').textContent = '15 min';
+  }
+}
+
+function setConnection(type) {
+  currentConnection = type;
+  const isWireless = type === 'wifi';
+  const label = type === 'wifi' ? 'WiFi' : type === 'rs485' ? 'RS-485' : 'Ethernet';
+
+  ['conn-p1-pilot','conn-p2-pilot','conn-p3-pilot','conn-p1-prod','conn-p2-prod','conn-p3-prod'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('wired', !isWireless);
+    el.classList.toggle('wireless', isWireless);
+    if (isWireless) {
+      el.setAttribute('stroke-dasharray', '6 4');
+    } else {
+      el.removeAttribute('stroke-dasharray');
+    }
+  });
+
+  ['connLabel1Pilot','connLabel2Pilot','connLabel3Pilot','connLabel1Prod','connLabel2Prod','connLabel3Prod'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
+}
+
+function positionSlider(btn) {
+  const slider = document.getElementById('toggleSlider');
+  const toggle = btn.parentElement;
+  const togglePadding = 3;
+  slider.style.left = (btn.offsetLeft - togglePadding) + 'px';
+  slider.style.width = btn.offsetWidth + 'px';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  positionSlider(document.getElementById('btnPilot'));
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.classList.contains('toggle-option')) {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      setMode(currentMode === 'pilot' ? 'production' : 'pilot');
+      document.getElementById(currentMode === 'pilot' ? 'btnPilot' : 'btnProduction').focus();
+    }
+  }
+});
+</script>
+</body>
+</html>
