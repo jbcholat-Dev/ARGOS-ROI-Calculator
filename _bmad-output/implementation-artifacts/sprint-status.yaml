@@ -103,7 +103,7 @@ development_status:
   6-2-pre-filled-context-from-roi-analyses: done  # UPDATED: Added pump model clustering (PO feedback 2026-02-13)
   6-spike-architecture-diagram-design: done  # COMPLETED: HTML prototype in design-references/
   6-3-technical-specifications-form: backlog  # NOTE: May be simplified after spike (overlap with diagram controls)
-  6-4-interactive-architecture-diagram: review  # Implementation complete, ready for code review
+  6-4-interactive-architecture-diagram: done  # Code review passed: 7 issues fixed (3H, 4M). 1137 tests.
   6-5-unified-pdf-export-v10-v11: backlog  # DEPENDENCY: Execute after Epic 5 (needs PDF pipeline)
   epic-6-retrospective: optional
 

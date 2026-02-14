@@ -12,6 +12,12 @@
   --color-toast-info: #009DA5;
 }
 
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
 body {
   background-color: #F1F2F2;
   color: #1f2937;

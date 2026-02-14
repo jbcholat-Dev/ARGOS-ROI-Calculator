@@ -39,6 +39,9 @@ describe('Solutions page', () => {
       analyses: [],
       activeAnalysisId: null,
       globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+      excludedFromGlobal: new Set<string>(),
+      deploymentMode: 'pilot',
+      connectionType: 'ethernet',
       unsavedChanges: false,
     });
   });
@@ -77,7 +80,22 @@ describe('Solutions page', () => {
 
     renderSolutions();
 
-    expect(screen.getByText('20')).toBeInTheDocument();
+    // '20' appears in both PreFilledContext and DiagramControls
+    const twentyElements = screen.getAllByText('20');
+    expect(twentyElements.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('From ROI Analysis')).toBeInTheDocument();
+  });
+
+  it('renders DiagramControls with deployment mode toggle', () => {
+    renderSolutions();
+
+    expect(screen.getByRole('radiogroup', { name: 'Deployment mode' })).toBeInTheDocument();
+  });
+
+  it('renders ArchitectureDiagram component', () => {
+    renderSolutions();
+
+    // Empty state diagram
+    expect(screen.getByRole('img')).toBeInTheDocument();
   });
 });

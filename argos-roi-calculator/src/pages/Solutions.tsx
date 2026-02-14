@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { PreFilledContext } from '@/components/solutions';
+import { PreFilledContext, DiagramControls, ArchitectureDiagram } from '@/components/solutions';
 
 export function Solutions() {
   useEffect(() => {
@@ -12,6 +12,8 @@ export function Solutions() {
       <div className="space-y-8">
         <h1 className="text-2xl font-bold text-gray-900">Solutions</h1>
         <PreFilledContext />
+        <DiagramControls />
+        <ArchitectureDiagram />
       </div>
     </AppLayout>
   );
