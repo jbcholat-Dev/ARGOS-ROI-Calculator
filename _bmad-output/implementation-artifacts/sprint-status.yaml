@@ -96,13 +96,14 @@ development_status:
   # infrastructure and will be executed AFTER Epic 5 is complete.
   # UPDATED 2026-02-13: Added spike for architecture diagram design (from PO feedback).
   # Story 6.4 rewritten: static diagram → interactive with Pilot/Production topologies.
-  # Story 6.3 may need revision after spike (overlap with diagram controls).
-  # Execution order: 6.2 // spike (parallel) → 6.4 (blocked by spike) → 6.3 (may simplify) → 6.5
+  # UPDATED 2026-02-14: Story 6.3 CANCELLED — superseded by 6.4 DiagramControls.
+  #   PreFilledContext banner (6.2) removed: redundant with DiagramControls inline stats.
+  #   Cleanup: deleted PreFilledContext.tsx + tests, updated Solutions page + barrel export.
   epic-6: in-progress
   6-1-solutions-navigation-from-global-analysis: done
-  6-2-pre-filled-context-from-roi-analyses: done  # UPDATED: Added pump model clustering (PO feedback 2026-02-13)
+  6-2-pre-filled-context-from-roi-analyses: cancelled  # 2026-02-14: PreFilledContext banner removed — stats now in DiagramControls (6.4)
   6-spike-architecture-diagram-design: done  # COMPLETED: HTML prototype in design-references/
-  6-3-technical-specifications-form: backlog  # NOTE: May be simplified after spike (overlap with diagram controls)
+  6-3-technical-specifications-form: cancelled  # 2026-02-14: Superseded by 6.4 DiagramControls (deployment toggle, connection type, inline stats)
   6-4-interactive-architecture-diagram: done  # Code review passed: 7 issues fixed (3H, 4M). 1137 tests.
   6-5-unified-pdf-export-v10-v11: backlog  # DEPENDENCY: Execute after Epic 5 (needs PDF pipeline)
   epic-6-retrospective: optional
