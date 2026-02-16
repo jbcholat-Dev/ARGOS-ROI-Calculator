@@ -3,12 +3,18 @@ import { useEffect } from 'react';
 
 export type ToastVariant = 'success' | 'error' | 'warning' | 'info';
 
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 export interface ToastProps {
   variant: ToastVariant;
   message: string;
   onDismiss: () => void;
   autoDismiss?: boolean;
   duration?: number;
+  action?: ToastAction;
 }
 
 const variantConfig = {
@@ -44,6 +50,7 @@ export function Toast({
   onDismiss,
   autoDismiss = true,
   duration,
+  action,
 }: ToastProps) {
   const config = variantConfig[variant];
   const dismissDuration = duration ?? (variant === 'error' ? 5000 : 3000);
@@ -76,7 +83,7 @@ export function Toast({
         // Effects
         'shadow-lg',
         // Animation
-        'animate-in slide-in-from-right duration-300',
+        'transition-all duration-300',
       )}
     >
       <div className="flex items-center gap-3">
@@ -84,6 +91,15 @@ export function Toast({
           {config.icon}
         </span>
         <p className="text-sm font-medium">{message}</p>
+        {action && (
+          <button
+            type="button"
+            onClick={action.onClick}
+            className="ml-2 text-sm font-semibold underline underline-offset-2 text-white hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-1 focus:ring-offset-transparent whitespace-nowrap"
+          >
+            {action.label}
+          </button>
+        )}
       </div>
       <button
         type="button"

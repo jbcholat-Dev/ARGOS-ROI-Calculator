@@ -125,9 +125,16 @@ development_status:
 
   # Epic 5: PDF Export & Reporting (4 stories)
   # Executed after Epic 6 stories 6.1-6.4, before story 6.5
-  epic-5: backlog
-  5-1-pdf-export-button-with-progress-state: backlog
-  5-2-pdf-template-with-pfeiffer-branding: backlog
-  5-3-pdf-content-structure-executive-summary-breakdown-assumptions: backlog
-  5-4-pdf-generation-error-handling: backlog
+  # UPDATED 2026-02-16: All 4 stories created in parallel (YOLO mode).
+  #   Wave 1: 5.1 + 5.2 in parallel. Wave 2: 5.3 + 5.4 in parallel (after 5.1+5.2).
+  #   Dependencies: jsPDF 4.1 + html2canvas 1.4 already installed. Zero blockers.
+  # COMPLETED 2026-02-16: All 4 stories developed + reviewed via team (2 waves).
+  #   Wave 1: 5.1 (33 tests) + 5.2 (61 tests). Wave 2: 5.3 (59 tests) + 5.4 (18 tests).
+  #   Code review: 3 parallel reviewers (simplicity/bugs/conventions), 14 issues found (4H+10M), all fixed.
+  #   Total: 1257 → 1428 tests (+171). No regressions.
+  epic-5: done
+  5-1-pdf-export-button-with-progress-state: done  # Code review passed: 10 issues fixed (4H, 4M, 2 shared). 48 tests.
+  5-2-pdf-template-with-pfeiffer-branding: done  # Code review passed: 4 issues fixed (4M). 61 tests.
+  5-3-pdf-content-structure-executive-summary-breakdown-assumptions: done  # Code review passed: shared fixes from 5.2 review. 59 tests.
+  5-4-pdf-generation-error-handling: done  # Code review passed: shared fixes from 5.1 review. 18 tests.
   epic-5-retrospective: optional

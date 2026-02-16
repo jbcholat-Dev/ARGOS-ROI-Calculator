@@ -11,7 +11,7 @@ export { Toggle } from './Toggle';
 export type { ToggleProps, ToggleOption } from './Toggle';
 
 export { Toast } from './Toast';
-export type { ToastProps, ToastVariant } from './Toast';
+export type { ToastProps, ToastVariant, ToastAction } from './Toast';
 
 export { Spinner } from './Spinner';
 export type { SpinnerProps, SpinnerSize } from './Spinner';

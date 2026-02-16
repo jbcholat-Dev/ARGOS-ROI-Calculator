@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
+import { PDFExportButton } from '@/components/pdf';
 import { useAppStore } from '@/stores/app-store';
 
 export function NavigationBar() {
@@ -48,7 +49,8 @@ export function NavigationBar() {
           </NavLink>
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          <PDFExportButton variant="compact" />
           <button
             type="button"
             onClick={() => setShowResetModal(true)}

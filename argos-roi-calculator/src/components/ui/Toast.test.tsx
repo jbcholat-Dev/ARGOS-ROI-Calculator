@@ -162,4 +162,47 @@ describe('Toast', () => {
 
     expect(handleDismiss).not.toHaveBeenCalled();
   });
+
+  // ========== Action button support ==========
+  describe('action button', () => {
+    it('renders action button when action prop is provided', () => {
+      render(
+        <Toast
+          variant="error"
+          message="Something failed"
+          onDismiss={() => {}}
+          action={{ label: 'Retry', onClick: () => {} }}
+        />,
+      );
+
+      expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+    });
+
+    it('does not render action button when action prop is not provided', () => {
+      render(
+        <Toast variant="error" message="Something failed" onDismiss={() => {}} />,
+      );
+
+      // Only the dismiss button should exist
+      const buttons = screen.getAllByRole('button');
+      expect(buttons).toHaveLength(1);
+      expect(buttons[0]).toHaveAttribute('aria-label', 'Dismiss notification');
+    });
+
+    it('calls action onClick when action button is clicked', () => {
+      const handleRetry = vi.fn();
+      render(
+        <Toast
+          variant="error"
+          message="Something failed"
+          onDismiss={() => {}}
+          action={{ label: 'Retry', onClick: handleRetry }}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+
+      expect(handleRetry).toHaveBeenCalledTimes(1);
+    });
+  });
 });
