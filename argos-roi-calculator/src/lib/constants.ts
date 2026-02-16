@@ -36,6 +36,19 @@ export const DELTA_POSITIVE_COLOR = '#28A745';
 export const DELTA_NEGATIVE_COLOR = '#CC0000';
 export const DELTA_NEUTRAL_COLOR = '#6B7280';
 
+// Deployment Mode Labels (shared by PDF generator and Architecture Diagram)
+export const DEPLOYMENT_MODE_LABELS: Record<string, string> = {
+  pilot: 'Pilot',
+  production: 'Production',
+};
+
+// Connection Type Labels (shared by PDF generator and Architecture Diagram)
+export const CONNECTION_TYPE_LABELS: Record<string, string> = {
+  ethernet: 'Ethernet',
+  rs485: 'RS-485',
+  wifi: 'WiFi',
+};
+
 // Pump Type Suggestions (from V9 reference categories)
 export const PUMP_TYPE_SUGGESTIONS = [
   'HiPace (turbo)',

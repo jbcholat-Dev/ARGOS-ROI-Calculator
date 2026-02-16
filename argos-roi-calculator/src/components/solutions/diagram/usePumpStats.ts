@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useAppStore } from '@/stores/app-store';
+import { calculatePumpStats } from '@/lib/calculations';
 
 export interface PumpCluster {
   id: string;
@@ -21,11 +22,13 @@ export function usePumpStats() {
         quantity: a.pumpQuantity || 0,
       }));
 
+    const stats = calculatePumpStats(analyses);
+
     return {
       pumpClusters: clusters,
-      totalPumps: analyses.reduce((sum, a) => sum + (a.pumpQuantity || 0), 0),
+      totalPumps: stats.totalPumps,
       modelCount: new Set(analyses.map((a) => a.pumpType).filter(Boolean)).size,
-      processCount: clusters.length,
+      processCount: stats.processCount,
     };
   }, [analyses]);
 

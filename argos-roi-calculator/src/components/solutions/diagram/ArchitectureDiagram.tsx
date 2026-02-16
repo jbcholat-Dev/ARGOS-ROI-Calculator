@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useAppStore } from '@/stores/app-store';
-import type { ConnectionType } from '@/stores/app-store';
 import { PumpCluster } from './PumpCluster';
 import { MicroPC } from './MicroPC';
 import { CentralServer } from './CentralServer';
@@ -9,14 +8,9 @@ import { ManualSync } from './ManualSync';
 import { AutoPipeline } from './AutoPipeline';
 import { ConnectionLine } from './ConnectionLine';
 import { usePumpStats } from './usePumpStats';
+import { CONNECTION_TYPE_LABELS } from '@/lib/constants';
 
 const CLUSTER_HEIGHT = 150;
-
-const CONNECTION_TYPE_LABELS: Record<ConnectionType, string> = {
-  rs485: 'RS-485',
-  ethernet: 'Ethernet',
-  wifi: 'WiFi',
-};
 
 export function ArchitectureDiagram() {
   const analyses = useAppStore((state) => state.analyses);
@@ -66,6 +60,7 @@ export function ArchitectureDiagram() {
     <div
       className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm"
       aria-live="polite"
+      data-testid="architecture-diagram"
     >
       <svg
         className="block w-full"

@@ -20,11 +20,18 @@ import {
   renderProcessBreakdown,
   renderGlobalSummary,
   renderAssumptions,
+  renderPartDivider,
+  renderDeploymentOverview,
+  renderArchitectureDiagramImage,
+  renderInfrastructureRequirements,
+  generateCompletePDF,
+  generateCompleteFilename,
   PDF_LAYOUT,
   PDF_COLORS,
   PDF_FONTS,
   type TableColumn,
   type PageContext,
+  type CompletePDFOptions,
 } from './pdf-generator';
 
 // ============================================================================
@@ -1376,5 +1383,442 @@ describe('generatePDF - content sections', () => {
     const pdfText = await extractPDFText(blob);
     expect(pdfText).not.toContain('Assumptions');
     expect(pdfText).not.toContain('Methodology');
+  });
+});
+
+// ============================================================================
+// generateCompleteFilename
+// ============================================================================
+
+describe('generateCompleteFilename', () => {
+  it('generates filename with correct format ARGOS-Complete-Proposal-YYYY-MM-DD.pdf', () => {
+    const date = new Date(2026, 1, 16);
+    expect(generateCompleteFilename(date)).toBe('ARGOS-Complete-Proposal-2026-02-16.pdf');
+  });
+
+  it('pads single-digit month and day with leading zeros', () => {
+    const date = new Date(2026, 0, 5);
+    expect(generateCompleteFilename(date)).toBe('ARGOS-Complete-Proposal-2026-01-05.pdf');
+  });
+
+  it('uses current date when no date is provided', () => {
+    const filename = generateCompleteFilename();
+    expect(filename).toMatch(/^ARGOS-Complete-Proposal-\d{4}-\d{2}-\d{2}\.pdf$/);
+  });
+});
+
+// ============================================================================
+// renderPartDivider
+// ============================================================================
+
+describe('renderPartDivider', () => {
+  it('renders part title on divider page', () => {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const textSpy = vi.spyOn(doc, 'text');
+
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderPartDivider(doc, ctx, 'Part 2: Technical Architecture');
+
+    const textCalls = getTextCalls(textSpy);
+    expect(textCalls).toContain('Part 2: Technical Architecture');
+  });
+
+  it('renders subtitle text', () => {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const textSpy = vi.spyOn(doc, 'text');
+
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderPartDivider(doc, ctx, 'Part 2: Technical Architecture');
+
+    const textCalls = getTextCalls(textSpy);
+    expect(textCalls.some(t => t.includes('ARGOS Deployment'))).toBe(true);
+  });
+
+  it('adds a new page', () => {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const addPageSpy = vi.spyOn(doc, 'addPage');
+
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderPartDivider(doc, ctx, 'Part 2: Technical Architecture');
+
+    expect(addPageSpy).toHaveBeenCalled();
+  });
+
+  it('increments page number', () => {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    const result = renderPartDivider(doc, ctx, 'Part 2: Technical Architecture');
+
+    expect(result.pageNumber).toBe(4);
+  });
+});
+
+// ============================================================================
+// renderDeploymentOverview
+// ============================================================================
+
+describe('renderDeploymentOverview', () => {
+  let doc: InstanceType<typeof jsPDF>;
+  let textSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    textSpy = vi.spyOn(doc, 'text');
+  });
+
+  function createOptions(overrides: Partial<CompletePDFOptions> = {}): CompletePDFOptions {
+    return {
+      deploymentMode: 'pilot',
+      connectionType: 'ethernet',
+      totalPumps: 30,
+      processCount: 3,
+      ...overrides,
+    };
+  }
+
+  it('renders "Deployment Overview" heading', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderDeploymentOverview(doc, ctx, createOptions());
+    const texts = getTextCalls(textSpy);
+    expect(texts).toContain('Deployment Overview');
+  });
+
+  it('shows Pilot deployment mode', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderDeploymentOverview(doc, ctx, createOptions({ deploymentMode: 'pilot' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts).toContain('Pilot');
+  });
+
+  it('shows Production deployment mode', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderDeploymentOverview(doc, ctx, createOptions({ deploymentMode: 'production' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts).toContain('Production');
+  });
+
+  it('shows Ethernet connection type', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderDeploymentOverview(doc, ctx, createOptions({ connectionType: 'ethernet' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts).toContain('Ethernet');
+  });
+
+  it('shows RS-485 connection type', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderDeploymentOverview(doc, ctx, createOptions({ connectionType: 'rs485' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts).toContain('RS-485');
+  });
+
+  it('shows WiFi connection type', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderDeploymentOverview(doc, ctx, createOptions({ connectionType: 'wifi' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts).toContain('WiFi');
+  });
+
+  it('shows total pumps count', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderDeploymentOverview(doc, ctx, createOptions({ totalPumps: 42 }));
+    const texts = getTextCalls(textSpy);
+    expect(texts).toContain('42');
+  });
+
+  it('shows process count', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderDeploymentOverview(doc, ctx, createOptions({ processCount: 5 }));
+    const texts = getTextCalls(textSpy);
+    expect(texts).toContain('5');
+  });
+
+  it('shows pilot timeline for pilot mode', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderDeploymentOverview(doc, ctx, createOptions({ deploymentMode: 'pilot' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts.some(t => t.includes('2-4 weeks'))).toBe(true);
+  });
+
+  it('shows production timeline for production mode', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderDeploymentOverview(doc, ctx, createOptions({ deploymentMode: 'production' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts.some(t => t.includes('6-8 weeks'))).toBe(true);
+  });
+
+  it('returns updated Y position', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    const result = renderDeploymentOverview(doc, ctx, createOptions());
+    expect(result.currentY).toBeGreaterThan(40);
+  });
+});
+
+// ============================================================================
+// renderArchitectureDiagramImage
+// ============================================================================
+
+describe('renderArchitectureDiagramImage', () => {
+  let doc: InstanceType<typeof jsPDF>;
+  let textSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    textSpy = vi.spyOn(doc, 'text');
+  });
+
+  it('renders "Architecture Diagram" subheading', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderArchitectureDiagramImage(doc, ctx, undefined);
+    const texts = getTextCalls(textSpy);
+    expect(texts).toContain('Architecture Diagram');
+  });
+
+  it('shows "Diagram not available" when no image provided', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderArchitectureDiagramImage(doc, ctx, undefined);
+    const texts = getTextCalls(textSpy);
+    expect(texts).toContain('Diagram not available');
+  });
+
+  it('returns updated Y position', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    const result = renderArchitectureDiagramImage(doc, ctx, undefined);
+    expect(result.currentY).toBeGreaterThan(40);
+  });
+});
+
+// ============================================================================
+// renderInfrastructureRequirements
+// ============================================================================
+
+describe('renderInfrastructureRequirements', () => {
+  let doc: InstanceType<typeof jsPDF>;
+  let textSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    textSpy = vi.spyOn(doc, 'text');
+  });
+
+  function createOptions(overrides: Partial<CompletePDFOptions> = {}): CompletePDFOptions {
+    return {
+      deploymentMode: 'pilot',
+      connectionType: 'ethernet',
+      totalPumps: 30,
+      processCount: 3,
+      ...overrides,
+    };
+  }
+
+  it('renders "Infrastructure Requirements" heading', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderInfrastructureRequirements(doc, ctx, createOptions());
+    const texts = getTextCalls(textSpy);
+    expect(texts).toContain('Infrastructure Requirements');
+  });
+
+  it('shows MicroPC requirement for pilot mode', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderInfrastructureRequirements(doc, ctx, createOptions({ deploymentMode: 'pilot' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts.some(t => t.includes('MicroPC'))).toBe(true);
+  });
+
+  it('shows direct local connection for pilot mode', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderInfrastructureRequirements(doc, ctx, createOptions({ deploymentMode: 'pilot' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts.some(t => t.includes('Direct local connection'))).toBe(true);
+  });
+
+  it('shows minimal IT for pilot mode', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderInfrastructureRequirements(doc, ctx, createOptions({ deploymentMode: 'pilot' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts.some(t => t.includes('Minimal IT'))).toBe(true);
+  });
+
+  it('shows central server for production mode', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderInfrastructureRequirements(doc, ctx, createOptions({ deploymentMode: 'production' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts.some(t => t.includes('Central server'))).toBe(true);
+  });
+
+  it('shows IT integration for production mode', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderInfrastructureRequirements(doc, ctx, createOptions({ deploymentMode: 'production' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts.some(t => t.includes('IT integration'))).toBe(true);
+  });
+
+  it('shows ARGOS Cloud connectivity for production mode', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderInfrastructureRequirements(doc, ctx, createOptions({ deploymentMode: 'production' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts.some(t => t.includes('ARGOS Cloud'))).toBe(true);
+  });
+
+  it('shows connection type in requirements', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    renderInfrastructureRequirements(doc, ctx, createOptions({ deploymentMode: 'pilot', connectionType: 'wifi' }));
+    const texts = getTextCalls(textSpy);
+    expect(texts.some(t => t.includes('WiFi'))).toBe(true);
+  });
+
+  it('returns updated Y position', () => {
+    const ctx: PageContext = { currentY: 40, pageNumber: 3 };
+    const result = renderInfrastructureRequirements(doc, ctx, createOptions());
+    expect(result.currentY).toBeGreaterThan(40);
+  });
+});
+
+// ============================================================================
+// generateCompletePDF
+// ============================================================================
+
+describe('generateCompletePDF', () => {
+  function createCompleteOptions(overrides: Partial<CompletePDFOptions> = {}): CompletePDFOptions {
+    return {
+      deploymentMode: 'pilot',
+      connectionType: 'ethernet',
+      totalPumps: 10,
+      processCount: 1,
+      ...overrides,
+    };
+  }
+
+  it('returns a valid Blob', async () => {
+    const blob = await generateCompletePDF(
+      [createMockAnalysis()],
+      createMockGlobalParams(),
+      new Set(),
+      createCompleteOptions(),
+    );
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.size).toBeGreaterThan(0);
+  });
+
+  it('generates PDF with correct MIME type', async () => {
+    const blob = await generateCompletePDF(
+      [createMockAnalysis()],
+      createMockGlobalParams(),
+      new Set(),
+      createCompleteOptions(),
+    );
+    expect(blob.type).toBe('application/pdf');
+  });
+
+  it('includes Part 1 content (Executive Summary)', async () => {
+    const blob = await generateCompletePDF(
+      [createMockAnalysis()],
+      createMockGlobalParams(),
+      new Set(),
+      createCompleteOptions(),
+    );
+    const pdfText = await extractPDFText(blob);
+    expect(pdfText).toContain('Executive Summary');
+  });
+
+  it('includes Part 2 divider page', async () => {
+    const blob = await generateCompletePDF(
+      [createMockAnalysis()],
+      createMockGlobalParams(),
+      new Set(),
+      createCompleteOptions(),
+    );
+    const pdfText = await extractPDFText(blob);
+    expect(pdfText).toContain('Part 2: Technical Architecture');
+  });
+
+  it('includes Deployment Overview section', async () => {
+    const blob = await generateCompletePDF(
+      [createMockAnalysis()],
+      createMockGlobalParams(),
+      new Set(),
+      createCompleteOptions(),
+    );
+    const pdfText = await extractPDFText(blob);
+    expect(pdfText).toContain('Deployment Overview');
+  });
+
+  it('includes Infrastructure Requirements section', async () => {
+    const blob = await generateCompletePDF(
+      [createMockAnalysis()],
+      createMockGlobalParams(),
+      new Set(),
+      createCompleteOptions(),
+    );
+    const pdfText = await extractPDFText(blob);
+    expect(pdfText).toContain('Infrastructure Requirements');
+  });
+
+  it('includes pilot mode content when deploymentMode is pilot', async () => {
+    const blob = await generateCompletePDF(
+      [createMockAnalysis()],
+      createMockGlobalParams(),
+      new Set(),
+      createCompleteOptions({ deploymentMode: 'pilot' }),
+    );
+    const pdfText = await extractPDFText(blob);
+    expect(pdfText).toContain('Pilot');
+    expect(pdfText).toContain('2-4 weeks');
+  });
+
+  it('includes production mode content when deploymentMode is production', async () => {
+    const blob = await generateCompletePDF(
+      [createMockAnalysis()],
+      createMockGlobalParams(),
+      new Set(),
+      createCompleteOptions({ deploymentMode: 'production' }),
+    );
+    const pdfText = await extractPDFText(blob);
+    expect(pdfText).toContain('Production');
+    expect(pdfText).toContain('6-8 weeks');
+  });
+
+  it('shows "Diagram not available" when no diagramImage provided', async () => {
+    const blob = await generateCompletePDF(
+      [createMockAnalysis()],
+      createMockGlobalParams(),
+      new Set(),
+      createCompleteOptions({ diagramImage: undefined }),
+    );
+    const pdfText = await extractPDFText(blob);
+    expect(pdfText).toContain('Diagram not available');
+  });
+
+  it('generates more pages than generatePDF alone', async () => {
+    const analysis = createMockAnalysis();
+    const globalParams = createMockGlobalParams();
+
+    const part1Blob = await generatePDF([analysis], globalParams, new Set());
+    const completeBlob = await generateCompletePDF(
+      [analysis],
+      globalParams,
+      new Set(),
+      createCompleteOptions(),
+    );
+
+    // Complete PDF should be larger due to Part 2 pages
+    expect(completeBlob.size).toBeGreaterThan(part1Blob.size);
+  });
+
+  it('completes within 5 seconds for 5 analyses (performance)', async () => {
+    const analyses = Array.from({ length: 5 }, (_, i) =>
+      createMockAnalysis({ name: `Process ${i + 1}` }),
+    );
+
+    const start = performance.now();
+    await generateCompletePDF(
+      analyses,
+      createMockGlobalParams(),
+      new Set(),
+      createCompleteOptions({ totalPumps: 50, processCount: 5 }),
+    );
+    const elapsed = performance.now() - start;
+
+    expect(elapsed).toBeLessThan(5000);
   });
 });

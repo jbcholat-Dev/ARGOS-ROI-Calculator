@@ -110,6 +110,15 @@ export interface AnalysisRowData {
 }
 
 /**
+ * Pump statistics derived from analyses
+ * Used by architecture diagram and PDF export
+ */
+export interface PumpStats {
+  totalPumps: number;
+  processCount: number;
+}
+
+/**
  * ROI calculation results for a single analysis
  * Computed from Analysis data + GlobalParams
  */

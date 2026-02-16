@@ -19,7 +19,7 @@
  *   calculateROI()              → CalculationResult.roiPercentage
  */
 
-import type { Analysis, AnalysisRowData, AggregatedMetrics, GlobalParams, MaintenanceStrategy } from '@/types';
+import type { Analysis, AnalysisRowData, AggregatedMetrics, GlobalParams, MaintenanceStrategy, PumpStats } from '@/types';
 import {
   ROI_NEGATIVE_THRESHOLD,
   ROI_WARNING_THRESHOLD,
@@ -421,6 +421,22 @@ export function calculateAllAnalysisRows(
   return analyses
     .map((analysis) => calculateAnalysisRow(analysis, globalParams))
     .filter((row): row is AnalysisRowData => row !== null);
+}
+
+/**
+ * Calculates pump statistics from analyses.
+ * Pure utility function shared by architecture diagram (usePumpStats) and PDF export.
+ *
+ * @param analyses - All analyses in the current session
+ * @returns totalPumps (sum of all pumpQuantity) and processCount (analyses with name + pumpType)
+ */
+export function calculatePumpStats(analyses: Analysis[]): PumpStats {
+  const totalPumps = analyses.reduce((sum, a) => sum + (a.pumpQuantity || 0), 0);
+  const processCount = analyses.filter(
+    (a) => a.name?.trim() && a.pumpType?.trim(),
+  ).length;
+
+  return { totalPumps, processCount };
 }
 
 /**

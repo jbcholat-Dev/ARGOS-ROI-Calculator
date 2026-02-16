@@ -101,14 +101,14 @@ development_status:
   #   Cleanup: deleted PreFilledContext.tsx + tests, updated Solutions page + barrel export.
   # UPDATED 2026-02-15: Retrospective completed. Story 6-6 added (fix clustering by process).
   #   Discovery: clustering by pumpType is incorrect — must be by process (1 cluster = 1 analysis = 1 process).
-  epic-6: in-progress
+  epic-6: done
   6-1-solutions-navigation-from-global-analysis: done
   6-2-pre-filled-context-from-roi-analyses: cancelled  # 2026-02-14: PreFilledContext banner removed — stats now in DiagramControls (6.4)
   6-spike-architecture-diagram-design: done  # COMPLETED: HTML prototype in design-references/
   6-3-technical-specifications-form: cancelled  # 2026-02-14: Superseded by 6.4 DiagramControls (deployment toggle, connection type, inline stats)
   6-4-interactive-architecture-diagram: done  # Code review passed: 7 issues fixed (3H, 4M). 1137 tests.
   6-6-fix-pump-clustering-by-process: done  # Code review passed: 12 issues found (3H, 6M, 3L), all H+M fixed. 1119 tests.
-  6-5-unified-pdf-export-v10-v11: backlog  # DEPENDENCY: Execute after Epic 5 (needs PDF pipeline)
+  6-5-unified-pdf-export-v10-v11: done  # Code review passed: 16 issues found (1C, 11H, 4M), all fixed. Extracted usePDFExport hook, shared constants, composed generateCompletePDF. 1506 tests.
   epic-6-retrospective: done
 
   # Epic 4.5: Pre-Demo Improvements (4 stories)

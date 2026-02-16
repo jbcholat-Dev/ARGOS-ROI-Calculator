@@ -13,6 +13,7 @@
  */
 
 import type { Analysis, GlobalParams, AggregatedMetrics, AnalysisRowData } from '@/types';
+import type { DeploymentMode, ConnectionType } from '@/stores/app-store';
 import {
   calculateAggregatedMetrics,
   calculateAllAnalysisRows,
@@ -21,7 +22,7 @@ import {
   calculateROI,
   isAnalysisCalculable,
 } from './calculations';
-import { ROI_NEGATIVE_THRESHOLD, ROI_WARNING_THRESHOLD } from './constants';
+import { ROI_NEGATIVE_THRESHOLD, ROI_WARNING_THRESHOLD, DEPLOYMENT_MODE_LABELS, CONNECTION_TYPE_LABELS } from './constants';
 import { formatCurrency, formatPercentage } from './utils';
 
 // ============================================================================
@@ -556,6 +557,44 @@ function addKeyValue(
 }
 
 // ============================================================================
+// Bullet List Helper
+// ============================================================================
+
+/**
+ * Renders a list of items with optional bullet prefix.
+ * Handles page breaks between items.
+ *
+ * @param doc - jsPDF document instance
+ * @param items - Array of text strings to render
+ * @param x - Left X coordinate
+ * @param ctx - Page context with Y position
+ * @param date - Optional date for footer rendering on new pages
+ * @param options - Optional: fontSize (default body 10pt), lineHeight (default 6mm), bullet (default true)
+ */
+function addBulletList(
+  doc: JsPDFDoc,
+  items: string[],
+  x: number,
+  ctx: PageContext,
+  date?: Date,
+  options?: { fontSize?: number; lineHeight?: number; bullet?: boolean },
+): PageContext {
+  const fontSize = options?.fontSize ?? PDF_FONTS.body.size;
+  const lineHeight = options?.lineHeight ?? 6;
+  const useBullet = options?.bullet ?? true;
+  for (const item of items) {
+    ctx = ensureSpace(doc, ctx, lineHeight, date);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(fontSize);
+    doc.setTextColor(...PDF_COLORS.darkText);
+    const text = useBullet ? `\u2022  ${item}` : item;
+    doc.text(text, x + 4, ctx.currentY);
+    ctx.currentY += lineHeight;
+  }
+  return ctx;
+}
+
+// ============================================================================
 // Section 1: Executive Summary
 // ============================================================================
 
@@ -886,14 +925,11 @@ export function renderAssumptions(
     'ROI = (Savings / Service Cost) x 100%',
   ];
 
-  for (const formula of formulas) {
-    ctx = ensureSpace(doc, ctx, 6, date);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(PDF_FONTS.label.size);
-    doc.setTextColor(...PDF_COLORS.darkText);
-    doc.text(formula, x + 4, ctx.currentY);
-    ctx.currentY += 5;
-  }
+  ctx = addBulletList(doc, formulas, x, ctx, date, {
+    fontSize: PDF_FONTS.label.size,
+    lineHeight: 5,
+    bullet: false,
+  });
 
   // Check if any analyses use planned strategy
   const hasPlanned = analyses.some(a => a.maintenanceStrategy === 'planned');
@@ -933,29 +969,21 @@ export function renderAssumptions(
 }
 
 // ============================================================================
-// Main PDF Generation
+// Internal Shared Helpers
 // ============================================================================
 
 /**
- * Generates a professionally branded PDF report.
- *
- * @param analyses - All analyses to include in the report
- * @param globalParams - Global parameters (detection rate, service cost)
- * @param excludedFromGlobal - Set of analysis IDs excluded from global aggregation
- * @param options - Optional configuration (filename override, include assumptions)
- * @returns Promise<Blob> - The generated PDF as a Blob
+ * Renders Part 1 content (cover page, executive summary, process breakdowns,
+ * global summary, and optional assumptions) into the provided document.
+ * Returns the doc and updated page context for further composition.
  */
-export async function generatePDF(
+async function buildPartOneContent(
   analyses: Analysis[],
   globalParams: GlobalParams,
   excludedFromGlobal: Set<string>,
-  options?: PDFOptions,
-): Promise<Blob> {
+  includeAssumptions: boolean,
+): Promise<{ doc: JsPDFDoc; ctx: PageContext; now: Date }> {
   const { jsPDF } = await import('jspdf');
-  const _options = {
-    includeAssumptions: true,
-    ...options,
-  };
 
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -1000,15 +1028,21 @@ export async function generatePDF(
   ctx = renderGlobalSummary(doc, rows, metrics, excludedCount, ctx, now);
 
   // Section 4: Assumptions & Methodology (if enabled)
-  if (_options.includeAssumptions) {
+  if (includeAssumptions) {
     ctx = renderAssumptions(doc, globalParams, analyses, ctx, now);
   }
 
-  // Finalize: update total page count in footers
+  return { doc, ctx, now };
+}
+
+/**
+ * Finalizes page numbers across all content pages (skipping cover page).
+ * Overwrites initial "Page N" with "Page N / Total" format.
+ */
+function finalizePageNumbers(doc: JsPDFDoc): void {
   const totalPages = doc.internal.getNumberOfPages();
   for (let i = 2; i <= totalPages; i++) {
     doc.setPage(i);
-    // Overwrite page number text with "Page X / Y"
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(PDF_FONTS.small.size);
     doc.setTextColor(...PDF_COLORS.grayText);
@@ -1031,6 +1065,372 @@ export async function generatePDF(
       PDF_LAYOUT.footerY,
     );
   }
+}
+
+// ============================================================================
+// Main PDF Generation
+// ============================================================================
+
+/**
+ * Generates a professionally branded PDF report.
+ *
+ * @param analyses - All analyses to include in the report
+ * @param globalParams - Global parameters (detection rate, service cost)
+ * @param excludedFromGlobal - Set of analysis IDs excluded from global aggregation
+ * @param options - Optional configuration (filename override, include assumptions)
+ * @returns Promise<Blob> - The generated PDF as a Blob
+ */
+export async function generatePDF(
+  analyses: Analysis[],
+  globalParams: GlobalParams,
+  excludedFromGlobal: Set<string>,
+  options?: PDFOptions,
+): Promise<Blob> {
+  const _options = {
+    includeAssumptions: true,
+    ...options,
+  };
+
+  const { doc } = await buildPartOneContent(
+    analyses,
+    globalParams,
+    excludedFromGlobal,
+    _options.includeAssumptions,
+  );
+
+  finalizePageNumbers(doc);
+
+  return doc.output('blob') as Blob;
+}
+
+// ============================================================================
+// Complete Report Types
+// ============================================================================
+
+export interface CompletePDFOptions extends PDFOptions {
+  deploymentMode: DeploymentMode;
+  connectionType: ConnectionType;
+  diagramImage?: string;
+  totalPumps: number;
+  processCount: number;
+}
+
+// ============================================================================
+// Complete Report Filename Generation
+// ============================================================================
+
+/**
+ * Generates Complete Report PDF filename with ISO date format.
+ * Format: ARGOS-Complete-Proposal-YYYY-MM-DD.pdf
+ */
+export function generateCompleteFilename(date?: Date): string {
+  const d = date ?? new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `ARGOS-Complete-Proposal-${year}-${month}-${day}.pdf`;
+}
+
+// ============================================================================
+// SVG Capture Utility
+// ============================================================================
+
+/**
+ * Captures an architecture diagram from the DOM as a high-quality PNG data URL.
+ * Uses html2canvas with 2x scale for retina-quality rendering.
+ *
+ * @returns PNG data URL string, or null if the diagram element is not found
+ */
+export async function captureDiagramAsImage(): Promise<string | null> {
+  const container = document.querySelector<HTMLElement>('[data-testid="architecture-diagram"]');
+  if (!container) {
+    return null;
+  }
+
+  try {
+    const html2canvas = (await import('html2canvas')).default;
+
+    // H9: Check container dimensions before capture. If estimated pixel count
+    // at scale:2 would exceed 50M pixels, fall back to scale:1 to avoid memory issues.
+    const MAX_PIXELS = 50_000_000;
+    const rect = container.getBoundingClientRect();
+    const estimatedPixels = rect.width * rect.height * 4; // scale:2 = 4x pixels
+    const scale = estimatedPixels > MAX_PIXELS ? 1 : 2;
+
+    // H8: Wrap html2canvas in a timeout to prevent indefinite hangs
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Diagram capture timeout')), 10000),
+    );
+    const canvas = await Promise.race([
+      html2canvas(container, {
+        scale,
+        backgroundColor: '#FFFFFF',
+        logging: false,
+      }),
+      timeoutPromise,
+    ]);
+
+    const dataUrl = canvas.toDataURL('image/png');
+    return dataUrl;
+  } catch {
+    // H10: Graceful degradation — caller handles errors at a higher level.
+    // No console.log in production code.
+    return null;
+  }
+}
+
+// ============================================================================
+// Part 2: Section Divider
+// ============================================================================
+
+/**
+ * Renders a full-page divider for Part 2: Technical Architecture.
+ * Centered title with decorative accents.
+ */
+export function renderPartDivider(
+  doc: JsPDFDoc,
+  ctx: PageContext,
+  title: string,
+  date?: Date,
+): PageContext {
+  doc.addPage();
+  ctx.pageNumber += 1;
+
+  // Red accent bar at top
+  doc.setFillColor(...PDF_COLORS.pfeifferRed);
+  doc.rect(0, 0, PDF_LAYOUT.pageWidth, 8, 'F');
+
+  // Centered title
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(28);
+  doc.setTextColor(...PDF_COLORS.pfeifferRed);
+  doc.text(title, PDF_LAYOUT.pageWidth / 2, 130, { align: 'center' });
+
+  // Decorative line
+  doc.setDrawColor(...PDF_COLORS.pfeifferRed);
+  doc.setLineWidth(1);
+  doc.line(60, 140, 150, 140);
+
+  // Subtitle
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.setTextColor(...PDF_COLORS.grayText);
+  doc.text('ARGOS Deployment & Infrastructure', PDF_LAYOUT.pageWidth / 2, 155, { align: 'center' });
+
+  addPageFooter(doc, ctx.pageNumber, date);
+
+  ctx.currentY = PDF_LAYOUT.marginTop + 10;
+  return ctx;
+}
+
+// ============================================================================
+// Part 2: Deployment Overview
+// ============================================================================
+
+/**
+ * Renders the deployment overview section showing mode, connection type,
+ * pump counts, and deployment timeline.
+ */
+export function renderDeploymentOverview(
+  doc: JsPDFDoc,
+  ctx: PageContext,
+  options: CompletePDFOptions,
+  date?: Date,
+): PageContext {
+  const x = PDF_LAYOUT.marginLeft;
+
+  doc.addPage();
+  ctx.pageNumber += 1;
+  addPageHeader(doc);
+  addPageFooter(doc, ctx.pageNumber, date);
+  ctx.currentY = PDF_LAYOUT.marginTop + 10;
+
+  // Section heading
+  addHeading(doc, 'Deployment Overview', x, ctx.currentY);
+  ctx.currentY += 12;
+
+  // Key deployment parameters
+  ctx = ensureSpace(doc, ctx, 30, date);
+  ctx.currentY = addKeyValue(doc, 'Deployment Mode:', DEPLOYMENT_MODE_LABELS[options.deploymentMode], x, ctx.currentY);
+  ctx.currentY = addKeyValue(doc, 'Connection Type:', CONNECTION_TYPE_LABELS[options.connectionType], x, ctx.currentY);
+  ctx.currentY = addKeyValue(doc, 'Total Pumps Monitored:', String(options.totalPumps), x, ctx.currentY);
+  ctx.currentY = addKeyValue(doc, 'Processes Covered:', String(options.processCount), x, ctx.currentY);
+  ctx.currentY += 4;
+
+  // Deployment timeline
+  ctx = ensureSpace(doc, ctx, 20, date);
+  addSubheading(doc, 'Deployment Timeline', x, ctx.currentY);
+  ctx.currentY += 7;
+
+  const timeline = options.deploymentMode === 'pilot'
+    ? 'Estimated deployment: 2-4 weeks. Minimal IT involvement required.'
+    : 'Estimated deployment: 6-8 weeks. Full IT integration and network infrastructure setup.';
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(PDF_FONTS.body.size);
+  doc.setTextColor(...PDF_COLORS.darkText);
+  const splitTimeline = doc.splitTextToSize(timeline, PDF_LAYOUT.contentWidth);
+  doc.text(splitTimeline, x, ctx.currentY);
+  ctx.currentY += splitTimeline.length * 5 + 8;
+
+  return ctx;
+}
+
+// ============================================================================
+// Part 2: Architecture Diagram Image
+// ============================================================================
+
+/**
+ * Renders the captured architecture diagram as an image in the PDF.
+ * Preserves aspect ratio and fits within content width.
+ * Shows placeholder text if diagram is not available.
+ */
+export function renderArchitectureDiagramImage(
+  doc: JsPDFDoc,
+  ctx: PageContext,
+  diagramImage: string | undefined,
+  date?: Date,
+): PageContext {
+  const x = PDF_LAYOUT.marginLeft;
+
+  // M1: Extracted fallback rendering for "Diagram not available" placeholder
+  function renderDiagramFallback(): PageContext {
+    ctx = ensureSpace(doc, ctx, 10, date);
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(PDF_FONTS.body.size);
+    doc.setTextColor(...PDF_COLORS.grayText);
+    doc.text('Diagram not available', x, ctx.currentY);
+    ctx.currentY += 8;
+    return ctx;
+  }
+
+  ctx = ensureSpace(doc, ctx, 30, date);
+  addSubheading(doc, 'Architecture Diagram', x, ctx.currentY);
+  ctx.currentY += 8;
+
+  if (!diagramImage) {
+    return renderDiagramFallback();
+  }
+
+  const maxWidth = PDF_LAYOUT.contentWidth;
+  const maxHeight = 180;
+
+  try {
+    const imgProps = doc.getImageProperties(diagramImage);
+    const ratio = imgProps.width / imgProps.height;
+    let width = maxWidth;
+    let height = width / ratio;
+    if (height > maxHeight) {
+      height = maxHeight;
+      width = height * ratio;
+    }
+
+    // H6: ensureSpace called AFTER image height is calculated (not before)
+    ctx = ensureSpace(doc, ctx, height + 10, date);
+
+    const imgX = PDF_LAYOUT.marginLeft + (PDF_LAYOUT.contentWidth - width) / 2;
+    doc.addImage(diagramImage, 'PNG', imgX, ctx.currentY, width, height);
+    ctx.currentY += height + 10;
+  } catch {
+    // H10: Graceful degradation — show placeholder if image embed fails.
+    // No console.log in production; caller handles errors at higher level.
+    ctx = renderDiagramFallback();
+  }
+
+  return ctx;
+}
+
+// ============================================================================
+// Part 2: Infrastructure Requirements
+// ============================================================================
+
+/**
+ * Renders infrastructure requirements section based on deployment mode.
+ * Pilot mode: lightweight local setup.
+ * Production mode: full server/network infrastructure.
+ */
+export function renderInfrastructureRequirements(
+  doc: JsPDFDoc,
+  ctx: PageContext,
+  options: CompletePDFOptions,
+  date?: Date,
+): PageContext {
+  const x = PDF_LAYOUT.marginLeft;
+
+  ctx = ensureSpace(doc, ctx, 50, date);
+  addSubheading(doc, 'Infrastructure Requirements', x, ctx.currentY);
+  ctx.currentY += 7;
+
+  const requirements = options.deploymentMode === 'pilot'
+    ? [
+        '1 MicroPC per pump cluster',
+        'Direct local connection',
+        'Minimal IT involvement',
+        `Connection: ${CONNECTION_TYPE_LABELS[options.connectionType]}`,
+      ]
+    : [
+        'Central server in Sub Fab',
+        `Network infrastructure: ${CONNECTION_TYPE_LABELS[options.connectionType]}`,
+        'IT integration requirements',
+        'ARGOS Cloud connectivity',
+      ];
+
+  ctx = addBulletList(doc, requirements, x, ctx, date);
+
+  ctx.currentY += 4;
+  return ctx;
+}
+
+// ============================================================================
+// Complete Report PDF Generation (Part 1 + Part 2)
+// ============================================================================
+
+/**
+ * Generates a complete proposal PDF containing:
+ * - Part 1: ROI Analysis (same as generatePDF)
+ * - Part 2: Technical Architecture (deployment, diagram, infrastructure)
+ *
+ * @param analyses - All analyses to include in the report
+ * @param globalParams - Global parameters (detection rate, service cost)
+ * @param excludedFromGlobal - Set of analysis IDs excluded from global aggregation
+ * @param options - Complete PDF options including deployment and diagram data
+ * @returns Promise<Blob> - The generated PDF as a Blob
+ */
+export async function generateCompletePDF(
+  analyses: Analysis[],
+  globalParams: GlobalParams,
+  excludedFromGlobal: Set<string>,
+  options: CompletePDFOptions,
+): Promise<Blob> {
+  const _options = {
+    includeAssumptions: true,
+    ...options,
+  };
+
+  // Part 1: Reuse shared ROI Analysis content
+  const { doc, ctx: partOneCtx, now } = await buildPartOneContent(
+    analyses,
+    globalParams,
+    excludedFromGlobal,
+    _options.includeAssumptions,
+  );
+
+  // === Part 2: Technical Architecture ===
+  let ctx = partOneCtx;
+
+  // Part 2 Divider
+  ctx = renderPartDivider(doc, ctx, 'Part 2: Technical Architecture', now);
+
+  // Deployment Overview
+  ctx = renderDeploymentOverview(doc, ctx, _options, now);
+
+  // Architecture Diagram Image
+  ctx = renderArchitectureDiagramImage(doc, ctx, _options.diagramImage, now);
+
+  // Infrastructure Requirements
+  ctx = renderInfrastructureRequirements(doc, ctx, _options, now);
+
+  finalizePageNumbers(doc);
 
   return doc.output('blob') as Blob;
 }
