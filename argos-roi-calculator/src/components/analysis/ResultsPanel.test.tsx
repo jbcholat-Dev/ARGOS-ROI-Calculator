@@ -15,15 +15,26 @@ const createTestAnalysis = (overrides?: Partial<Analysis>): Analysis => ({
   waferType: 'mono',
   waferQuantity: 1,
   waferCost: 0,
+  waferDefectEventsPerYear: 0,
   downtimeDuration: 0,
   downtimeCostPerHour: 0,
+  isBottleneck: false,
+  bottleneckMultiplier: 2.0,
+  maintenanceStrategy: 'unplanned' as const,
+  overhaulCostPerPump: 0,
+  pmIntervalMonths: 12,
+  argosMtbfExtensionPercent: 15,
+  unplannedDespitePM: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,
 });
 
-// Full data analysis: 10 pumps, 10% failure, €8000/wafer, 125 wafers/batch, 6h downtime, €500/h
-// Expected: totalFailureCost = (10 × 0.10) × (8000 × 125 + 6 × 500) = 1 × (1,000,000 + 3,000) = 1,003,000
+// Full data analysis: 10 pumps, 10% failure, €8000/wafer, 125 wafers/batch, 6h downtime, €500/h, 1 defect event
+// Decoupled formula (Story 4.5.2):
+//   waferDefectCost = 1 × 8000 × 125 = 1,000,000
+//   downtimeCost = (10 × 0.10) × 6 × 500 = 1 × 3,000 = 3,000
+//   totalFailureCost = 1,000,000 + 3,000 = 1,003,000
 // serviceCost = 10 × 2500 = 25,000
 // savings = 1,003,000 × 0.70 - 25,000 = 702,100 - 25,000 = 677,100
 // roi = (677,100 / 25,000) × 100 = 2708.4
@@ -34,8 +45,16 @@ const fullDataAnalysis = (): Analysis =>
     waferType: 'batch',
     waferQuantity: 125,
     waferCost: 8000,
+    waferDefectEventsPerYear: 1,
     downtimeDuration: 6,
     downtimeCostPerHour: 500,
+    isBottleneck: false,
+    bottleneckMultiplier: 2.0,
+    maintenanceStrategy: 'unplanned' as const,
+    overhaulCostPerPump: 0,
+    pmIntervalMonths: 12,
+    argosMtbfExtensionPercent: 15,
+    unplannedDespitePM: 0,
   });
 
 describe('ResultsPanel', () => {
@@ -180,14 +199,25 @@ describe('ResultsPanel', () => {
             waferType: 'mono',
             waferQuantity: 50, // This should be overridden to 1
             waferCost: 8000,
+            waferDefectEventsPerYear: 1,
             downtimeDuration: 6,
             downtimeCostPerHour: 500,
+            isBottleneck: false,
+            bottleneckMultiplier: 2.0,
+            maintenanceStrategy: 'unplanned' as const,
+            overhaulCostPerPump: 0,
+            pmIntervalMonths: 12,
+            argosMtbfExtensionPercent: 15,
+            unplannedDespitePM: 0,
           }),
         ],
       });
       renderComponent();
 
-      // totalFailureCost = (10 × 0.10) × (8000 × 1 + 6 × 500) = 1 × (8000 + 3000) = 11,000
+      // Decoupled formula with mono (waferQuantity forced to 1):
+      //   waferDefectCost = 1 × 8000 × 1 = 8,000
+      //   downtimeCost = (10 × 0.10) × 6 × 500 = 3,000
+      //   totalFailureCost = 8,000 + 3,000 = 11,000
       const value = screen.getByTestId('total-failure-cost-value').textContent!;
       expect(value).toMatch(/€.*11[\s\u00a0\u202f]000/);
     });
@@ -201,8 +231,16 @@ describe('ResultsPanel', () => {
             waferType: 'mono',
             waferQuantity: 1,
             waferCost: 100,
+            waferDefectEventsPerYear: 0,
             downtimeDuration: 1,
             downtimeCostPerHour: 100,
+            isBottleneck: false,
+            bottleneckMultiplier: 2.0,
+            maintenanceStrategy: 'unplanned' as const,
+            overhaulCostPerPump: 0,
+            pmIntervalMonths: 12,
+            argosMtbfExtensionPercent: 15,
+            unplannedDespitePM: 0,
           }),
         ],
       });
@@ -227,8 +265,16 @@ describe('ResultsPanel', () => {
             waferType: 'mono',
             waferQuantity: 1,
             waferCost: 100,
+            waferDefectEventsPerYear: 0,
             downtimeDuration: 1,
             downtimeCostPerHour: 100,
+            isBottleneck: false,
+            bottleneckMultiplier: 2.0,
+            maintenanceStrategy: 'unplanned' as const,
+            overhaulCostPerPump: 0,
+            pmIntervalMonths: 12,
+            argosMtbfExtensionPercent: 15,
+            unplannedDespitePM: 0,
           }),
         ],
       });
@@ -239,20 +285,13 @@ describe('ResultsPanel', () => {
     });
 
     it('shows orange class for ROI between 0-15%', () => {
-      // Need: savings/serviceCost between 0 and 0.15
+      // Decoupled formula: need totalFailureCost such that ROI is 0-15%
       // serviceCost = 10 × 2500 = 25,000
-      // Need savings between 0 and 3,750
-      // savings = totalFailureCost × 0.70 - 25,000
-      // Need totalFailureCost × 0.70 between 25,000 and 28,750
-      // totalFailureCost between ~35,714 and ~41,071
-      // (10 × failureRate/100) × (waferCost × 1 + downtime × costPerHour)
-      // Using: 10 pumps, 10% failure, €350/wafer mono, 1h downtime, €50/h
-      // totalFailureCost = 1 × (350 + 50) = 400 ... too small
-      // Let's try: 10 pumps, 50% failure, €700/wafer mono, 1h, €100/h
-      // totalFailureCost = 5 × (700 + 100) = 4,000 ... still too small
-      // Need: 10 pumps, 100% failure, waferCost to get totalFailureCost ~37,000
-      // totalFailureCost = (10 × 1.0) × (waferCost + downtimeH × costH)
-      // 37000 = 10 × (waferCost + 1 × 100) → waferCost = 3600
+      // waferDefectCost = 10 × 3600 × 1 = 36,000
+      // downtimeCost = (10 × 1.0) × 1 × 100 = 1,000
+      // totalFailureCost = 37,000
+      // savings = 37,000 × 0.70 - 25,000 = 25,900 - 25,000 = 900
+      // ROI = (900 / 25,000) × 100 = 3.6% → orange
       useAppStore.setState({
         analyses: [
           createTestAnalysis({
@@ -261,16 +300,21 @@ describe('ResultsPanel', () => {
             waferType: 'mono',
             waferQuantity: 1,
             waferCost: 3600,
+            waferDefectEventsPerYear: 10,
             downtimeDuration: 1,
             downtimeCostPerHour: 100,
+            isBottleneck: false,
+            bottleneckMultiplier: 2.0,
+            maintenanceStrategy: 'unplanned' as const,
+            overhaulCostPerPump: 0,
+            pmIntervalMonths: 12,
+            argosMtbfExtensionPercent: 15,
+            unplannedDespitePM: 0,
           }),
         ],
       });
       renderComponent();
 
-      // totalFailureCost = 10 × (3600 + 100) = 37,000
-      // savings = 37,000 × 0.70 - 25,000 = 25,900 - 25,000 = 900
-      // ROI = (900 / 25,000) × 100 = 3.6% → orange
       const roiEl = screen.getByTestId('roi-value');
       expect(roiEl).toHaveClass('text-orange-500');
     });
@@ -307,8 +351,16 @@ describe('ResultsPanel', () => {
             waferType: 'mono',
             waferQuantity: 1,
             waferCost: 100,
+            waferDefectEventsPerYear: 0,
             downtimeDuration: 1,
             downtimeCostPerHour: 100,
+            isBottleneck: false,
+            bottleneckMultiplier: 2.0,
+            maintenanceStrategy: 'unplanned' as const,
+            overhaulCostPerPump: 0,
+            pmIntervalMonths: 12,
+            argosMtbfExtensionPercent: 15,
+            unplannedDespitePM: 0,
           }),
         ],
       });
@@ -423,6 +475,116 @@ describe('ResultsPanel', () => {
     });
   });
 
+  // ========== Planned Mode Tests ==========
+
+  describe('Planned mode display', () => {
+    // 12 pumps, 12 months interval, €30,000 overhaul, 20% MTBF extension
+    // currentOverhauls = 12 / (12/12) = 12
+    // argosOverhauls = 12 / (14.4/12) = 12 / 1.2 = 10
+    // overhaulsSaved = 2
+    // overhaulSavings = 2 × 30,000 = 60,000
+    // serviceCost = 12 × 2500 = 30,000
+    // totalFailureCost = 12 × 30,000 = 360,000
+    // savings = 60,000 - 30,000 = 30,000
+    // ROI = (30,000 / 30,000) × 100 = 100.0%
+    const fullPlannedAnalysis = (): Analysis =>
+      createTestAnalysis({
+        pumpQuantity: 12,
+        maintenanceStrategy: 'planned' as const,
+        overhaulCostPerPump: 30000,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 20,
+        unplannedDespitePM: 0,
+        failureRatePercentage: 0,
+        waferDefectEventsPerYear: 0,
+        downtimeDuration: 0,
+        downtimeCostPerHour: 0,
+      });
+
+    it('shows "Total Maintenance Cost" label instead of "Total Failure Cost"', () => {
+      useAppStore.setState({ analyses: [fullPlannedAnalysis()] });
+      renderComponent();
+
+      expect(screen.getByText('Total Maintenance Cost')).toBeInTheDocument();
+      expect(screen.queryByText('Total Failure Cost')).not.toBeInTheDocument();
+    });
+
+    it('shows "Overhaul Savings Breakdown" instead of "Cost Avoided Breakdown"', () => {
+      useAppStore.setState({ analyses: [fullPlannedAnalysis()] });
+      renderComponent();
+
+      expect(screen.getByText('Overhaul Savings Breakdown')).toBeInTheDocument();
+      expect(screen.queryByText('Cost Avoided Breakdown')).not.toBeInTheDocument();
+    });
+
+    it('displays Total Maintenance Cost correctly (€360 000)', () => {
+      useAppStore.setState({ analyses: [fullPlannedAnalysis()] });
+      renderComponent();
+
+      const value = screen.getByTestId('total-failure-cost-value').textContent!;
+      expect(value).toMatch(/€.*360[\s\u00a0\u202f]000/);
+    });
+
+    it('displays Savings correctly (€30 000)', () => {
+      useAppStore.setState({ analyses: [fullPlannedAnalysis()] });
+      renderComponent();
+
+      const value = screen.getByTestId('savings-value').textContent!;
+      expect(value).toMatch(/€.*30[\s\u00a0\u202f]000/);
+    });
+
+    it('displays ROI correctly (100,0 %)', () => {
+      useAppStore.setState({ analyses: [fullPlannedAnalysis()] });
+      renderComponent();
+
+      const value = screen.getByTestId('roi-value').textContent!;
+      expect(value).toMatch(/100,0\s?%/);
+    });
+
+    it('shows overhauls saved in breakdown', () => {
+      useAppStore.setState({ analyses: [fullPlannedAnalysis()] });
+      renderComponent();
+
+      expect(screen.getByTestId('overhauls-saved')).toHaveTextContent('2,0');
+    });
+
+    it('shows overhaul savings in breakdown (€60 000)', () => {
+      useAppStore.setState({ analyses: [fullPlannedAnalysis()] });
+      renderComponent();
+
+      const value = screen.getByTestId('overhaul-savings').textContent!;
+      expect(value).toMatch(/€.*60[\s\u00a0\u202f]000/);
+    });
+
+    it('shows MTBF extension percentage in breakdown', () => {
+      useAppStore.setState({ analyses: [fullPlannedAnalysis()] });
+      renderComponent();
+
+      expect(screen.getByText('+20%')).toBeInTheDocument();
+    });
+
+    it('shows planned formula tooltips', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({ analyses: [fullPlannedAnalysis()] });
+      renderComponent();
+
+      const infoButtons = screen.getAllByLabelText('View calculation formula');
+
+      // Total failure cost formula (planned)
+      await user.hover(infoButtons[0]);
+      expect(screen.getByRole('tooltip')).toHaveTextContent(
+        '(overhauls/year × overhaul cost) + residual failure cost',
+      );
+      await user.unhover(infoButtons[0]);
+
+      // Savings formula (planned)
+      await user.hover(infoButtons[2]);
+      expect(screen.getByRole('tooltip')).toHaveTextContent(
+        'overhaul savings + residual savings − service cost',
+      );
+    });
+  });
+
   // ========== Formula Tooltip Tests ==========
 
   describe('Formula tooltips', () => {
@@ -441,7 +603,7 @@ describe('ResultsPanel', () => {
 
       expect(screen.getByRole('tooltip')).toBeInTheDocument();
       expect(screen.getByRole('tooltip')).toHaveTextContent(
-        '(pumps × failure rate %) × (wafer cost × wafers/batch + downtime hours × cost/hour)',
+        '(defect events × wafer cost × wafers/batch) + (failed pumps × downtime hours × cost/hour × bottleneck multiplier)',
       );
     });
 
@@ -466,7 +628,7 @@ describe('ResultsPanel', () => {
       // Total Failure Cost formula
       await user.hover(infoButtons[0]);
       expect(screen.getByRole('tooltip')).toHaveTextContent(
-        '(pumps × failure rate %) × (wafer cost × wafers/batch + downtime hours × cost/hour)',
+        '(defect events × wafer cost × wafers/batch) + (failed pumps × downtime hours × cost/hour × bottleneck multiplier)',
       );
       await user.unhover(infoButtons[0]);
 

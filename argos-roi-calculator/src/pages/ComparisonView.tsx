@@ -24,7 +24,7 @@ import {
 } from '@/components/analysis';
 import type { Analysis } from '@/types';
 
-type MetricsInput = Pick<Analysis, 'pumpQuantity' | 'failureRatePercentage' | 'waferCost' | 'waferType' | 'waferQuantity' | 'downtimeDuration' | 'downtimeCostPerHour' | 'detectionRate'>;
+type MetricsInput = Pick<Analysis, 'pumpQuantity' | 'failureRatePercentage' | 'waferCost' | 'waferType' | 'waferQuantity' | 'downtimeDuration' | 'downtimeCostPerHour' | 'detectionRate' | 'waferDefectEventsPerYear'>;
 
 function computeMetrics(analysis: MetricsInput, serviceCostPerPump: number, globalDetectionRate: number) {
   const waferQuantity = analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
@@ -37,6 +37,7 @@ function computeMetrics(analysis: MetricsInput, serviceCostPerPump: number, glob
     waferQuantity,
     analysis.downtimeDuration,
     analysis.downtimeCostPerHour,
+    analysis.waferDefectEventsPerYear,
   );
 
   const argosServiceCost = calculateArgosServiceCost(
@@ -116,6 +117,7 @@ export function ComparisonView() {
       waferType: whatIf.waferType,
       waferQuantity: whatIf.waferQuantity,
       waferCost: whatIf.waferCost,
+      waferDefectEventsPerYear: whatIf.waferDefectEventsPerYear,
       downtimeDuration: whatIf.downtimeDuration,
       downtimeCostPerHour: whatIf.downtimeCostPerHour,
       detectionRate: whatIf.detectionRate,
@@ -147,7 +149,8 @@ export function ComparisonView() {
   const isWaferModified =
     snap.waferType !== whatIf.waferType ||
     snap.waferQuantity !== whatIf.waferQuantity ||
-    snap.waferCost !== whatIf.waferCost;
+    snap.waferCost !== whatIf.waferCost ||
+    snap.waferDefectEventsPerYear !== whatIf.waferDefectEventsPerYear;
   const isDowntimeModified =
     snap.downtimeDuration !== whatIf.downtimeDuration ||
     snap.downtimeCostPerHour !== whatIf.downtimeCostPerHour;

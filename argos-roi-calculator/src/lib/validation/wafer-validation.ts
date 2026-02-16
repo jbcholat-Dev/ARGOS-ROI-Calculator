@@ -75,6 +75,40 @@ export function validateWaferCost(value: string): ValidationResult {
 }
 
 /**
+ * Validate wafer defect events per year input value
+ *
+ * Rules:
+ * - Must be numeric (non-negative integer)
+ * - Must be >= 0
+ * - Must be <= 1000 (reasonable upper bound)
+ * - No decimals allowed
+ *
+ * @param value - Raw string from input field
+ * @returns Validation result with optional error message
+ */
+export function validateWaferDefectEvents(value: string): ValidationResult {
+  if (value.trim() === '') {
+    return { isValid: true }; // Empty is allowed (not yet filled)
+  }
+
+  const parsed = parseInt(value, 10);
+
+  if (isNaN(parsed) || String(parsed) !== value.trim()) {
+    return { isValid: false, error: 'Must be a whole number' };
+  }
+
+  if (parsed < 0) {
+    return { isValid: false, error: 'Must be 0 or a positive number' };
+  }
+
+  if (parsed > 1000) {
+    return { isValid: false, error: 'Maximum 1000 events' };
+  }
+
+  return { isValid: true };
+}
+
+/**
  * Format a number as French euro currency (thousands separator = space)
  *
  * Examples:

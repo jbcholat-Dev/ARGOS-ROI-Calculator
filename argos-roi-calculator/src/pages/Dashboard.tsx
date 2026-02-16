@@ -32,9 +32,17 @@ export function Dashboard() {
         waferType: 'mono',
         waferQuantity: 1,
         waferCost: 0,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 0,
         downtimeCostPerHour: 0,
+        isBottleneck: false, // Story 4.5.3: Bottleneck tool toggle
+        bottleneckMultiplier: 2.0, // Story 4.5.3: Default multiplier
         detectionRate: DEFAULT_DETECTION_RATE, // Story 2.9: Per-analysis detection rate
+        maintenanceStrategy: 'unplanned', // Story 4.5.4: Default to unplanned
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

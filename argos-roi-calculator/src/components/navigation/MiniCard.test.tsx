@@ -16,8 +16,16 @@ function createAnalysis(overrides: Partial<Analysis> = {}): Analysis {
     waferType: 'batch',
     waferQuantity: 125,
     waferCost: 8000,
+    waferDefectEventsPerYear: 1,
     downtimeDuration: 6,
     downtimeCostPerHour: 500,
+    isBottleneck: false,
+    bottleneckMultiplier: 2.0,
+    maintenanceStrategy: 'unplanned' as const,
+    overhaulCostPerPump: 0,
+    pmIntervalMonths: 12,
+    argosMtbfExtensionPercent: 15,
+    unplannedDespitePM: 0,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
@@ -49,8 +57,8 @@ describe('MiniCard', () => {
       const analysis = createAnalysis();
       render(<MiniCard analysis={analysis} isActive={false} onClick={() => {}} />);
 
-      // With default params: totalFailureCost = 10 * 0.1 * (8000*125 + 6*500) = 1,003,000
-      // argosServiceCost = 10 * 2500 = 25,000
+      // Decoupled: waferDefectCost=1*8000*125=1,000,000, downtimeCost=1*6*500=3,000
+      // totalFailureCost = 1,003,000, serviceCost = 25,000
       // savings = 1,003,000 * 0.7 - 25,000 = 677,100
       expect(screen.getByText(/677/)).toBeInTheDocument();
     });
@@ -82,17 +90,29 @@ describe('MiniCard', () => {
     });
 
     it('should display orange badge for ROI 0-15%', () => {
-      // ROI ~10%: pumpQuantity=1, failureRate=100%, costPerFailure=3929
-      // totalFailureCost=3929, serviceCost=2500, savings=3929*0.7-2500=250.3
-      // ROI=(250.3/2500)*100=10.01% → orange
+      // Decoupled formula:
+      // waferDefectCost = 1 × 3000 × 1 = 3,000
+      // downtimeCost = (1 × 1.0) × 1 × 929 = 929
+      // totalFailureCost = 3,929
+      // serviceCost = 1 × 2500 = 2,500
+      // savings = 3,929 × 0.7 - 2,500 = 250.3
+      // ROI = (250.3 / 2,500) × 100 = 10.01% → orange
       const marginAnalysis = createAnalysis({
         pumpQuantity: 1,
         failureRatePercentage: 100,
         waferCost: 3000,
         waferQuantity: 1,
         waferType: 'mono',
+        waferDefectEventsPerYear: 1,
         downtimeDuration: 1,
         downtimeCostPerHour: 929,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
       });
 
       render(<MiniCard analysis={marginAnalysis} isActive={false} onClick={() => {}} />);
@@ -110,6 +130,13 @@ describe('MiniCard', () => {
         waferType: 'mono',
         downtimeDuration: 1,
         downtimeCostPerHour: 10,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
       });
 
       render(<MiniCard analysis={analysis} isActive={false} onClick={() => {}} />);
@@ -125,8 +152,16 @@ describe('MiniCard', () => {
         pumpQuantity: 0,
         failureRatePercentage: 0,
         waferCost: 0,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 0,
         downtimeCostPerHour: 0,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
       });
 
       render(<MiniCard analysis={analysis} isActive={false} onClick={() => {}} />);

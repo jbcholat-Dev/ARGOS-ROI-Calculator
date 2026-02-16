@@ -14,8 +14,16 @@ const createTestAnalysis = (overrides?: Partial<Analysis>): Analysis => ({
   waferType: 'mono',
   waferQuantity: 1,
   waferCost: 0,
+  waferDefectEventsPerYear: 0,
   downtimeDuration: 0,
   downtimeCostPerHour: 0,
+  isBottleneck: false,
+  bottleneckMultiplier: 2.0,
+  maintenanceStrategy: 'unplanned' as const,
+  overhaulCostPerPump: 0,
+  pmIntervalMonths: 12,
+  argosMtbfExtensionPercent: 15,
+  unplannedDespitePM: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,
@@ -55,6 +63,13 @@ describe('ResultsPanel Integration', () => {
         waferQuantity: 125,
         downtimeDuration: 6,
         downtimeCostPerHour: 500,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
       });
     });
 
@@ -77,14 +92,23 @@ describe('ResultsPanel Integration', () => {
           waferType: 'batch',
           waferQuantity: 125,
           waferCost: 8000,
+          waferDefectEventsPerYear: 1,
           downtimeDuration: 6,
           downtimeCostPerHour: 500,
+          isBottleneck: false,
+          bottleneckMultiplier: 2.0,
+          maintenanceStrategy: 'unplanned' as const,
+          overhaulCostPerPump: 0,
+          pmIntervalMonths: 12,
+          argosMtbfExtensionPercent: 15,
+          unplannedDespitePM: 0,
         }),
       ],
     });
 
     render(<ResultsPanel analysisId="test-analysis-1" />);
 
+    // Decoupled: totalFailureCost = 1*8000*125 + 1*6*500 = 1,003,000
     // With 70% detection: savings = 1,003,000 × 0.70 - 25,000 = 677,100
     const savingsBefore = screen.getByTestId('savings-value').textContent!;
     expect(savingsBefore).toMatch(/677[\s\u00a0\u202f]100/);
@@ -94,7 +118,7 @@ describe('ResultsPanel Integration', () => {
       useAppStore.getState().updateGlobalParams({ detectionRate: 50 });
     });
 
-    // With 50% detection: savings = 1,003,000 × 0.50 - 25,000 = 501,500 - 25,000 = 476,500
+    // With 50% detection: savings = 1,003,000 × 0.50 - 25,000 = 476,500
     const savingsAfter = screen.getByTestId('savings-value').textContent!;
     expect(savingsAfter).toMatch(/476[\s\u00a0\u202f]500/);
   });
@@ -108,8 +132,16 @@ describe('ResultsPanel Integration', () => {
           waferType: 'batch',
           waferQuantity: 125,
           waferCost: 50000,
+          waferDefectEventsPerYear: 0,
           downtimeDuration: 24,
           downtimeCostPerHour: 10000,
+          isBottleneck: false,
+          bottleneckMultiplier: 2.0,
+          maintenanceStrategy: 'unplanned' as const,
+          overhaulCostPerPump: 0,
+          pmIntervalMonths: 12,
+          argosMtbfExtensionPercent: 15,
+          unplannedDespitePM: 0,
         }),
       ],
     });
@@ -133,8 +165,16 @@ describe('ResultsPanel Integration', () => {
           waferType: 'mono',
           waferQuantity: 1,
           waferCost: 100,
+          waferDefectEventsPerYear: 0,
           downtimeDuration: 1,
           downtimeCostPerHour: 50,
+          isBottleneck: false,
+          bottleneckMultiplier: 2.0,
+          maintenanceStrategy: 'unplanned' as const,
+          overhaulCostPerPump: 0,
+          pmIntervalMonths: 12,
+          argosMtbfExtensionPercent: 15,
+          unplannedDespitePM: 0,
         }),
       ],
     });

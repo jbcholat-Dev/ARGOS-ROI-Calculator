@@ -2,9 +2,10 @@ import { useState, useId } from 'react';
 import { clsx } from 'clsx';
 import { useAppStore } from '@/stores/app-store';
 import {
-  calculateTotalFailureCost,
+  isAnalysisCalculable,
+  calculateStrategySavings,
+  calculatePlannedOverhaulSavings,
   calculateArgosServiceCost,
-  calculateSavings,
   calculateROI,
   getROIColorClass,
 } from '@/lib/calculations';
@@ -50,10 +51,17 @@ function FormulaTooltip({ formula, tooltipId, children }: FormulaTooltipProps) {
   );
 }
 
-const FORMULAS = {
-  totalFailureCost: '(pumps × failure rate %) × (wafer cost × wafers/batch + downtime hours × cost/hour)',
+const FORMULAS_UNPLANNED = {
+  totalFailureCost: '(defect events × wafer cost × wafers/batch) + (failed pumps × downtime hours × cost/hour × bottleneck multiplier)',
   argosServiceCost: 'pumps × service cost per pump/year',
   savings: 'failure cost × detection rate % − service cost',
+  roi: '(savings ÷ service cost) × 100',
+} as const;
+
+const FORMULAS_PLANNED = {
+  totalFailureCost: '(overhauls/year × overhaul cost) + residual failure cost',
+  argosServiceCost: 'pumps × service cost per pump/year',
+  savings: 'overhaul savings + residual savings − service cost',
   roi: '(savings ÷ service cost) × 100',
 } as const;
 
@@ -64,7 +72,7 @@ function formatCurrency(value: number): string {
   return `€${value.toLocaleString('fr-FR')}`;
 }
 
-function formatROI(roi: number): string {
+function formatROIValue(roi: number): string {
   return `${roi.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`;
 }
 
@@ -77,39 +85,23 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
 
   if (!analysis) return null;
 
-  const waferQuantity = analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
-
-  const isFullyCalculable =
-    analysis.pumpQuantity > 0 &&
-    analysis.failureRatePercentage > 0 &&
-    analysis.waferCost > 0 &&
-    analysis.downtimeDuration > 0 &&
-    analysis.downtimeCostPerHour > 0;
-
+  const isPlanned = analysis.maintenanceStrategy === 'planned';
+  const formulas = isPlanned ? FORMULAS_PLANNED : FORMULAS_UNPLANNED;
+  const isFullyCalculable = isAnalysisCalculable(analysis);
   const canShowServiceCost = analysis.pumpQuantity > 0;
 
-  const totalFailureCost = isFullyCalculable
-    ? calculateTotalFailureCost(
-        analysis.pumpQuantity,
-        analysis.failureRatePercentage,
-        analysis.waferCost,
-        waferQuantity,
-        analysis.downtimeDuration,
-        analysis.downtimeCostPerHour,
-      )
-    : null;
+  let totalFailureCost: number | null = null;
+  let savingsValue: number | null = null;
+  let argosServiceCost: number | null = null;
 
-  const argosServiceCost = canShowServiceCost
-    ? calculateArgosServiceCost(analysis.pumpQuantity, globalParams.serviceCostPerPump)
-    : null;
-
-  // Story 2.9: Use per-analysis detection rate, fallback to global if undefined
-  const detectionRate = analysis.detectionRate ?? globalParams.detectionRate;
-
-  const savingsValue =
-    totalFailureCost !== null && argosServiceCost !== null
-      ? calculateSavings(totalFailureCost, argosServiceCost, detectionRate)
-      : null;
+  if (isFullyCalculable) {
+    const result = calculateStrategySavings(analysis, globalParams);
+    totalFailureCost = result.totalFailureCost;
+    savingsValue = result.savings;
+    argosServiceCost = result.argosServiceCost;
+  } else if (canShowServiceCost) {
+    argosServiceCost = calculateArgosServiceCost(analysis.pumpQuantity, globalParams.serviceCostPerPump);
+  }
 
   const roiValue =
     savingsValue !== null && argosServiceCost !== null
@@ -127,24 +119,34 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
           : 'text-gray-500'
       : '';
 
-  const showIncompleteMessage = !isFullyCalculable;
+  // Strategy-specific breakdown for planned mode
+  const plannedBreakdown = isPlanned && isFullyCalculable
+    ? calculatePlannedOverhaulSavings(
+        analysis.pumpQuantity,
+        analysis.pmIntervalMonths,
+        analysis.overhaulCostPerPump,
+        analysis.argosMtbfExtensionPercent,
+      )
+    : null;
+
+  const detectionRate = analysis.detectionRate ?? globalParams.detectionRate;
 
   return (
     <section aria-label="Results">
       <h2 className="mb-4 text-lg font-semibold text-gray-900">Results</h2>
 
-      {showIncompleteMessage && (
+      {!isFullyCalculable && (
         <p className="mb-4 text-sm text-gray-500">
           Complete the data to see results
         </p>
       )}
 
       <div className="flex flex-col gap-4">
-        {/* Act 1 — The Risk: Total Failure Cost */}
+        {/* Act 1 — The Risk: Total Cost */}
         <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
           <h3 className="text-sm font-medium text-gray-600">
-            <FormulaTooltip formula={FORMULAS.totalFailureCost} tooltipId={`${tooltipBaseId}-total-failure-cost`}>
-              Total Failure Cost
+            <FormulaTooltip formula={formulas.totalFailureCost} tooltipId={`${tooltipBaseId}-total-failure-cost`}>
+              {isPlanned ? 'Total Maintenance Cost' : 'Total Failure Cost'}
             </FormulaTooltip>
           </h3>
           <p className="mt-1 text-4xl font-bold text-gray-900" data-testid="total-failure-cost-value">
@@ -158,7 +160,7 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
         {/* Supporting Context: ARGOS Service Cost */}
         <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
           <h3 className="text-sm font-medium text-gray-600">
-            <FormulaTooltip formula={FORMULAS.argosServiceCost} tooltipId={`${tooltipBaseId}-argos-service-cost`}>
+            <FormulaTooltip formula={formulas.argosServiceCost} tooltipId={`${tooltipBaseId}-argos-service-cost`}>
               ARGOS Service Cost
             </FormulaTooltip>
           </h3>
@@ -173,7 +175,7 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
         {/* Act 2 — The Value: Savings */}
         <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
           <h3 className="text-sm font-medium text-gray-600">
-            <FormulaTooltip formula={FORMULAS.savings} tooltipId={`${tooltipBaseId}-savings`}>
+            <FormulaTooltip formula={formulas.savings} tooltipId={`${tooltipBaseId}-savings`}>
               Savings Realized
             </FormulaTooltip>
           </h3>
@@ -188,10 +190,56 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
           )}
         </div>
 
+        {/* Strategy-specific breakdown */}
+        {isFullyCalculable && (
+          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+            <h3 className="mb-2 text-sm font-medium text-gray-600">
+              {isPlanned ? 'Overhaul Savings Breakdown' : 'Cost Avoided Breakdown'}
+            </h3>
+            {isPlanned && plannedBreakdown ? (
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Overhauls saved/year</span>
+                  <span className="font-medium text-gray-900" data-testid="overhauls-saved">
+                    {(plannedBreakdown.currentOverhauls - plannedBreakdown.argosOverhauls).toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Overhaul savings</span>
+                  <span className="font-medium text-green-700" data-testid="overhaul-savings">
+                    {formatCurrency(plannedBreakdown.overhaulSavings)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">MTBF extension</span>
+                  <span className="font-medium text-gray-900">
+                    +{analysis.argosMtbfExtensionPercent}%
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Detection rate applied</span>
+                  <span className="font-medium text-gray-900" data-testid="detection-rate-applied">
+                    {detectionRate}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Cost avoided (downtime + wafer defect)</span>
+                  <span className="font-medium text-green-700" data-testid="cost-avoided">
+                    {totalFailureCost !== null ? formatCurrency(totalFailureCost * (detectionRate / 100)) : '--'}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Act 3 — The Proof: ROI */}
         <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
           <h3 className="text-sm font-medium text-gray-600">
-            <FormulaTooltip formula={FORMULAS.roi} tooltipId={`${tooltipBaseId}-roi`}>
+            <FormulaTooltip formula={formulas.roi} tooltipId={`${tooltipBaseId}-roi`}>
               ROI
             </FormulaTooltip>
           </h3>
@@ -199,7 +247,7 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
             className={clsx('mt-1 text-4xl font-bold', roiValue !== null ? roiColorClass : 'text-gray-900')}
             data-testid="roi-value"
           >
-            {roiValue !== null ? formatROI(roiValue) : '--'}
+            {roiValue !== null ? formatROIValue(roiValue) : '--'}
           </p>
         </div>
       </div>

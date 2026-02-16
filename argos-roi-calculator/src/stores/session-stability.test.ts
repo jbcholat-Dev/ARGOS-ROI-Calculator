@@ -22,8 +22,16 @@ function createTestAnalysis(overrides: Partial<Analysis> = {}): Analysis {
     waferType: 'batch',
     waferQuantity: 125,
     waferCost: 8000,
+    waferDefectEventsPerYear: 0,
     downtimeDuration: 6,
     downtimeCostPerHour: 500,
+    isBottleneck: false,
+    bottleneckMultiplier: 2.0,
+    maintenanceStrategy: 'unplanned' as const,
+    overhaulCostPerPump: 0,
+    pmIntervalMonths: 12,
+    argosMtbfExtensionPercent: 15,
+    unplannedDespitePM: 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides,
@@ -31,10 +39,12 @@ function createTestAnalysis(overrides: Partial<Analysis> = {}): Analysis {
 }
 
 const resetStore = () => {
+  localStorage.removeItem('argos-roi-data');
   useAppStore.setState({
     analyses: [],
     activeAnalysisId: null,
     globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+    excludedFromGlobal: new Set<string>(),
     unsavedChanges: false,
   });
 };
@@ -215,21 +225,21 @@ describe('Session Stability — Ephemeral Behavior (AC: 5)', () => {
     expect(reset.unsavedChanges).toBe(false);
   });
 
-  it('no localStorage or sessionStorage persistence', () => {
+  it('localStorage persistence stores data under argos-roi-data key (Story 4.5.1)', () => {
     const state = useAppStore.getState();
 
     // Add data
     state.addAnalysis(createTestAnalysis({ id: 'storage-test', name: 'Storage Test' }));
     state.updateGlobalParams({ detectionRate: 90 });
 
-    // Check localStorage is not used
-    const localKeys = Object.keys(localStorage);
-    const appKeys = localKeys.filter(
-      (k) => k.includes('app') || k.includes('store') || k.includes('analysis') || k.includes('argos'),
-    );
-    expect(appKeys).toHaveLength(0);
+    // Story 4.5.1: Data should be persisted to localStorage under 'argos-roi-data'
+    const data = localStorage.getItem('argos-roi-data');
+    expect(data).not.toBeNull();
+    const parsed = JSON.parse(data!);
+    expect(parsed.state.analyses).toHaveLength(1);
+    expect(parsed.state.analyses[0].id).toBe('storage-test');
 
-    // Check sessionStorage is not used
+    // sessionStorage should not be used
     const sessionKeys = Object.keys(sessionStorage);
     const appSessionKeys = sessionKeys.filter(
       (k) => k.includes('app') || k.includes('store') || k.includes('analysis') || k.includes('argos'),

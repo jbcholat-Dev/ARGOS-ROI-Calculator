@@ -5,6 +5,15 @@ import { AppRoutes } from './AppRoutes';
 import { useAppStore } from '@/stores/app-store';
 import type { Analysis } from '@/types';
 
+// Pre-import lazy-loaded pages so they resolve instantly from module cache
+// Prevents flaky timeouts when running full test suite under load
+import '@/pages/Dashboard';
+import '@/pages/FocusMode';
+import '@/pages/GlobalAnalysis';
+import '@/pages/Solutions';
+import '@/pages/NotFound';
+import '@/pages/ComparisonView';
+
 const createTestAnalysis = (overrides?: Partial<Analysis>): Analysis => ({
   id: 'test-123',
   name: 'Test Analysis',
@@ -15,8 +24,16 @@ const createTestAnalysis = (overrides?: Partial<Analysis>): Analysis => ({
   waferType: 'mono',
   waferQuantity: 1,
   waferCost: 0,
+  waferDefectEventsPerYear: 0,
   downtimeDuration: 0,
   downtimeCostPerHour: 0,
+  isBottleneck: false,
+  bottleneckMultiplier: 2.0,
+  maintenanceStrategy: 'unplanned' as const,
+  overhaulCostPerPump: 0,
+  pmIntervalMonths: 12,
+  argosMtbfExtensionPercent: 15,
+  unplannedDespitePM: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,
@@ -24,10 +41,12 @@ const createTestAnalysis = (overrides?: Partial<Analysis>): Analysis => ({
 
 describe('[ROUTER] App Routing Integration Tests', () => {
   beforeEach(() => {
+    localStorage.removeItem('argos-roi-data');
     useAppStore.setState({
       analyses: [],
       activeAnalysisId: null,
       globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+      excludedFromGlobal: new Set<string>(),
       unsavedChanges: false,
     });
   });
@@ -49,7 +68,7 @@ describe('[ROUTER] App Routing Integration Tests', () => {
         expect(
           screen.getByRole('button', { name: 'New Analysis' })
         ).toBeInTheDocument();
-      });
+      }, { timeout: 10000 });
     });
 
     it('should render GlobalAnalysis on "/global" route', async () => {

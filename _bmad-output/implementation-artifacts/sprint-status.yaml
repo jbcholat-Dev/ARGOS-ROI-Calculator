@@ -111,6 +111,18 @@ development_status:
   6-5-unified-pdf-export-v10-v11: backlog  # DEPENDENCY: Execute after Epic 5 (needs PDF pipeline)
   epic-6-retrospective: done
 
+  # Epic 4.5: Pre-Demo Improvements (4 stories)
+  # ADDED 2026-02-16: Internal feedback sprint before Wednesday demo (2026-02-18).
+  # Party mode session identified HIGH-priority items impacting ROI credibility.
+  # COMPLETED 2026-02-16: All 4 stories developed via parallel team (2 waves).
+  #   Wave 1: 4.5.1 + 4.5.2 in parallel. Wave 2: 4.5.3 + 4.5.4 in parallel (after 4.5.2).
+  #   Total: 1119 → 1236 tests (+117). No regressions.
+  epic-4.5: done
+  4.5-1-localstorage-persistence: done             # FB-4: Zustand persist + session recovery modal + reset. +28 tests. Code review passed.
+  4.5-2-wafer-defect-decoupling-and-rename: done   # FB-1: Separate wafer defect events field + scrap→defect rename. +10 tests. Code review passed: 7 issues fixed (2C, 2H, 3M).
+  4.5-3-bottleneck-tool-toggle: done                # FB-3: Toggle + downtime multiplier (default x2, step 0.5). +33 tests. Code review passed: 6 issues fixed (1H, 4M, 1L).
+  4.5-4-maintenance-strategy-and-argos-value: done   # FB-2: Unplanned/Planned strategy + ARGOS value calculation. +54 tests. Code review passed: 8 issues found (3H, 3M, 2L), all H+M fixed. 1257 tests.
+
   # Epic 5: PDF Export & Reporting (4 stories)
   # Executed after Epic 6 stories 6.1-6.4, before story 6.5
   epic-5: backlog

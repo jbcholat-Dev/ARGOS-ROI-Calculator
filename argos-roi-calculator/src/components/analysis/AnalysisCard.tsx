@@ -3,15 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { Card } from '@/components/ui';
 import {
-  calculateTotalFailureCost,
-  calculateArgosServiceCost,
-  calculateSavings,
+  calculateStrategySavings,
   calculateROI,
   getROIColorClass,
   isAnalysisCalculable,
 } from '@/lib/calculations';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
-import { DEFAULT_DETECTION_RATE, DEFAULT_SERVICE_COST_PER_PUMP, buildComparisonRoute } from '@/lib/constants';
+import { buildComparisonRoute } from '@/lib/constants';
 import { useAppStore } from '@/stores/app-store';
 import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 import type { Analysis } from '@/types';
@@ -50,48 +48,21 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
   const duplicateAnalysis = useAppStore((state) => state.duplicateAnalysis);
   const deleteAnalysis = useAppStore((state) => state.deleteAnalysis);
   const updateAnalysis = useAppStore((state) => state.updateAnalysis);
+  const globalParams = useAppStore((state) => state.globalParams);
   const navigate = useNavigate();
 
-  // Calculate wafer quantity based on type
-  const waferQuantity = analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
-
-  // Use per-analysis detection rate, fallback to global default (Story 2.9 pattern)
-  const detectionRate = analysis.detectionRate ?? DEFAULT_DETECTION_RATE;
-
-  // Memoize calculations to prevent unnecessary re-computation (NFR-P6: 5 concurrent analyses)
+  // Strategy-aware calculation (supports unplanned, planned, bottleneck)
   const { totalFailureCost, argosServiceCost, savings, roi } = useMemo(() => {
-    const totalCost = calculateTotalFailureCost(
-      analysis.pumpQuantity,
-      analysis.failureRatePercentage,
-      analysis.waferCost,
-      waferQuantity,
-      analysis.downtimeDuration,
-      analysis.downtimeCostPerHour,
-    );
-
-    const serviceCost = calculateArgosServiceCost(
-      analysis.pumpQuantity,
-      DEFAULT_SERVICE_COST_PER_PUMP,
-    );
-
-    const calculatedSavings = calculateSavings(totalCost, serviceCost, detectionRate);
-    const calculatedROI = calculateROI(calculatedSavings, serviceCost);
+    const result = calculateStrategySavings(analysis, globalParams);
+    const calculatedROI = calculateROI(result.savings, result.argosServiceCost);
 
     return {
-      totalFailureCost: totalCost,
-      argosServiceCost: serviceCost,
-      savings: calculatedSavings,
+      totalFailureCost: result.totalFailureCost,
+      argosServiceCost: result.argosServiceCost,
+      savings: result.savings,
       roi: calculatedROI,
     };
-  }, [
-    analysis.pumpQuantity,
-    analysis.failureRatePercentage,
-    analysis.waferCost,
-    waferQuantity,
-    analysis.downtimeDuration,
-    analysis.downtimeCostPerHour,
-    detectionRate,
-  ]);
+  }, [analysis, globalParams]);
 
   // Traffic-light color for ROI
   const roiColorClass = getROIColorClass(roi);

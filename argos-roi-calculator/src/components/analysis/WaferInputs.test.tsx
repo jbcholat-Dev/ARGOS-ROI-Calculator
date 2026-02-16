@@ -18,8 +18,16 @@ function createTestAnalysis(overrides: Partial<Analysis> = {}): Analysis {
     waferType: 'mono',
     waferQuantity: 1,
     waferCost: 8000,
+    waferDefectEventsPerYear: 0,
     downtimeDuration: 6,
     downtimeCostPerHour: 500,
+    isBottleneck: false,
+    bottleneckMultiplier: 2.0,
+    maintenanceStrategy: 'unplanned' as const,
+    overhaulCostPerPump: 0,
+    pmIntervalMonths: 12,
+    argosMtbfExtensionPercent: 15,
+    unplannedDespitePM: 0,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
@@ -304,6 +312,105 @@ describe('WaferInputs', () => {
     const analysis = useAppStore.getState().analyses[0];
     expect(analysis.waferQuantity).toBe(1);
     expect(screen.queryByText(/Must be a positive number/)).not.toBeInTheDocument();
+  });
+
+  // === Wafer Defect Events Tests (Story 4.5.2) ===
+
+  it('renders wafer defect events input with correct label', () => {
+    render(<WaferInputs analysisId="test-analysis-1" />);
+    expect(screen.getByLabelText('Wafer Defect Events per Year')).toBeInTheDocument();
+  });
+
+  it('shows empty field when waferDefectEventsPerYear is 0', () => {
+    render(<WaferInputs analysisId="test-analysis-1" />);
+    const input = screen.getByLabelText('Wafer Defect Events per Year') as HTMLInputElement;
+    expect(input.value).toBe('');
+  });
+
+  it('shows value when waferDefectEventsPerYear > 0', () => {
+    useAppStore.setState({
+      analyses: [createTestAnalysis({ waferDefectEventsPerYear: 3 })],
+    });
+    render(<WaferInputs analysisId="test-analysis-1" />);
+    const input = screen.getByLabelText('Wafer Defect Events per Year') as HTMLInputElement;
+    expect(input.value).toBe('3');
+  });
+
+  it('updates store waferDefectEventsPerYear when entering valid value', async () => {
+    const user = userEvent.setup();
+    render(<WaferInputs analysisId="test-analysis-1" />);
+
+    const input = screen.getByLabelText('Wafer Defect Events per Year');
+    await user.type(input, '5');
+
+    const analysis = useAppStore.getState().analyses[0];
+    expect(analysis.waferDefectEventsPerYear).toBe(5);
+  });
+
+  it('accepts 0 as valid for defect events', async () => {
+    const user = userEvent.setup();
+    useAppStore.setState({
+      analyses: [createTestAnalysis({ waferDefectEventsPerYear: 3 })],
+    });
+    render(<WaferInputs analysisId="test-analysis-1" />);
+
+    const input = screen.getByLabelText('Wafer Defect Events per Year');
+    await user.clear(input);
+    await user.type(input, '0');
+
+    const analysis = useAppStore.getState().analyses[0];
+    expect(analysis.waferDefectEventsPerYear).toBe(0);
+  });
+
+  it('stores 0 when defect events field is cleared', async () => {
+    const user = userEvent.setup();
+    useAppStore.setState({
+      analyses: [createTestAnalysis({ waferDefectEventsPerYear: 3 })],
+    });
+    render(<WaferInputs analysisId="test-analysis-1" />);
+
+    const input = screen.getByLabelText('Wafer Defect Events per Year');
+    await user.clear(input);
+
+    const analysis = useAppStore.getState().analyses[0];
+    expect(analysis.waferDefectEventsPerYear).toBe(0);
+  });
+
+  it('shows error for negative defect events', async () => {
+    const user = userEvent.setup();
+    render(<WaferInputs analysisId="test-analysis-1" />);
+
+    const input = screen.getByLabelText('Wafer Defect Events per Year');
+    await user.type(input, '-3');
+
+    expect(screen.getByText(/Must be 0 or a positive number/)).toBeInTheDocument();
+  });
+
+  it('shows error for decimal defect events', async () => {
+    const user = userEvent.setup();
+    render(<WaferInputs analysisId="test-analysis-1" />);
+
+    const input = screen.getByLabelText('Wafer Defect Events per Year');
+    await user.type(input, '2.5');
+
+    expect(screen.getByText(/Must be a whole number/)).toBeInTheDocument();
+  });
+
+  it('does NOT update store with invalid defect events', async () => {
+    const user = userEvent.setup();
+    render(<WaferInputs analysisId="test-analysis-1" />);
+
+    const input = screen.getByLabelText('Wafer Defect Events per Year');
+    await user.type(input, '-5');
+
+    const analysis = useAppStore.getState().analyses[0];
+    expect(analysis.waferDefectEventsPerYear).toBe(0); // Original value preserved
+  });
+
+  it('has placeholder "ex: 2" on defect events field', () => {
+    render(<WaferInputs analysisId="test-analysis-1" />);
+    const input = screen.getByLabelText('Wafer Defect Events per Year');
+    expect(input).toHaveAttribute('placeholder', 'ex: 2');
   });
 
   // === Accessibility Tests ===

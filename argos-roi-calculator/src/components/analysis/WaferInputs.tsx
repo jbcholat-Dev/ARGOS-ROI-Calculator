@@ -5,6 +5,7 @@ import { useAppStore } from '@/stores/app-store';
 import {
   validateWaferQuantity,
   validateWaferCost,
+  validateWaferDefectEvents,
   formatEuroCurrency,
 } from '@/lib/validation/wafer-validation';
 import type { WaferType } from '@/types';
@@ -21,6 +22,7 @@ export function WaferInputs({ analysisId }: WaferInputsProps) {
 
   const [quantityError, setQuantityError] = useState<string | undefined>();
   const [costError, setCostError] = useState<string | undefined>();
+  const [defectEventsError, setDefectEventsError] = useState<string | undefined>();
   const [isCostFocused, setIsCostFocused] = useState(false);
   const [costInputValue, setCostInputValue] = useState<string>('');
 
@@ -76,6 +78,25 @@ export function WaferInputs({ analysisId }: WaferInputsProps) {
       updateAnalysis(analysisId, { waferCost: parseFloat(cleaned) });
     } else {
       setCostError(result.error);
+    }
+  };
+
+  const handleDefectEventsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    if (value.trim() === '') {
+      setDefectEventsError(undefined);
+      updateAnalysis(analysisId, { waferDefectEventsPerYear: 0 });
+      return;
+    }
+
+    const result = validateWaferDefectEvents(value);
+
+    if (result.isValid) {
+      setDefectEventsError(undefined);
+      updateAnalysis(analysisId, { waferDefectEventsPerYear: parseInt(value, 10) });
+    } else {
+      setDefectEventsError(result.error);
     }
   };
 
@@ -180,6 +201,18 @@ export function WaferInputs({ analysisId }: WaferInputsProps) {
           onFocus={handleCostFocus}
           onBlur={handleCostBlur}
           error={costError}
+        />
+
+        {/* Wafer defect events per year (Story 4.5.2) */}
+        <Input
+          label="Wafer Defect Events per Year"
+          type="number"
+          placeholder="ex: 2"
+          value={analysis.waferDefectEventsPerYear === 0 ? '' : String(analysis.waferDefectEventsPerYear)}
+          onChange={handleDefectEventsChange}
+          error={defectEventsError}
+          min={0}
+          max={1000}
         />
       </div>
     </section>

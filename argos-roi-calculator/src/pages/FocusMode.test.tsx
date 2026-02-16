@@ -49,6 +49,13 @@ vi.mock('@/components/analysis/ResultsPanel', () => ({
   ),
 }));
 
+// Mock OverhaulCostInput
+vi.mock('@/components/analysis/OverhaulCostInput', () => ({
+  OverhaulCostInput: ({ analysisId }: { analysisId: string }) => (
+    <div data-testid="overhaul-cost-input">{analysisId}</div>
+  ),
+}));
+
 const createTestAnalysis = (overrides: Partial<Analysis> = {}): Analysis => ({
   id: 'test-id-1',
   name: 'Poly Etch - Chamber 04',
@@ -59,8 +66,16 @@ const createTestAnalysis = (overrides: Partial<Analysis> = {}): Analysis => ({
   waferType: 'batch',
   waferQuantity: 125,
   waferCost: 500,
+  waferDefectEventsPerYear: 0,
   downtimeDuration: 8,
   downtimeCostPerHour: 1000,
+  isBottleneck: false,
+  bottleneckMultiplier: 2.0,
+  maintenanceStrategy: 'unplanned' as const,
+  overhaulCostPerPump: 0,
+  pmIntervalMonths: 12,
+  argosMtbfExtensionPercent: 15,
+  unplannedDespitePM: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,

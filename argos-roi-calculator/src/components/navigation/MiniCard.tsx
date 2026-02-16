@@ -1,9 +1,7 @@
 import { clsx } from 'clsx';
 import { useAppStore } from '@/stores/app-store';
 import {
-  calculateTotalFailureCost,
-  calculateArgosServiceCost,
-  calculateSavings,
+  calculateStrategySavings,
   calculateROI,
   isAnalysisCalculable,
 } from '@/lib/calculations';
@@ -44,34 +42,14 @@ export function MiniCard({ analysis, isActive, onClick }: MiniCardProps) {
 
   const calculable = isAnalysisCalculable(analysis);
 
-  const waferQuantity = analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
+  let savings: number | null = null;
+  let roi: number | null = null;
 
-  const totalFailureCost = calculable
-    ? calculateTotalFailureCost(
-        analysis.pumpQuantity,
-        analysis.failureRatePercentage,
-        analysis.waferCost,
-        waferQuantity,
-        analysis.downtimeDuration,
-        analysis.downtimeCostPerHour,
-      )
-    : null;
-
-  const argosServiceCost = calculable
-    ? calculateArgosServiceCost(analysis.pumpQuantity, globalParams.serviceCostPerPump)
-    : null;
-
-  const detectionRate = analysis.detectionRate ?? globalParams.detectionRate;
-
-  const savings =
-    totalFailureCost !== null && argosServiceCost !== null
-      ? calculateSavings(totalFailureCost, argosServiceCost, detectionRate)
-      : null;
-
-  const roi =
-    savings !== null && argosServiceCost !== null
-      ? calculateROI(savings, argosServiceCost)
-      : null;
+  if (calculable) {
+    const result = calculateStrategySavings(analysis, globalParams);
+    savings = result.savings;
+    roi = calculateROI(result.savings, result.argosServiceCost);
+  }
 
   const borderColorClass =
     roi !== null ? getRoiBorderColor(roi) : 'border-l-gray-300';

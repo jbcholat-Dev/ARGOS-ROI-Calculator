@@ -1,10 +1,10 @@
-# Design Feedback & Polish Backlog
+# Design Feedback & Improvement Backlog
 
-## Status: Deferred to post-Epic 6 design branch
+## Status: Active — Epic 4.5 Pre-Demo Sprint (mercredi 2026-02-18)
 
-**Strategy:** Focus on functional MVP delivery (Epics 2-6) first, then comprehensive design refactor in separate branch with full product context and real user feedback.
+**Strategy (updated 2026-02-16):** Internal feedback review identified HIGH-priority items impacting ROI credibility and demo safety. These are addressed in **Epic 4.5 — Pre-Demo Improvements** before continuing to Epic 5 (PDF Export). Remaining MEDIUM/LOW items stay deferred to post-Epic 6 design branch.
 
-**Workflow:** After each epic retrospective, capture new design feedback in this file. Process all items in batch after Epic 6 completion.
+**Workflow:** HIGH items → Epic 4.5 stories → implement before Wednesday demo. MEDIUM/LOW items → batch after Epic 6.
 
 ---
 
@@ -91,14 +91,98 @@
 
 ---
 
-## Epic 4 Feedback
+## Epic 4 Feedback (2026-02-16)
 
-_To be captured after Epic 4 retrospective_
+_No specific Epic 4 retrospective items — feedback captured in Pre-Demo Sprint below._
 
-### Areas to Watch:
-- Global Analysis view hero metrics design
-- Comparison table layout and readability
-- Aggregated data visualization
+---
+
+## Pre-Demo Improvement Sprint (2026-02-16) — Epic 4.5
+
+Feedback collected during internal review session (party mode). Prioritized for Wednesday 2026-02-18 client demo.
+
+### HIGH Priority — Must ship before Wednesday
+
+#### FB-1: Wafer Defect Decoupling + Terminology Rename ⬜ → Story 4.5.2
+- **Priority:** HIGH | **Effort:** 3-4h
+- [ ] **Separate wafer defect events field** — Decouple wafer defect count from pump failure count
+  - Problem: Model applies wafer cost to EVERY failure. Reality: only a fraction of failures cause wafer defects (e.g., 5 failures but only 1-2 wafer defect events)
+  - Proposed: New field "Wafer defect events per year" in wafer section, independent of failure count
+  - Calculation: Total wafer cost = wafer defect events × cost per wafer defect event (NOT failures × cost)
+- [ ] **Rename "wafer scrap" → "wafer defect" everywhere** (UI labels, types, store, tests)
+  - Reason: Not all wafer events are scraps — some wafers can be reworked. "Defect" is the correct neutral term
+
+#### FB-2: Maintenance Strategy Model & ARGOS Value Calculation ⬜ → Story 4.5.4
+- **Priority:** HIGH | **Effort:** 1-1.5 days
+- [ ] **Maintenance strategy selector** at process level: `Unplanned` | `Planned`
+  - **Unplanned** (Run to Fail + Opportunistic PM):
+    - Input: Unplanned events/year
+    - ARGOS value: Anticipate failures BEFORE they happen (detect early)
+    - Slider: ARGOS detection rate (70-90%) — % of events anticipated
+    - Number of overhauls stays THE SAME (pump still gets overhauled, just before it breaks)
+    - Gain = anticipated events × (downtime cost + wafer defect cost avoided)
+    - Covers both true RTF and "opportunistic PM" (technician heard noise → pull pump)
+  - **Planned** (Fixed-interval Preventive Maintenance):
+    - Input: PM interval in months (e.g., 12, 18, 24)
+    - Auto-calculated: overhauls/year = number of pumps ÷ (interval ÷ 12)
+    - Optional: unplanned failures despite PM schedule (default: 0)
+    - ARGOS value: Extend interval via data-driven condition monitoring
+    - Slider: MTBF extension (10-30%)
+    - Gain = (current overhauls/year − ARGOS overhauls/year) × overhaul cost + residual unplanned events avoided
+    - Wafer defect: typically 0 in PM mode (pumps removed before failure), but user decides
+  - **Key insight:** No "hybrid" mode needed — Planned mode with optional unplanned residual covers the real-world hybrid scenario
+- [ ] **Single overhaul cost** — No distinction between RTF and PM repair cost (marginal difference in practice, client refurbishes most parts regardless)
+- [ ] **Annualization for PM** — Steady-state formula: pumps ÷ interval-in-years gives annual overhaul rate (pumps staggered over time)
+
+#### FB-3: Bottleneck Tool Toggle ⬜ → Story 4.5.3
+- **Priority:** HIGH | **Effort:** 2-3h
+- [ ] **Toggle "Bottleneck tool?"** in downtime section
+  - When ON: reveal multiplier field
+  - Default multiplier: x2
+  - Step: 0.5 increments (x1.5, x2, x2.5, x3, x3.5...)
+  - Applied ONLY to downtime cost per hour (not wafer defect)
+  - Rationale: Bottleneck tools block downstream production when down — cost extends beyond the tool itself
+  - UX: conversational — consultant adjusts live with client ("When this tool goes down, how much of the line stops?")
+
+#### FB-4: Data Persistence (localStorage) ⬜ → Story 4.5.1
+- **Priority:** HIGH | **Effort:** 3-4h
+- [ ] **Zustand persist middleware** — Auto-save entire store to localStorage
+  - Survives: page refresh, tab close, browser restart
+  - Storage: ~5 Mo available, sufficient for dozens of analyses
+  - Implementation: `zustand/middleware` persist with `name: 'argos-roi-data'`
+- [ ] **Session recovery modal** on app launch when previous data exists
+  - Options: "Resume previous session" | "Start new session"
+  - Protects client data confidentiality between different client meetings
+- [ ] **Reset button** accessible in UI to clear all stored data
+- [ ] Handle store migration if structure changes between versions (future-proofing)
+
+### MEDIUM Priority — If time permits before Wednesday
+
+#### FB-5: What-If Card Positioning
+- **Priority:** MEDIUM | **Effort:** 2-3h
+- [ ] When "Save Both" creates a new What-If card, insert it immediately AFTER the source card (not at end of list)
+  - Problem: Client loses visual link between original and What-If scenario
+  - Requires: `sortOrder` field on analyses in store
+
+#### FB-6: ROI Badges on Dashboard Cards
+- **Priority:** MEDIUM | **Effort:** 3-4h
+- [ ] Colored ROI classification badges on each dashboard card (traffic-light system)
+  - Categories TBD: e.g., "Strong ROI" (green), "Marginal" (yellow), "Negative" (red)
+  - Already identified in Epic 3 feedback — promoting to MEDIUM for pre-demo
+
+### LOW Priority — Post-Demo (Design Branch)
+
+#### FB-7: Compact Dashboard Cards
+- **Priority:** LOW | **Effort:** 4-6h
+- [ ] Reduce card height, densify information display, less white space
+
+#### FB-8: Drag & Drop Card Reordering
+- **Priority:** LOW | **Effort:** 1-2 days
+- [ ] Free card reordering via drag and drop (consider `dnd-kit` or `@hello-pangea/dnd`)
+
+#### FB-9: Process Clustering
+- **Priority:** LOW | **Effort:** 1-2 days
+- [ ] Visual grouping of related analyses (by process, by scenario family)
 
 ---
 
@@ -129,13 +213,13 @@ _To be captured after Epic 6 retrospective_
 
 ### Pre-Work
 1. Gather real user feedback from client demos (Epics 4-6)
-2. Review all accumulated feedback in this file
+2. Review all accumulated feedback in this file (including Epic 2/3 items still open)
 3. Audit Sally's initial mockups for design direction
-4. Prioritize changes by impact and effort
+4. Prioritize remaining changes by impact and effort
 
 ### Approach
 1. Create branch: `feature/design-polish`
-2. Work through feedback items systematically
+2. Work through remaining feedback items systematically (FB-7, FB-8, FB-9 + Epic 2/3 open items)
 3. Test comprehensively (visual regression, interaction)
 4. Review with JB before merge
 5. Merge to main after approval
@@ -150,12 +234,25 @@ _To be captured after Epic 6 retrospective_
 
 ## Notes
 
-- **Don't prematurely optimize:** Wait for full product context before making design decisions
-- **User feedback > assumptions:** Real client reactions (post-Epic 4) should inform design
-- **Batch refactor > incremental:** Avoid refactoring same components 6 times across epics
+- **Pre-demo sprint (Epic 4.5):** HIGH items are no longer deferred — addressed before Wednesday demo
+- **User feedback > assumptions:** Real client reactions should continue to inform design
+- **Batch refactor for remaining items:** LOW priority items batched in post-Epic 6 design branch
 - **Design branch isolation:** Allows aggressive refactoring without disrupting feature velocity
 
 ---
 
-**Last Updated:** 2026-02-11 (Epic 3 Retrospective — Phase 2)
-**Next Update:** After Epic 4 Retrospective
+## Implementation Order (Epic 4.5)
+
+| Order | Story | Feedback | Rationale |
+|-------|-------|----------|-----------|
+| 1 | 4.5.1 | FB-4 Persistence | Safety net — protects all subsequent dev work during demo |
+| 2 | 4.5.2 | FB-1 Wafer defect | Quick win — field + rename, independent |
+| 3 | 4.5.3 | FB-3 Bottleneck | Quick win — toggle + multiplier, independent |
+| 4 | 4.5.4 | FB-2 Maintenance strategy | Biggest item — depends on FB-1 (wafer defect field) |
+
+Stories 4.5.1 + 4.5.2 can be developed in parallel (no dependencies).
+
+---
+
+**Last Updated:** 2026-02-16 (Pre-Demo Improvement Sprint — Party Mode Session)
+**Next Update:** After Wednesday demo (2026-02-18) — capture client feedback

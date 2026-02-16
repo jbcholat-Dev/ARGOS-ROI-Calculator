@@ -19,7 +19,7 @@
  *   calculateROI()              → CalculationResult.roiPercentage
  */
 
-import type { Analysis, AnalysisRowData, AggregatedMetrics, GlobalParams } from '@/types';
+import type { Analysis, AnalysisRowData, AggregatedMetrics, GlobalParams, MaintenanceStrategy } from '@/types';
 import {
   ROI_NEGATIVE_THRESHOLD,
   ROI_WARNING_THRESHOLD,
@@ -50,7 +50,12 @@ function isFiniteNumber(value: number): boolean {
 /**
  * Calculates the total annual cost of pump failures without ARGOS predictive maintenance.
  *
- * Formula: (pumpQuantity × failureRate/100) × (waferCost × wafersPerBatch + downtimeHours × downtimeCostPerHour)
+ * Decoupled formula (Story 4.5.2):
+ *   waferDefectCost = waferDefectEventsPerYear × waferCost × wafersPerBatch
+ *   downtimeCost    = failedPumps × downtimeHours × downtimeCostPerHour
+ *   totalFailureCost = waferDefectCost + downtimeCost
+ *
+ * Wafer defect events are independent from pump failures — not every failure causes a wafer defect.
  *
  * @param pumpQuantity - Number of pumps for this process (e.g., 10)
  * @param failureRate - Annual failure rate as percentage, 0-100 (e.g., 10 = 10%)
@@ -58,11 +63,13 @@ function isFiniteNumber(value: number): boolean {
  * @param wafersPerBatch - Number of wafers per batch (e.g., 125 for batch tools, 1 for mono)
  * @param downtimeHours - Hours of downtime per failure event (e.g., 6)
  * @param downtimeCostPerHour - Cost per hour of downtime in EUR (e.g., 500)
+ * @param waferDefectEventsPerYear - Independent wafer defect events per year (default: 0)
+ * @param bottleneckMultiplier - Downtime cost multiplier for bottleneck tools (default: 1, i.e. no multiplier)
  * @returns Total annual failure cost in EUR, or 0 for invalid inputs
  *
  * @example
- * // 10 pumps, 10% failure rate, €8,000/wafer, 125 wafers/batch, 6h downtime, €500/h
- * calculateTotalFailureCost(10, 10, 8000, 125, 6, 500) // → 1,003,000
+ * // 10 pumps, 10% failure rate, €8,000/wafer, 125 wafers/batch, 6h downtime, €500/h, 2 defect events
+ * calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 2) // → 2,003,000
  */
 export function calculateTotalFailureCost(
   pumpQuantity: number,
@@ -71,6 +78,8 @@ export function calculateTotalFailureCost(
   wafersPerBatch: number,
   downtimeHours: number,
   downtimeCostPerHour: number,
+  waferDefectEventsPerYear: number = 0,
+  bottleneckMultiplier: number = 1,
 ): number {
   if (
     !isValidInput(pumpQuantity) ||
@@ -78,14 +87,23 @@ export function calculateTotalFailureCost(
     !isValidInput(waferCost) ||
     !isValidInput(wafersPerBatch) ||
     !isValidInput(downtimeHours) ||
-    !isValidInput(downtimeCostPerHour)
+    !isValidInput(downtimeCostPerHour) ||
+    !isValidInput(waferDefectEventsPerYear) ||
+    !isValidInput(bottleneckMultiplier) ||
+    bottleneckMultiplier < 1
   ) {
     return 0;
   }
 
+  // No pumps or no failures = no cost (wafer defect events require an active process)
+  if (pumpQuantity === 0 || failureRate === 0) {
+    return 0;
+  }
+
   const failedPumps = pumpQuantity * (failureRate / 100);
-  const costPerFailure = waferCost * wafersPerBatch + downtimeHours * downtimeCostPerHour;
-  return failedPumps * costPerFailure;
+  const waferDefectCost = waferDefectEventsPerYear * waferCost * wafersPerBatch;
+  const downtimeCost = failedPumps * downtimeHours * downtimeCostPerHour * bottleneckMultiplier;
+  return waferDefectCost + downtimeCost;
 }
 
 /**
@@ -208,34 +226,153 @@ export function getROIColorClass(roi: number): string {
 }
 
 /**
- * Checks if an analysis has all required fields populated for ROI calculation.
- * Shared between MiniCard (summary display) and ResultsPanel (detailed display).
+ * Calculates planned maintenance overhaul savings with ARGOS MTBF extension.
+ *
+ * Formula:
+ *   currentOverhaulsPerYear = pumps / (intervalMonths / 12)
+ *   argosIntervalMonths = intervalMonths × (1 + mtbfExtension / 100)
+ *   argosOverhaulsPerYear = pumps / (argosIntervalMonths / 12)
+ *   overhaulSavings = (currentOverhauls - argosOverhauls) × overhaulCostPerPump
+ *
+ * @param pumps - Number of pumps
+ * @param intervalMonths - Current PM interval in months
+ * @param overhaulCostPerPump - Cost per overhaul in EUR
+ * @param mtbfExtensionPercent - ARGOS MTBF extension as percentage (e.g., 15 = 15%)
+ * @returns Object with currentOverhauls, argosOverhauls, and overhaulSavings
+ */
+export function calculatePlannedOverhaulSavings(
+  pumps: number,
+  intervalMonths: number,
+  overhaulCostPerPump: number,
+  mtbfExtensionPercent: number,
+): { currentOverhauls: number; argosOverhauls: number; overhaulSavings: number } {
+  if (
+    !isValidInput(pumps) ||
+    !isValidInput(intervalMonths) ||
+    !isValidInput(overhaulCostPerPump) ||
+    !isValidInput(mtbfExtensionPercent) ||
+    pumps === 0 || intervalMonths === 0
+  ) {
+    return { currentOverhauls: 0, argosOverhauls: 0, overhaulSavings: 0 };
+  }
+
+  const currentOverhauls = pumps / (intervalMonths / 12);
+  const argosIntervalMonths = intervalMonths * (1 + mtbfExtensionPercent / 100);
+  const argosOverhauls = pumps / (argosIntervalMonths / 12);
+  const overhaulSavings = (currentOverhauls - argosOverhauls) * overhaulCostPerPump;
+
+  return { currentOverhauls, argosOverhauls, overhaulSavings };
+}
+
+/**
+ * Calculates savings for an analysis based on its maintenance strategy.
+ *
+ * Unplanned: savingsFromArgos = detectionRate × totalCostWithoutArgos - serviceCost
+ * Planned: overhaulSavings + optional residualSavings - serviceCost
+ *
+ * @param analysis - Full analysis object
+ * @param globalParams - Global parameters
+ * @returns Object with totalFailureCost, savings, and argosServiceCost
+ */
+export function calculateStrategySavings(
+  analysis: Analysis,
+  globalParams: GlobalParams,
+): { totalFailureCost: number; savings: number; argosServiceCost: number } {
+  const argosServiceCost = calculateArgosServiceCost(
+    analysis.pumpQuantity,
+    globalParams.serviceCostPerPump,
+  );
+  const effectiveMultiplier = analysis.isBottleneck ? analysis.bottleneckMultiplier : 1;
+  const effectiveWaferQty = analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
+
+  if (analysis.maintenanceStrategy === 'planned') {
+    // Planned mode: overhaul savings + optional residual
+    const { overhaulSavings } = calculatePlannedOverhaulSavings(
+      analysis.pumpQuantity,
+      analysis.pmIntervalMonths,
+      analysis.overhaulCostPerPump,
+      analysis.argosMtbfExtensionPercent,
+    );
+
+    // Residual unplanned failures: use unplannedDespitePM as failure count
+    let residualSavings = 0;
+    let residualFailureCost = 0;
+    if (analysis.unplannedDespitePM > 0) {
+      const residualDowntimeCost = analysis.unplannedDespitePM * analysis.downtimeDuration * analysis.downtimeCostPerHour * effectiveMultiplier;
+      const residualWaferCost = analysis.waferDefectEventsPerYear * analysis.waferCost * effectiveWaferQty;
+      residualFailureCost = residualDowntimeCost + residualWaferCost;
+      const detectionRate = analysis.detectionRate ?? globalParams.detectionRate;
+      residualSavings = residualFailureCost * (detectionRate / 100);
+    }
+
+    // Total failure cost for planned = overhaul cost baseline + residual failure cost
+    const currentOverhauls = analysis.pumpQuantity > 0 && analysis.pmIntervalMonths > 0
+      ? analysis.pumpQuantity / (analysis.pmIntervalMonths / 12)
+      : 0;
+    const totalFailureCost = currentOverhauls * analysis.overhaulCostPerPump + residualFailureCost;
+
+    const savings = overhaulSavings + residualSavings - argosServiceCost;
+    return { totalFailureCost, savings, argosServiceCost };
+  }
+
+  // Unplanned mode: existing formula
+  const totalFailureCost = calculateTotalFailureCost(
+    analysis.pumpQuantity,
+    analysis.failureRatePercentage,
+    analysis.waferCost,
+    effectiveWaferQty,
+    analysis.downtimeDuration,
+    analysis.downtimeCostPerHour,
+    analysis.waferDefectEventsPerYear,
+    effectiveMultiplier,
+  );
+  const detectionRate = analysis.detectionRate ?? globalParams.detectionRate;
+  const savings = calculateSavings(totalFailureCost, argosServiceCost, detectionRate);
+  return { totalFailureCost, savings, argosServiceCost };
+}
+
+/**
+ * Checks if an analysis has sufficient fields populated for ROI calculation.
+ *
+ * For unplanned strategy:
+ *   - Pump quantity > 0 and failure rate > 0
+ *   - At least ONE cost component: wafer defect or downtime
+ *
+ * For planned strategy:
+ *   - Pump quantity > 0 and PM interval > 0
+ *   - At least ONE savings source: overhaul cost > 0 OR residual events with costs
  *
  * @param analysis - Object with the required numeric fields
- * @returns true if all fields are > 0 and calculation can proceed
+ * @returns true if calculation can proceed
  */
 export function isAnalysisCalculable(analysis: {
   pumpQuantity: number;
   failureRatePercentage: number;
   waferCost: number;
+  waferDefectEventsPerYear: number;
   downtimeDuration: number;
   downtimeCostPerHour: number;
+  maintenanceStrategy?: MaintenanceStrategy;
+  pmIntervalMonths?: number;
+  overhaulCostPerPump?: number;
+  unplannedDespitePM?: number;
 }): boolean {
-  return (
-    analysis.pumpQuantity > 0 &&
-    analysis.failureRatePercentage > 0 &&
-    analysis.waferCost > 0 &&
-    analysis.downtimeDuration > 0 &&
-    analysis.downtimeCostPerHour > 0
-  );
-}
+  if (analysis.maintenanceStrategy === 'planned') {
+    const hasBasicInputs = analysis.pumpQuantity > 0 && (analysis.pmIntervalMonths ?? 0) > 0;
+    const hasOverhaulCost = (analysis.overhaulCostPerPump ?? 0) > 0;
+    const hasResidualCosts = (analysis.unplannedDespitePM ?? 0) > 0 && (
+      (analysis.downtimeDuration > 0 && analysis.downtimeCostPerHour > 0) ||
+      (analysis.waferDefectEventsPerYear > 0 && analysis.waferCost > 0)
+    );
+    return hasBasicInputs && (hasOverhaulCost || hasResidualCosts);
+  }
 
-/**
- * Returns the effective wafer quantity for an analysis.
- * Mono wafer type forces quantity to 1 regardless of waferQuantity field.
- */
-function getEffectiveWaferQuantity(analysis: Pick<Analysis, 'waferType' | 'waferQuantity'>): number {
-  return analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
+  // Unplanned mode (default)
+  const hasBasicInputs = analysis.pumpQuantity > 0 && analysis.failureRatePercentage > 0;
+  const hasWaferDefectCost = analysis.waferDefectEventsPerYear > 0 && analysis.waferCost > 0;
+  const hasDowntimeCost = analysis.downtimeDuration > 0 && analysis.downtimeCostPerHour > 0;
+
+  return hasBasicInputs && (hasWaferDefectCost || hasDowntimeCost);
 }
 
 /**
@@ -254,22 +391,7 @@ export function calculateAnalysisRow(
     return null;
   }
 
-  const totalFailureCost = calculateTotalFailureCost(
-    analysis.pumpQuantity,
-    analysis.failureRatePercentage,
-    analysis.waferCost,
-    getEffectiveWaferQuantity(analysis),
-    analysis.downtimeDuration,
-    analysis.downtimeCostPerHour,
-  );
-
-  const argosServiceCost = calculateArgosServiceCost(
-    analysis.pumpQuantity,
-    globalParams.serviceCostPerPump,
-  );
-
-  const detectionRate = analysis.detectionRate ?? globalParams.detectionRate;
-  const savings = calculateSavings(totalFailureCost, argosServiceCost, detectionRate);
+  const { totalFailureCost, savings, argosServiceCost } = calculateStrategySavings(analysis, globalParams);
   const roiPercentage = calculateROI(savings, argosServiceCost);
 
   return {
@@ -322,26 +444,11 @@ export function calculateAggregatedMetrics(
   let totalPumps = 0;
 
   for (const analysis of calculable) {
-    const failureCost = calculateTotalFailureCost(
-      analysis.pumpQuantity,
-      analysis.failureRatePercentage,
-      analysis.waferCost,
-      getEffectiveWaferQuantity(analysis),
-      analysis.downtimeDuration,
-      analysis.downtimeCostPerHour,
-    );
+    const result = calculateStrategySavings(analysis, globalParams);
 
-    const serviceCost = calculateArgosServiceCost(
-      analysis.pumpQuantity,
-      globalParams.serviceCostPerPump,
-    );
-
-    const detectionRate = analysis.detectionRate ?? globalParams.detectionRate;
-    const savings = calculateSavings(failureCost, serviceCost, detectionRate);
-
-    totalFailureCost += failureCost;
-    totalServiceCost += serviceCost;
-    totalSavings += savings;
+    totalFailureCost += result.totalFailureCost;
+    totalServiceCost += result.argosServiceCost;
+    totalSavings += result.savings;
     totalPumps += analysis.pumpQuantity;
   }
 

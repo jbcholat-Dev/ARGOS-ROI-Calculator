@@ -66,8 +66,16 @@ describe('AnalysisCard Integration Tests', () => {
         waferType: 'mono' as const,
         waferQuantity: 1,
         waferCost: 100,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 6,
         downtimeCostPerHour: 500,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         detectionRate: 10,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -82,8 +90,16 @@ describe('AnalysisCard Integration Tests', () => {
         waferType: 'mono' as const,
         waferQuantity: 1,
         waferCost: 8000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 6,
         downtimeCostPerHour: 500,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         detectionRate: 25,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -98,8 +114,16 @@ describe('AnalysisCard Integration Tests', () => {
         waferType: 'batch' as const,
         waferQuantity: 125,
         waferCost: 8000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 6,
         downtimeCostPerHour: 500,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         detectionRate: 70,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -132,8 +156,16 @@ describe('AnalysisCard Integration Tests', () => {
         waferType: 'mono' as const,
         waferQuantity: 1,
         waferCost: 0,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 0,
         downtimeCostPerHour: 0,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -147,8 +179,16 @@ describe('AnalysisCard Integration Tests', () => {
         waferType: 'mono' as const,
         waferQuantity: 1,
         waferCost: 0,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 0,
         downtimeCostPerHour: 0,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -203,8 +243,16 @@ describe('AnalysisCard Integration Tests', () => {
       waferType: 'batch' as const,
       waferQuantity: 125,
       waferCost: 8000,
+      waferDefectEventsPerYear: 1,
       downtimeDuration: 6,
       downtimeCostPerHour: 500,
+      isBottleneck: false,
+      bottleneckMultiplier: 2.0,
+      maintenanceStrategy: 'unplanned' as const,
+      overhaulCostPerPump: 0,
+      pmIntervalMonths: 12,
+      argosMtbfExtensionPercent: 15,
+      unplannedDespitePM: 0,
       detectionRate: 70,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -213,6 +261,7 @@ describe('AnalysisCard Integration Tests', () => {
     useAppStore.setState({ analyses: [analysis], activeAnalysisId: 'test-analysis' });
     renderApp();
 
+    // Decoupled: totalFailureCost = 1*8000*125 + 1*6*500 = 1,003,000
     // Verify initial ROI display (2708.4%)
     const initialROI = screen.getByTestId('roi-percentage');
     expect(initialROI.textContent).toMatch(/2[\s\u00a0\u202f]708,4/);
@@ -220,11 +269,11 @@ describe('AnalysisCard Integration Tests', () => {
     // Simulate user modifying analysis in FocusMode (change pump quantity to 5)
     useAppStore.getState().updateAnalysis('test-analysis', { pumpQuantity: 5 });
 
-    // New calculation with pumpQuantity = 5:
-    // Total failure cost = (5 × 0.10) × (8000 × 125 + 6 × 500) = 0.5 × 1,003,000 = 501,500
-    // Service cost = 5 × 2500 = 12,500
-    // Savings = 501,500 × 0.70 - 12,500 = 351,050 - 12,500 = 338,550
-    // ROI = (338,550 / 12,500) × 100 = 2708.4% (same ROI ratio!)
+    // Decoupled with pumpQuantity=5:
+    // waferDefectCost = 1*8000*125 = 1,000,000, downtimeCost = 0.5*6*500 = 1,500
+    // totalFailureCost = 1,001,500, serviceCost = 12,500
+    // Savings = 1,001,500 × 0.70 - 12,500 = 701,050 - 12,500 = 688,550
+    // ROI = (688,550 / 12,500) × 100 = 5508.4%
 
     // For different ROI, change detectionRate to 85%:
     useAppStore.getState().updateAnalysis('test-analysis', { detectionRate: 85 });
@@ -232,9 +281,9 @@ describe('AnalysisCard Integration Tests', () => {
     // Wait for component to re-render with updated store values (Zustand triggers re-render)
     await waitFor(() => {
       const updatedROI = screen.getByTestId('roi-percentage');
-      // New ROI with 85% detection: Savings = 501,500 × 0.85 - 12,500 = 413,775
-      // ROI = (413,775 / 12,500) × 100 = 3310.2%
-      expect(updatedROI.textContent).toMatch(/3[\s\u00a0\u202f]310,2/);
+      // Savings = 1,001,500 × 0.85 - 12,500 = 851,275 - 12,500 = 838,775
+      // ROI = (838,775 / 12,500) × 100 = 6710.2%
+      expect(updatedROI.textContent).toMatch(/6[\s\u00a0\u202f]710,2/);
     });
   });
 });

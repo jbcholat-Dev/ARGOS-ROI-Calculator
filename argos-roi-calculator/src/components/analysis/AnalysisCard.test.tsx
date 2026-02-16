@@ -27,8 +27,16 @@ describe('AnalysisCard', () => {
     waferType: 'batch',
     waferQuantity: 125,
     waferCost: 8000,
+    waferDefectEventsPerYear: 1,
     downtimeDuration: 6,
     downtimeCostPerHour: 500,
+    isBottleneck: false,
+    bottleneckMultiplier: 2.0,
+    maintenanceStrategy: 'unplanned' as const,
+    overhaulCostPerPump: 0,
+    pmIntervalMonths: 12,
+    argosMtbfExtensionPercent: 15,
+    unplannedDespitePM: 0,
     detectionRate: 70,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
@@ -95,16 +103,24 @@ describe('AnalysisCard', () => {
       failureRatePercentage: 100, // Simplified: 1 failure per year
       waferType: 'mono', // 1 wafer
       waferCost: 8000,
+      waferDefectEventsPerYear: 1,
       downtimeDuration: 6,
       downtimeCostPerHour: 500,
+      isBottleneck: false,
+      bottleneckMultiplier: 2.0,
+      maintenanceStrategy: 'unplanned' as const,
+      overhaulCostPerPump: 0,
+      pmIntervalMonths: 12,
+      argosMtbfExtensionPercent: 15,
+      unplannedDespitePM: 0,
       detectionRate: 25, // Low detection rate to get ROI ~10%
     };
 
     render(<AnalysisCard analysis={analysisWithLowROI} isActive={false} />);
 
-    // Total failure cost = (1 × 1.0) × (8000 × 1 + 6 × 500) = 1 × 11,000 = 11,000
-    // Service cost = 1 × 2500 = 2,500
-    // Savings = 11,000 × 0.25 - 2,500 = 2,750 - 2,500 = 250
+    // Decoupled: waferDefectCost = 1 × 8000 × 1 = 8,000, downtimeCost = 1 × 6 × 500 = 3,000
+    // totalFailureCost = 11,000, serviceCost = 2,500
+    // Savings = 11,000 × 0.25 - 2,500 = 250
     // ROI = (250 / 2,500) × 100 = 10% (orange!)
     const roiElement = screen.getByTestId('roi-percentage');
     expect(roiElement.className).toMatch(/text-orange-500/);

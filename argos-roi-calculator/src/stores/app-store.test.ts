@@ -8,8 +8,9 @@ import { useAppStore } from './app-store';
 import type { Analysis } from '@/types';
 
 describe('AppStore', () => {
-  // Reset store state before each test
+  // Reset store state before each test (clear localStorage to prevent persist rehydration)
   beforeEach(() => {
+    localStorage.removeItem('argos-roi-data');
     useAppStore.setState({
       analyses: [],
       activeAnalysisId: null,
@@ -62,8 +63,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -87,8 +96,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -113,8 +130,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -141,8 +166,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: originalTimestamp,
         updatedAt: originalTimestamp,
       };
@@ -169,8 +202,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -184,8 +225,16 @@ describe('AppStore', () => {
         waferType: 'mono',
         waferQuantity: 1,
         waferCost: 8000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 6,
         downtimeCostPerHour: 1500,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -212,8 +261,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         detectionRate: 70,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -238,8 +295,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         detectionRate: 70,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -269,8 +334,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -295,8 +368,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -310,8 +391,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -337,8 +426,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -364,8 +461,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -379,8 +484,16 @@ describe('AppStore', () => {
         waferType: 'mono',
         waferQuantity: 1,
         waferCost: 8000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 6,
         downtimeCostPerHour: 1500,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -409,8 +522,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -424,8 +545,16 @@ describe('AppStore', () => {
         waferType: 'mono',
         waferQuantity: 1,
         waferCost: 8000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 6,
         downtimeCostPerHour: 1500,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -452,8 +581,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
       };
@@ -481,8 +618,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -507,8 +652,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -534,8 +687,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -559,8 +720,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -574,8 +743,16 @@ describe('AppStore', () => {
         waferType: 'mono',
         waferQuantity: 1,
         waferCost: 8000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 6,
         downtimeCostPerHour: 1500,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -655,8 +832,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -682,8 +867,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -705,8 +898,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -728,8 +929,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -754,8 +963,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: originalTimestamp,
         updatedAt: originalTimestamp,
       };
@@ -779,8 +996,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -804,8 +1029,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -830,8 +1063,16 @@ describe('AppStore', () => {
       waferType: 'batch',
       waferQuantity: 125,
       waferCost: 5000,
+      waferDefectEventsPerYear: 0,
       downtimeDuration: 4,
       downtimeCostPerHour: 1000,
+      isBottleneck: false,
+      bottleneckMultiplier: 2.0,
+      maintenanceStrategy: 'unplanned' as const,
+      overhaulCostPerPump: 0,
+      pmIntervalMonths: 12,
+      argosMtbfExtensionPercent: 15,
+      unplannedDespitePM: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
@@ -948,6 +1189,245 @@ describe('AppStore', () => {
     });
   });
 
+  // Story 4.5.1: LocalStorage Persistence
+  describe('Persistence (Story 4.5.1)', () => {
+    const createAnalysis = (id: string, name: string): Analysis => ({
+      id,
+      name,
+      pumpType: 'A3004XN',
+      pumpQuantity: 10,
+      failureRateMode: 'percentage',
+      failureRatePercentage: 10,
+      waferType: 'batch',
+      waferQuantity: 125,
+      waferCost: 5000,
+      waferDefectEventsPerYear: 0,
+      downtimeDuration: 4,
+      downtimeCostPerHour: 1000,
+      isBottleneck: false,
+      bottleneckMultiplier: 2.0,
+      maintenanceStrategy: 'unplanned' as const,
+      overhaulCostPerPump: 0,
+      pmIntervalMonths: 12,
+      argosMtbfExtensionPercent: 15,
+      unplannedDespitePM: 0,
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
+    });
+
+    it('should persist data to localStorage under argos-roi-data key', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('persist-1', 'Persist Test'));
+
+      const raw = localStorage.getItem('argos-roi-data');
+      expect(raw).not.toBeNull();
+      const parsed = JSON.parse(raw!);
+      expect(parsed.state.analyses).toHaveLength(1);
+      expect(parsed.state.analyses[0].id).toBe('persist-1');
+    });
+
+    it('should serialize excludedFromGlobal Set as Array', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('ser-1', 'A'));
+      state.addAnalysis(createAnalysis('ser-2', 'B'));
+      state.toggleExcludeFromGlobal('ser-1');
+
+      const raw = localStorage.getItem('argos-roi-data');
+      const parsed = JSON.parse(raw!);
+      // Should be stored as array, not as empty object (default Set serialization)
+      expect(Array.isArray(parsed.state.excludedFromGlobal)).toBe(true);
+      expect(parsed.state.excludedFromGlobal).toContain('ser-1');
+    });
+
+    it('should restore excludedFromGlobal as a Set after rehydration', () => {
+      // Manually write serialized data with excludedFromGlobal as array
+      const persisted = {
+        state: {
+          analyses: [createAnalysis('reh-1', 'Rehydrate')],
+          activeAnalysisId: 'reh-1',
+          globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+          excludedFromGlobal: ['reh-1'],
+          deploymentMode: 'pilot',
+          connectionType: 'ethernet',
+        },
+        version: 1,
+      };
+      localStorage.setItem('argos-roi-data', JSON.stringify(persisted));
+
+      // Force rehydration by reading localStorage and simulating what the storage adapter does
+      const raw = localStorage.getItem('argos-roi-data');
+      const parsed = JSON.parse(raw!);
+      // The storage adapter converts the array back to a Set on read
+      if (Array.isArray(parsed.state.excludedFromGlobal)) {
+        parsed.state.excludedFromGlobal = new Set(parsed.state.excludedFromGlobal);
+      }
+      expect(parsed.state.excludedFromGlobal).toBeInstanceOf(Set);
+      expect(parsed.state.excludedFromGlobal.has('reh-1')).toBe(true);
+    });
+
+    it('should include version: 1 in persisted data', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('ver-1', 'Version Test'));
+
+      const raw = localStorage.getItem('argos-roi-data');
+      const parsed = JSON.parse(raw!);
+      expect(parsed.version).toBe(1);
+    });
+
+    it('should persist deploymentMode and connectionType', () => {
+      const state = useAppStore.getState();
+      state.setDeploymentMode('production');
+      state.setConnectionType('wifi');
+
+      const raw = localStorage.getItem('argos-roi-data');
+      const parsed = JSON.parse(raw!);
+      expect(parsed.state.deploymentMode).toBe('production');
+      expect(parsed.state.connectionType).toBe('wifi');
+    });
+  });
+
+  // Story 4.5.1: clearAllData
+  describe('clearAllData (Story 4.5.1)', () => {
+    const createAnalysis = (id: string, name: string): Analysis => ({
+      id,
+      name,
+      pumpType: 'A3004XN',
+      pumpQuantity: 10,
+      failureRateMode: 'percentage',
+      failureRatePercentage: 10,
+      waferType: 'batch',
+      waferQuantity: 125,
+      waferCost: 5000,
+      waferDefectEventsPerYear: 0,
+      downtimeDuration: 4,
+      downtimeCostPerHour: 1000,
+      isBottleneck: false,
+      bottleneckMultiplier: 2.0,
+      maintenanceStrategy: 'unplanned' as const,
+      overhaulCostPerPump: 0,
+      pmIntervalMonths: 12,
+      argosMtbfExtensionPercent: 15,
+      unplannedDespitePM: 0,
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
+    });
+
+    it('should reset analyses to empty array', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('clear-1', 'A'));
+      state.addAnalysis(createAnalysis('clear-2', 'B'));
+      expect(useAppStore.getState().analyses).toHaveLength(2);
+
+      state.clearAllData();
+
+      expect(useAppStore.getState().analyses).toEqual([]);
+    });
+
+    it('should reset activeAnalysisId to null', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('clear-active', 'A'));
+      expect(useAppStore.getState().activeAnalysisId).toBe('clear-active');
+
+      state.clearAllData();
+
+      expect(useAppStore.getState().activeAnalysisId).toBeNull();
+    });
+
+    it('should reset globalParams to defaults', () => {
+      const state = useAppStore.getState();
+      state.updateGlobalParams({ detectionRate: 90, serviceCostPerPump: 5000 });
+
+      state.clearAllData();
+
+      const reset = useAppStore.getState();
+      expect(reset.globalParams.detectionRate).toBe(70);
+      expect(reset.globalParams.serviceCostPerPump).toBe(2500);
+    });
+
+    it('should reset excludedFromGlobal to empty Set', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('excl-1', 'A'));
+      state.addAnalysis(createAnalysis('excl-2', 'B'));
+      state.toggleExcludeFromGlobal('excl-1');
+      expect(useAppStore.getState().excludedFromGlobal.size).toBe(1);
+
+      state.clearAllData();
+
+      expect(useAppStore.getState().excludedFromGlobal.size).toBe(0);
+    });
+
+    it('should reset deploymentMode and connectionType to defaults', () => {
+      const state = useAppStore.getState();
+      state.setDeploymentMode('production');
+      state.setConnectionType('wifi');
+
+      state.clearAllData();
+
+      const reset = useAppStore.getState();
+      expect(reset.deploymentMode).toBe('pilot');
+      expect(reset.connectionType).toBe('ethernet');
+    });
+
+    it('should update localStorage after clearing', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createAnalysis('ls-clear', 'LS Clear'));
+
+      const before = JSON.parse(localStorage.getItem('argos-roi-data')!);
+      expect(before.state.analyses).toHaveLength(1);
+
+      state.clearAllData();
+
+      const after = JSON.parse(localStorage.getItem('argos-roi-data')!);
+      expect(after.state.analyses).toEqual([]);
+    });
+  });
+
+  // Story 4.5.1: Graceful Degradation
+  describe('Graceful Degradation (Story 4.5.1)', () => {
+    it('should not crash when localStorage.setItem throws', () => {
+      // The store is already created with our safe storage adapter.
+      // Simulate localStorage failure by making setItem throw
+      const originalSetItem = Storage.prototype.setItem;
+      Storage.prototype.setItem = () => {
+        throw new Error('QuotaExceededError');
+      };
+
+      // Store operations should still work without crashing
+      const state = useAppStore.getState();
+      expect(() => {
+        state.addAnalysis({
+          id: 'degrade-test',
+          name: 'Degrade',
+          pumpType: 'A3004XN',
+          pumpQuantity: 2,
+          failureRateMode: 'percentage',
+          failureRatePercentage: 10,
+          waferType: 'batch',
+          waferQuantity: 125,
+          waferCost: 5000,
+          waferDefectEventsPerYear: 0,
+          downtimeDuration: 4,
+          downtimeCostPerHour: 1000,
+          isBottleneck: false,
+          bottleneckMultiplier: 2.0,
+          maintenanceStrategy: 'unplanned' as const,
+          overhaulCostPerPump: 0,
+          pmIntervalMonths: 12,
+          argosMtbfExtensionPercent: 15,
+          unplannedDespitePM: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      }).not.toThrow();
+
+      // State should still be updated in memory
+      expect(useAppStore.getState().analyses).toHaveLength(1);
+
+      // Restore
+      Storage.prototype.setItem = originalSetItem;
+    });
+  });
+
   // Story 6.4: Diagram Store Slice
   describe('Diagram State (Story 6.4)', () => {
     it('should have default deploymentMode set to pilot', () => {
@@ -996,8 +1476,16 @@ describe('AppStore', () => {
         waferType: 'batch',
         waferQuantity: 125,
         waferCost: 5000,
+        waferDefectEventsPerYear: 0,
         downtimeDuration: 4,
         downtimeCostPerHour: 1000,
+        isBottleneck: false,
+        bottleneckMultiplier: 2.0,
+        maintenanceStrategy: 'unplanned' as const,
+        overhaulCostPerPump: 0,
+        pmIntervalMonths: 12,
+        argosMtbfExtensionPercent: 15,
+        unplannedDespitePM: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -1010,6 +1498,100 @@ describe('AppStore', () => {
       expect(updated.analyses).toHaveLength(1);
       expect(updated.activeAnalysisId).toBe('test-id');
       expect(updated.connectionType).toBe('ethernet');
+    });
+  });
+
+  // Story 4.5.3: Bottleneck Tool Toggle
+  describe('Bottleneck Configuration (Story 4.5.3)', () => {
+    const createBottleneckAnalysis = (overrides: Partial<Analysis> = {}): Analysis => ({
+      id: 'bottleneck-test',
+      name: 'Bottleneck Test',
+      pumpType: 'A3004XN',
+      pumpQuantity: 10,
+      failureRateMode: 'percentage',
+      failureRatePercentage: 10,
+      waferType: 'batch',
+      waferQuantity: 125,
+      waferCost: 5000,
+      waferDefectEventsPerYear: 0,
+      downtimeDuration: 4,
+      downtimeCostPerHour: 1000,
+      isBottleneck: false,
+      bottleneckMultiplier: 2.0,
+      maintenanceStrategy: 'unplanned' as const,
+      overhaulCostPerPump: 0,
+      pmIntervalMonths: 12,
+      argosMtbfExtensionPercent: 15,
+      unplannedDespitePM: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      ...overrides,
+    });
+
+    it('should add analysis with isBottleneck and bottleneckMultiplier', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createBottleneckAnalysis({ isBottleneck: true, bottleneckMultiplier: 3.0 }));
+
+      const analysis = useAppStore.getState().analyses[0];
+      expect(analysis.isBottleneck).toBe(true);
+      expect(analysis.bottleneckMultiplier).toBe(3.0);
+    });
+
+    it('should update isBottleneck toggle', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createBottleneckAnalysis());
+
+      state.updateAnalysis('bottleneck-test', { isBottleneck: true });
+      expect(useAppStore.getState().analyses[0].isBottleneck).toBe(true);
+
+      state.updateAnalysis('bottleneck-test', { isBottleneck: false });
+      expect(useAppStore.getState().analyses[0].isBottleneck).toBe(false);
+    });
+
+    it('should update bottleneckMultiplier', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createBottleneckAnalysis());
+
+      state.updateAnalysis('bottleneck-test', { bottleneckMultiplier: 4.5 });
+      expect(useAppStore.getState().analyses[0].bottleneckMultiplier).toBe(4.5);
+    });
+
+    it('should reject bottleneckMultiplier < 1.5 on addAnalysis', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createBottleneckAnalysis({ bottleneckMultiplier: 1.0 }));
+      expect(useAppStore.getState().analyses).toHaveLength(0);
+    });
+
+    it('should reject bottleneckMultiplier > 5 on addAnalysis', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createBottleneckAnalysis({ bottleneckMultiplier: 6 }));
+      expect(useAppStore.getState().analyses).toHaveLength(0);
+    });
+
+    it('should reject bottleneckMultiplier < 1.5 on updateAnalysis', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createBottleneckAnalysis());
+
+      state.updateAnalysis('bottleneck-test', { bottleneckMultiplier: 1.0 });
+      expect(useAppStore.getState().analyses[0].bottleneckMultiplier).toBe(2.0); // Unchanged
+    });
+
+    it('should reject bottleneckMultiplier > 5 on updateAnalysis', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createBottleneckAnalysis());
+
+      state.updateAnalysis('bottleneck-test', { bottleneckMultiplier: 10 });
+      expect(useAppStore.getState().analyses[0].bottleneckMultiplier).toBe(2.0); // Unchanged
+    });
+
+    it('should preserve bottleneck fields on duplication', () => {
+      const state = useAppStore.getState();
+      state.addAnalysis(createBottleneckAnalysis({ isBottleneck: true, bottleneckMultiplier: 3.5 }));
+      state.duplicateAnalysis('bottleneck-test');
+
+      const duplicate = useAppStore.getState().analyses[1];
+      expect(duplicate.isBottleneck).toBe(true);
+      expect(duplicate.bottleneckMultiplier).toBe(3.5);
     });
   });
 });

@@ -1,12 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { clsx } from 'clsx';
-import { useId } from 'react';
 import { useAppStore } from '@/stores/app-store';
 import {
   validateDowntimeDuration,
   validateDowntimeCostPerHour,
   formatFrenchNumber,
 } from '@/lib/validation/downtime-validation';
+
+const MULTIPLIER_OPTIONS = [
+  { value: 1.5, label: 'x1.5' },
+  { value: 2.0, label: 'x2.0' },
+  { value: 2.5, label: 'x2.5' },
+  { value: 3.0, label: 'x3.0' },
+  { value: 3.5, label: 'x3.5' },
+  { value: 4.0, label: 'x4.0' },
+  { value: 4.5, label: 'x4.5' },
+  { value: 5.0, label: 'x5.0' },
+];
 
 export interface DowntimeInputsProps {
   analysisId: string;
@@ -28,6 +38,8 @@ export function DowntimeInputs({ analysisId }: DowntimeInputsProps) {
 
   const durationInputId = useId();
   const costInputId = useId();
+  const bottleneckToggleId = useId();
+  const multiplierSelectId = useId();
   const durationErrorId = `${durationInputId}-error`;
   const durationWarningId = `${durationInputId}-warning`;
   const costErrorId = `${costInputId}-error`;
@@ -110,6 +122,14 @@ export function DowntimeInputs({ analysisId }: DowntimeInputsProps) {
     setCostRawValue(
       analysis.downtimeCostPerHour === 0 ? '' : String(analysis.downtimeCostPerHour)
     );
+  };
+
+  const handleBottleneckToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateAnalysis(analysisId, { isBottleneck: e.target.checked });
+  };
+
+  const handleMultiplierChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    updateAnalysis(analysisId, { bottleneckMultiplier: Number(e.target.value) });
   };
 
   const getDurationDescribedBy = () => {
@@ -251,6 +271,48 @@ export function DowntimeInputs({ analysisId }: DowntimeInputsProps) {
             >
               {costWarning}
             </p>
+          )}
+        </div>
+
+        {/* Bottleneck Tool Toggle (Story 4.5.3) */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <input
+              id={bottleneckToggleId}
+              type="checkbox"
+              checked={analysis.isBottleneck}
+              onChange={handleBottleneckToggle}
+              aria-expanded={analysis.isBottleneck}
+              aria-controls={analysis.isBottleneck ? multiplierSelectId : undefined}
+              className="h-4 w-4 rounded border-gray-300 text-pfeiffer-red focus:ring-pfeiffer-red"
+            />
+            <label htmlFor={bottleneckToggleId} className="text-base font-medium text-gray-900">
+              Bottleneck tool
+            </label>
+          </div>
+
+          {/* Conditional Multiplier Select */}
+          {analysis.isBottleneck && (
+            <div className="flex flex-col gap-1">
+              <label htmlFor={multiplierSelectId} className="text-sm font-medium text-gray-700">
+                Impact multiplier
+              </label>
+              <select
+                id={multiplierSelectId}
+                value={analysis.bottleneckMultiplier}
+                onChange={handleMultiplierChange}
+                className={clsx(
+                  'w-full rounded border border-gray-300 bg-white px-4 py-2 text-base text-gray-900',
+                  'focus:border-pfeiffer-red focus:outline-none focus:ring-2 focus:ring-pfeiffer-red',
+                )}
+              >
+                {MULTIPLIER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
         </div>
       </div>

@@ -332,6 +332,27 @@ This document provides the complete epic and story breakdown for ROI Calculator,
 
 ---
 
+### Epic 4.5: Pre-Demo Improvements
+
+**Goal:** Address HIGH-priority internal feedback before the Wednesday 2026-02-18 client demo — fix ROI credibility issues, add missing business model sophistication, and protect demo sessions from data loss.
+
+**User Outcome:** The ROI calculator accurately models real-world maintenance strategies (Run to Fail vs. Preventive), correctly decouples wafer defect costs from pump failures, accounts for bottleneck tool downstream impact, and never loses work during a client meeting.
+
+**Scope:**
+- Data persistence via localStorage (Zustand persist middleware) with session recovery
+- Wafer defect events decoupled from pump failure count + "scrap" → "defect" terminology
+- Bottleneck tool toggle with configurable downtime multiplier
+- Maintenance strategy selector (Unplanned / Planned) with distinct ARGOS value calculations
+- Updated ResultsPanel showing strategy-specific ROI breakdowns
+- Backward-compatible with existing analyses and Global Analysis aggregation
+
+**Context:** Feedback collected during internal party mode review session (2026-02-16). Items identified as HIGH priority for demo credibility. See DESIGN_FEEDBACK.md for full feedback backlog.
+
+**FRs Covered:** Extensions to FR20 (calculation), FR24 (real-time recalc), FR8 (session persistence)
+**NFRs Addressed:** NFR-P1 (<100ms calculations), NFR-R5 (session stability), NFR-S1 (client-side only)
+
+---
+
 ### Epic 5: PDF Export & Reporting
 
 **Goal:** Generate a professional PDF report that Marc can share with management and procurement without edits, serving as the permanent artifact of the co-construction session.

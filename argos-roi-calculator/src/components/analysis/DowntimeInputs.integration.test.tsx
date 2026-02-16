@@ -16,8 +16,16 @@ const createTestAnalysis = (overrides?: Partial<Analysis>): Analysis => ({
   waferType: 'batch',
   waferQuantity: 125,
   waferCost: 8000,
+  waferDefectEventsPerYear: 0,
   downtimeDuration: 0,
   downtimeCostPerHour: 0,
+  isBottleneck: false,
+  bottleneckMultiplier: 2.0,
+  maintenanceStrategy: 'unplanned' as const,
+  overhaulCostPerPump: 0,
+  pmIntervalMonths: 12,
+  argosMtbfExtensionPercent: 15,
+  unplannedDespitePM: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,
@@ -63,11 +71,11 @@ describe('DowntimeInputs Integration', () => {
         analysis.waferQuantity,
         analysis.downtimeDuration,
         analysis.downtimeCostPerHour,
+        analysis.waferDefectEventsPerYear,
       );
 
-      // 10 pumps * 10% failure * (8000 * 125 + 6 * 15000)
-      // = 1 * (1,000,000 + 90,000) = 1,090,000
-      expect(totalCost).toBe(1090000);
+      // Decoupled: waferDefectCost = 0 (no defect events), downtimeCost = 1 * 6 * 15000 = 90,000
+      expect(totalCost).toBe(90000);
     });
   });
 
@@ -100,12 +108,19 @@ describe('DowntimeInputs Integration', () => {
           createTestAnalysis({
             downtimeDuration: 6,
             downtimeCostPerHour: 15000,
+            isBottleneck: false,
+            bottleneckMultiplier: 2.0,
+            maintenanceStrategy: 'unplanned' as const,
+            overhaulCostPerPump: 0,
+            pmIntervalMonths: 12,
+            argosMtbfExtensionPercent: 15,
+            unplannedDespitePM: 0,
           }),
         ],
       });
       render(<DowntimeInputs analysisId="test-analysis-1" />);
 
-      // Initial calculation: 10 * 0.1 * (1,000,000 + 90,000) = 1,090,000
+      // Decoupled: waferDefectCost = 0, downtimeCost = 1 * 6 * 15000 = 90,000
       let analysis = useAppStore.getState().analyses[0];
       let initialCost = calculateTotalFailureCost(
         analysis.pumpQuantity,
@@ -114,15 +129,16 @@ describe('DowntimeInputs Integration', () => {
         analysis.waferQuantity,
         analysis.downtimeDuration,
         analysis.downtimeCostPerHour,
+        analysis.waferDefectEventsPerYear,
       );
-      expect(initialCost).toBe(1090000);
+      expect(initialCost).toBe(90000);
 
       // Change duration from 6 to 12
       const durationInput = screen.getByLabelText(/Duration per Failure \(hours\)/);
       await user.clear(durationInput);
       await user.type(durationInput, '12');
 
-      // New calculation: 10 * 0.1 * (1,000,000 + 180,000) = 1,180,000
+      // Decoupled: waferDefectCost = 0, downtimeCost = 1 * 12 * 15000 = 180,000
       analysis = useAppStore.getState().analyses[0];
       const updatedCost = calculateTotalFailureCost(
         analysis.pumpQuantity,
@@ -131,8 +147,9 @@ describe('DowntimeInputs Integration', () => {
         analysis.waferQuantity,
         analysis.downtimeDuration,
         analysis.downtimeCostPerHour,
+        analysis.waferDefectEventsPerYear,
       );
-      expect(updatedCost).toBe(1180000);
+      expect(updatedCost).toBe(180000);
 
       // Downtime component doubled from 90,000 to 180,000
       const downtimeDelta = updatedCost - initialCost;
@@ -141,33 +158,33 @@ describe('DowntimeInputs Integration', () => {
   });
 
   describe('Calculation engine verification', () => {
-    it('calculates correctly with downtime = 0 (only wafer cost)', () => {
-      const cost = calculateTotalFailureCost(10, 10, 8000, 125, 0, 0);
-      // 10 * 0.1 * (8000 * 125 + 0) = 1 * 1,000,000 = 1,000,000
+    it('calculates correctly with downtime = 0 and defect events (only wafer cost)', () => {
+      // Decoupled: waferDefectCost = 1 * 8000 * 125 = 1,000,000, downtimeCost = 0
+      const cost = calculateTotalFailureCost(10, 10, 8000, 125, 0, 0, 1);
       expect(cost).toBe(1000000);
     });
 
-    it('calculates correctly with downtime > 0 (wafer + downtime)', () => {
-      const cost = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500);
-      // 10 * 0.1 * (1,000,000 + 3,000) = 1 * 1,003,000 = 1,003,000
+    it('calculates correctly with downtime > 0 and defect events (wafer + downtime)', () => {
+      // Decoupled: waferDefectCost = 1 * 8000 * 125 = 1,000,000, downtimeCost = 1 * 6 * 500 = 3,000
+      const cost = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 1);
       expect(cost).toBe(1003000);
     });
 
     it('calculates correctly with waferCost = 0, only downtime', () => {
-      const cost = calculateTotalFailureCost(10, 10, 0, 0, 6, 15000);
-      // 10 * 0.1 * (0 + 90,000) = 1 * 90,000 = 90,000
+      // Decoupled: waferDefectCost = 0, downtimeCost = 1 * 6 * 15000 = 90,000
+      const cost = calculateTotalFailureCost(10, 10, 0, 0, 6, 15000, 0);
       expect(cost).toBe(90000);
     });
 
     it('calculates correctly with realistic values (6h, 15000 EUR/h)', () => {
-      const cost = calculateTotalFailureCost(10, 10, 8000, 125, 6, 15000);
-      // 10 * 0.1 * (1,000,000 + 90,000) = 1 * 1,090,000 = 1,090,000
+      // Decoupled: waferDefectCost = 1 * 8000 * 125 = 1,000,000, downtimeCost = 1 * 6 * 15000 = 90,000
+      const cost = calculateTotalFailureCost(10, 10, 8000, 125, 6, 15000, 1);
       expect(cost).toBe(1090000);
     });
 
     it('handles edge case: high downtime cost per hour', () => {
-      const cost = calculateTotalFailureCost(10, 10, 0, 0, 24, 50000);
-      // 10 * 0.1 * (0 + 1,200,000) = 1 * 1,200,000 = 1,200,000
+      // Decoupled: waferDefectCost = 0, downtimeCost = 1 * 24 * 50000 = 1,200,000
+      const cost = calculateTotalFailureCost(10, 10, 0, 0, 24, 50000, 0);
       expect(cost).toBe(1200000);
     });
   });

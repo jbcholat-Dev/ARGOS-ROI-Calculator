@@ -9,6 +9,9 @@ import {
   calculateAggregatedMetrics,
   calculateAnalysisRow,
   calculateAllAnalysisRows,
+  calculatePlannedOverhaulSavings,
+  calculateStrategySavings,
+  isAnalysisCalculable,
 } from './calculations';
 
 // ============================================================================
@@ -16,50 +19,149 @@ import {
 // ============================================================================
 
 describe('calculateTotalFailureCost', () => {
-  it('should calculate correctly with valid inputs (V9 reference scenario)', () => {
-    // 10 pumps, 10% failure, €8,000/wafer, 125 wafers/batch, 6h downtime, €500/h
+  it('should calculate decoupled formula correctly (Story 4.5.2)', () => {
+    // 10 pumps, 10% failure, €8,000/wafer, 125 wafers/batch, 6h downtime, €500/h, 2 defect events
+    // waferDefectCost = 2 * 8000 * 125 = 2,000,000
+    // downtimeCost = (10 * 0.10) * 6 * 500 = 1 * 3,000 = 3,000
+    // total = 2,003,000
+    const result = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 2);
+    expect(result).toBe(2_003_000);
+  });
+
+  it('should return downtime-only cost when waferDefectEventsPerYear is 0', () => {
+    // 10 pumps, 10% failure, 6h downtime, €500/h, 0 defect events
+    // waferDefectCost = 0
+    // downtimeCost = 1 * 6 * 500 = 3,000
+    const result = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 0);
+    expect(result).toBe(3_000);
+  });
+
+  it('should default waferDefectEventsPerYear to 0 when omitted', () => {
+    // Same as above — omitting 7th param defaults to 0
     const result = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500);
-    // (10 * 10/100) * (8000 * 125 + 6 * 500) = 1 * (1,000,000 + 3,000) = 1,003,000
-    expect(result).toBe(1_003_000);
+    expect(result).toBe(3_000);
+  });
+
+  it('should return wafer-only cost when downtime is 0', () => {
+    // 10 pumps, 10% failure, 0h downtime, 3 defect events
+    // waferDefectCost = 3 * 8000 * 125 = 3,000,000
+    // downtimeCost = 1 * 0 * 500 = 0
+    const result = calculateTotalFailureCost(10, 10, 8000, 125, 0, 500, 3);
+    expect(result).toBe(3_000_000);
+  });
+
+  it('should handle defect events greater than failed pumps', () => {
+    // 10 pumps, 10% failure (1 failed pump), but 5 defect events (a single failure can cause multiple)
+    // waferDefectCost = 5 * 8000 * 125 = 5,000,000
+    // downtimeCost = 1 * 6 * 500 = 3,000
+    const result = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 5);
+    expect(result).toBe(5_003_000);
   });
 
   it('should calculate correctly with mono wafer type (1 wafer per batch)', () => {
-    const result = calculateTotalFailureCost(10, 10, 8000, 1, 6, 500);
-    // 1 * (8000 * 1 + 6 * 500) = 1 * (8,000 + 3,000) = 11,000
-    expect(result).toBe(11_000);
+    // 10 pumps, 10% failure, 1 wafer/batch, 2 defect events
+    // waferDefectCost = 2 * 8000 * 1 = 16,000
+    // downtimeCost = 1 * 6 * 500 = 3,000
+    const result = calculateTotalFailureCost(10, 10, 8000, 1, 6, 500, 2);
+    expect(result).toBe(19_000);
   });
 
-  it('should return 0 when pump quantity is 0', () => {
-    expect(calculateTotalFailureCost(0, 10, 8000, 125, 6, 500)).toBe(0);
+  it('should return 0 when pump quantity is 0 (even with defect events)', () => {
+    expect(calculateTotalFailureCost(0, 10, 8000, 125, 6, 500, 2)).toBe(0);
   });
 
-  it('should return 0 when failure rate is 0', () => {
-    expect(calculateTotalFailureCost(10, 0, 8000, 125, 6, 500)).toBe(0);
+  it('should return 0 when failure rate is 0 (even with defect events)', () => {
+    expect(calculateTotalFailureCost(10, 0, 8000, 125, 6, 500, 2)).toBe(0);
   });
 
-  it('should handle high failure rate (100%)', () => {
-    const result = calculateTotalFailureCost(10, 100, 8000, 125, 6, 500);
-    // (10 * 1.0) * (1,000,000 + 3,000) = 10,030,000
-    expect(result).toBe(10_030_000);
+  it('should handle high failure rate (100%) with defect events', () => {
+    // 10 pumps, 100% failure (10 failed), 2 defect events
+    // waferDefectCost = 2 * 8000 * 125 = 2,000,000
+    // downtimeCost = 10 * 6 * 500 = 30,000
+    const result = calculateTotalFailureCost(10, 100, 8000, 125, 6, 500, 2);
+    expect(result).toBe(2_030_000);
   });
 
   it('should handle very large numbers without overflow', () => {
-    const result = calculateTotalFailureCost(1000, 50, 100000, 500, 24, 10000);
+    const result = calculateTotalFailureCost(1000, 50, 100000, 500, 24, 10000, 10);
     expect(result).toBeGreaterThan(0);
     expect(Number.isFinite(result)).toBe(true);
   });
 
   it('should handle very small fractional values', () => {
-    const result = calculateTotalFailureCost(1, 0.1, 100, 1, 0.5, 10);
-    // (1 * 0.001) * (100 + 5) = 0.001 * 105 = 0.105
-    expect(result).toBeCloseTo(0.105);
+    // 1 pump, 0.1% failure, 0.5h downtime, €10/h, 0 defect events
+    // downtimeCost = 0.001 * 0.5 * 10 = 0.005
+    const result = calculateTotalFailureCost(1, 0.1, 100, 1, 0.5, 10, 0);
+    expect(result).toBeCloseTo(0.005);
+  });
+
+  it('should return 0 for negative waferDefectEventsPerYear', () => {
+    expect(calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, -1)).toBe(0);
+  });
+
+  it('should return 0 for NaN waferDefectEventsPerYear', () => {
+    expect(calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, NaN)).toBe(0);
   });
 
   it('should complete within 100ms (NFR-P1)', () => {
     const start = performance.now();
-    calculateTotalFailureCost(10, 10, 8000, 125, 6, 500);
+    calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 2);
     const duration = performance.now() - start;
     expect(duration).toBeLessThan(100);
+  });
+
+  // Story 4.5.3: Bottleneck Multiplier
+  it('should apply bottleneck multiplier only to downtime cost', () => {
+    // 10 pumps, 10% failure, 2 defect events, x2 multiplier
+    // waferDefectCost = 2 * 8000 * 125 = 2,000,000 (NOT multiplied)
+    // downtimeCost = 1 * 6 * 500 * 2 = 6,000 (multiplied by 2)
+    // total = 2,006,000
+    const result = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 2, 2);
+    expect(result).toBe(2_006_000);
+  });
+
+  it('should default bottleneck multiplier to 1 (no effect)', () => {
+    const withoutMultiplier = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 2);
+    const withMultiplier1 = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 2, 1);
+    expect(withoutMultiplier).toBe(withMultiplier1);
+  });
+
+  it('should apply x3 bottleneck multiplier correctly', () => {
+    // 10 pumps, 10% failure, 0 defect events, x3 multiplier
+    // downtimeCost = 1 * 6 * 500 * 3 = 9,000
+    const result = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 0, 3);
+    expect(result).toBe(9_000);
+  });
+
+  it('should return 0 for bottleneck multiplier < 1', () => {
+    expect(calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 0, 0.5)).toBe(0);
+    expect(calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 0, 0)).toBe(0);
+  });
+
+  it('should return 0 for negative bottleneck multiplier', () => {
+    expect(calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 0, -2)).toBe(0);
+  });
+
+  it('should return 0 for NaN bottleneck multiplier', () => {
+    expect(calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 0, NaN)).toBe(0);
+  });
+
+  it('should return 0 for Infinity bottleneck multiplier', () => {
+    expect(calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 0, Infinity)).toBe(0);
+  });
+
+  it('should accept x5 bottleneck multiplier (max)', () => {
+    // 10 pumps, 10% failure, 0 defect events, x5 multiplier
+    // downtimeCost = 1 * 6 * 500 * 5 = 15,000
+    const result = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 0, 5);
+    expect(result).toBe(15_000);
+  });
+
+  it('should handle fractional multiplier (x1.5)', () => {
+    // 10 pumps, 10% failure, 0 defect events, x1.5 multiplier
+    // downtimeCost = 1 * 6 * 500 * 1.5 = 4,500
+    const result = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 0, 1.5);
+    expect(result).toBe(4_500);
   });
 });
 
@@ -348,42 +450,45 @@ describe('Pure Function Behavior - Determinism', () => {
 // ============================================================================
 
 describe('Integration - Full Calculation Pipeline', () => {
-  it('should produce consistent results through the entire pipeline', () => {
-    // Simulating Story 2.7 usage pattern
-    const totalFailureCost = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500);
+  it('should produce consistent results through the entire pipeline (decoupled)', () => {
+    // 10 pumps, 10% failure, 2 defect events, €8,000/wafer, 125 wafers/batch, 6h downtime, €500/h
+    // waferDefectCost = 2 * 8000 * 125 = 2,000,000
+    // downtimeCost = 1 * 6 * 500 = 3,000
+    // total = 2,003,000
+    const totalFailureCost = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 2);
     const argosServiceCost = calculateArgosServiceCost(10, 2500);
     const savings = calculateSavings(totalFailureCost, argosServiceCost, 70);
     const roi = calculateROI(savings, argosServiceCost);
     const colorClass = getROIColorClass(roi);
 
-    expect(totalFailureCost).toBe(1_003_000);
+    expect(totalFailureCost).toBe(2_003_000);
     expect(argosServiceCost).toBe(25_000);
-    expect(savings).toBe(677_100);
-    expect(roi).toBeCloseTo(2708.4);
+    // savings = 2,003,000 * 0.70 - 25,000 = 1,402,100 - 25,000 = 1,377,100
+    expect(savings).toBe(1_377_100);
+    // roi = (1,377,100 / 25,000) * 100 = 5,508.4
+    expect(roi).toBeCloseTo(5508.4);
     expect(colorClass).toBe('text-green-600');
   });
 
-  it('should handle break-even scenario through the pipeline', () => {
-    // Pump config that results in near-zero savings
-    const totalFailureCost = calculateTotalFailureCost(1, 5, 100, 1, 1, 100);
-    // (1 * 0.05) * (100 + 100) = 0.05 * 200 = 10
+  it('should handle downtime-only scenario (0 defect events)', () => {
+    // downtimeCost only = 0.05 * 1 * 100 = 5
+    const totalFailureCost = calculateTotalFailureCost(1, 5, 100, 1, 1, 100, 0);
     const argosServiceCost = calculateArgosServiceCost(1, 2500);
-    // 1 * 2500 = 2500
     const savings = calculateSavings(totalFailureCost, argosServiceCost, 70);
-    // 10 * 0.70 - 2500 = 7 - 2500 = -2493
+    // 5 * 0.70 - 2500 = 3.5 - 2500 = -2496.5
     const roi = calculateROI(savings, argosServiceCost);
     const colorClass = getROIColorClass(roi);
 
-    expect(totalFailureCost).toBe(10);
+    expect(totalFailureCost).toBe(5);
     expect(argosServiceCost).toBe(2500);
-    expect(savings).toBe(-2493);
-    expect(roi).toBeCloseTo(-99.72);
+    expect(savings).toBe(-2496.5);
+    expect(roi).toBeCloseTo(-99.86);
     expect(colorClass).toBe('text-red-600');
   });
 
   it('should complete full pipeline within 100ms (NFR-P1)', () => {
     const start = performance.now();
-    const totalFailureCost = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500);
+    const totalFailureCost = calculateTotalFailureCost(10, 10, 8000, 125, 6, 500, 2);
     const argosServiceCost = calculateArgosServiceCost(10, 2500);
     const savings = calculateSavings(totalFailureCost, argosServiceCost, 70);
     calculateROI(savings, argosServiceCost);
@@ -407,8 +512,16 @@ function createAnalysis(overrides: Partial<Analysis> = {}): Analysis {
     waferType: 'batch',
     waferQuantity: 125,
     waferCost: 8000,
+    waferDefectEventsPerYear: 1,
     downtimeDuration: 6,
     downtimeCostPerHour: 500,
+    isBottleneck: false,
+    bottleneckMultiplier: 2.0,
+    maintenanceStrategy: 'unplanned' as const,
+    overhaulCostPerPump: 0,
+    pmIntervalMonths: 12,
+    argosMtbfExtensionPercent: 15,
+    unplannedDespitePM: 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides,
@@ -437,8 +550,10 @@ describe('calculateAggregatedMetrics', () => {
     const analysis = createAnalysis();
     const result = calculateAggregatedMetrics([analysis], defaultGlobalParams);
 
-    // Single analysis: 10 pumps, 10% failure, €8000/wafer, 125 batch, 6h, €500/h
-    // totalFailureCost = (10 * 0.10) * (8000*125 + 6*500) = 1 * 1,003,000 = 1,003,000
+    // Single analysis: 10 pumps, 10% failure, 1 defect event, €8000/wafer, 125 batch, 6h, €500/h
+    // waferDefectCost = 1 * 8000 * 125 = 1,000,000
+    // downtimeCost = (10 * 0.10) * 6 * 500 = 1 * 3,000 = 3,000
+    // totalFailureCost = 1,003,000
     // serviceCost = 10 * 2500 = 25,000
     // savings = 1,003,000 * 0.70 - 25,000 = 702,100 - 25,000 = 677,100
     // ROI = (677,100 / 25,000) * 100 = 2,708.4
@@ -459,16 +574,23 @@ describe('calculateAggregatedMetrics', () => {
     ];
     const result = calculateAggregatedMetrics(analyses, defaultGlobalParams);
 
-    // Analysis 1: 10 pumps → failureCost=1,003,000, serviceCost=25,000, savings=677,100
-    // Analysis 2: 8 pumps → failureCost=802,400, serviceCost=20,000, savings=541,680
-    // Analysis 3: 8 pumps → failureCost=802,400, serviceCost=20,000, savings=541,680
+    // Decoupled formula: waferDefectCost = events * waferCost * wafersPerBatch (independent of pumpQuantity)
+    // Analysis 1: 10 pumps → waferDefect=1,000,000, downtime=1*6*500=3,000, total=1,003,000, service=25,000
+    // Analysis 2: 8 pumps → waferDefect=1,000,000, downtime=0.8*6*500=2,400, total=1,002,400, service=20,000
+    // Analysis 3: 8 pumps → waferDefect=1,000,000, downtime=0.8*6*500=2,400, total=1,002,400, service=20,000
+    const fc1 = 1_003_000, sc1 = 25_000;
+    const fc2 = 1_002_400, sc2 = 20_000;
+    const fc3 = 1_002_400, sc3 = 20_000;
+    const sav1 = fc1 * 0.70 - sc1; // 677,100
+    const sav2 = fc2 * 0.70 - sc2; // 681,680
+    const sav3 = fc3 * 0.70 - sc3; // 681,680
+
     expect(result.totalPumps).toBe(26);
-    expect(result.totalFailureCost).toBe(1_003_000 + 802_400 + 802_400);
-    expect(result.totalServiceCost).toBe(25_000 + 20_000 + 20_000);
-    expect(result.totalSavings).toBe(677_100 + 541_680 + 541_680);
+    expect(result.totalFailureCost).toBe(fc1 + fc2 + fc3);
+    expect(result.totalServiceCost).toBe(sc1 + sc2 + sc3);
+    expect(result.totalSavings).toBe(sav1 + sav2 + sav3);
     expect(result.processCount).toBe(3);
     expect(result.excludedCount).toBe(0);
-    // overallROI = (totalSavings / totalServiceCost) * 100
     const expectedROI = (result.totalSavings / result.totalServiceCost) * 100;
     expect(result.overallROI).toBeCloseTo(expectedROI);
   });
@@ -520,14 +642,24 @@ describe('calculateAggregatedMetrics', () => {
       waferCost: 10,
       waferQuantity: 1,
       waferType: 'mono',
+      waferDefectEventsPerYear: 1,
       downtimeDuration: 1,
       downtimeCostPerHour: 10,
+      isBottleneck: false,
+      bottleneckMultiplier: 2.0,
+      maintenanceStrategy: 'unplanned' as const,
+      overhaulCostPerPump: 0,
+      pmIntervalMonths: 12,
+      argosMtbfExtensionPercent: 15,
+      unplannedDespitePM: 0,
     });
     const result = calculateAggregatedMetrics([analysis], defaultGlobalParams);
 
-    // failureCost = (1 * 0.01) * (10*1 + 1*10) = 0.01 * 20 = 0.2
+    // waferDefectCost = 1 * 10 * 1 = 10
+    // downtimeCost = (1 * 0.01) * 1 * 10 = 0.1
+    // failureCost = 10.1
     // serviceCost = 1 * 2500 = 2500
-    // savings = 0.2 * 0.70 - 2500 = 0.14 - 2500 = -2499.86
+    // savings = 10.1 * 0.70 - 2500 = 7.07 - 2500 = -2492.93
     expect(result.totalSavings).toBeLessThan(0);
     expect(result.overallROI).toBeLessThan(0);
   });
@@ -570,6 +702,20 @@ describe('calculateAggregatedMetrics', () => {
     const duration = performance.now() - start;
 
     expect(duration).toBeLessThan(100);
+  });
+
+  // Story 4.5.3: Bottleneck multiplier in aggregation
+  it('should increase failure cost when bottleneck is enabled', () => {
+    const withoutBottleneck = createAnalysis({ isBottleneck: false });
+    const withBottleneck = createAnalysis({ isBottleneck: true, bottleneckMultiplier: 2.0 });
+
+    const resultWithout = calculateAggregatedMetrics([withoutBottleneck], defaultGlobalParams);
+    const resultWith = calculateAggregatedMetrics([withBottleneck], defaultGlobalParams);
+
+    // Bottleneck doubles downtime cost only, so total failure cost increases
+    expect(resultWith.totalFailureCost).toBeGreaterThan(resultWithout.totalFailureCost);
+    // Savings should also increase since more cost is avoided
+    expect(resultWith.totalSavings).toBeGreaterThan(resultWithout.totalSavings);
   });
 });
 
@@ -628,6 +774,30 @@ describe('calculateAnalysisRow', () => {
     expect(result!.totalFailureCost).toBe(11_000);
     expect(result!.savings).toBe(-17_300);
   });
+
+  // Story 4.5.3: Bottleneck multiplier in analysis row
+  it('should apply bottleneck multiplier when isBottleneck is true', () => {
+    const analysis = createAnalysis({ isBottleneck: true, bottleneckMultiplier: 3.0 });
+    const result = calculateAnalysisRow(analysis, defaultGlobalParams);
+
+    // waferDefectCost = 1 * 8000 * 125 = 1,000,000 (NOT multiplied)
+    // downtimeCost = 1 * 6 * 500 * 3 = 9,000 (multiplied by 3)
+    // totalFailureCost = 1,009,000
+    expect(result).not.toBeNull();
+    expect(result!.totalFailureCost).toBe(1_009_000);
+  });
+
+  it('should NOT apply multiplier when isBottleneck is false', () => {
+    const analysis = createAnalysis({ isBottleneck: false, bottleneckMultiplier: 3.0 });
+    const result = calculateAnalysisRow(analysis, defaultGlobalParams);
+
+    // bottleneckMultiplier is 3 but isBottleneck is false → effectiveMultiplier = 1
+    // waferDefectCost = 1 * 8000 * 125 = 1,000,000
+    // downtimeCost = 1 * 6 * 500 * 1 = 3,000
+    // totalFailureCost = 1,003,000
+    expect(result).not.toBeNull();
+    expect(result!.totalFailureCost).toBe(1_003_000);
+  });
 });
 
 // ============================================================================
@@ -665,5 +835,352 @@ describe('calculateAllAnalysisRows', () => {
       expect(row.name).toBe(`Process ${i + 1}`);
       expect(row.pumpQuantity).toBe(10 + i);
     });
+  });
+});
+
+// ============================================================================
+// Story 4.5.4: Maintenance Strategy — Planned Overhaul Savings
+// ============================================================================
+
+describe('calculatePlannedOverhaulSavings', () => {
+  it('should calculate overhaul savings correctly (AC5 example)', () => {
+    // 20 pumps, 24-month interval, €25K overhaul cost, 20% MTBF extension
+    const result = calculatePlannedOverhaulSavings(20, 24, 25_000, 20);
+
+    // currentOverhauls = 20 / (24/12) = 10
+    expect(result.currentOverhauls).toBe(10);
+    // argosInterval = 24 * 1.20 = 28.8, argosOverhauls = 20 / (28.8/12) = 8.333...
+    expect(result.argosOverhauls).toBeCloseTo(8.333, 2);
+    // overhaulSavings = (10 - 8.333) * 25,000 = 41,666.67
+    expect(result.overhaulSavings).toBeCloseTo(41_666.67, 0);
+  });
+
+  it('should calculate with 15% default MTBF extension', () => {
+    const result = calculatePlannedOverhaulSavings(20, 12, 25_000, 15);
+    // currentOverhauls = 20 / (12/12) = 20
+    // argosInterval = 12 * 1.15 = 13.8, argosOverhauls = 20 / (13.8/12) = 17.39...
+    expect(result.currentOverhauls).toBe(20);
+    expect(result.argosOverhauls).toBeCloseTo(17.391, 2);
+    // savings = (20 - 17.391) * 25,000 = 65,217.39
+    expect(result.overhaulSavings).toBeCloseTo(65_217.39, 0);
+  });
+
+  it('should return 0 for 0 pumps', () => {
+    const result = calculatePlannedOverhaulSavings(0, 24, 25_000, 20);
+    expect(result.overhaulSavings).toBe(0);
+    expect(result.currentOverhauls).toBe(0);
+  });
+
+  it('should return 0 for 0 interval months', () => {
+    const result = calculatePlannedOverhaulSavings(20, 0, 25_000, 20);
+    expect(result.overhaulSavings).toBe(0);
+  });
+
+  it('should return 0 for 0 overhaul cost', () => {
+    const result = calculatePlannedOverhaulSavings(20, 24, 0, 20);
+    expect(result.overhaulSavings).toBe(0);
+    expect(result.currentOverhauls).toBe(10); // still calculates count
+  });
+
+  it('should return 0 for 0% MTBF extension', () => {
+    const result = calculatePlannedOverhaulSavings(20, 24, 25_000, 0);
+    // 0% extension -> argos interval = current interval -> 0 savings
+    expect(result.currentOverhauls).toBe(10);
+    expect(result.argosOverhauls).toBe(10);
+    expect(result.overhaulSavings).toBe(0);
+  });
+
+  it('should handle 1-month interval (extreme)', () => {
+    const result = calculatePlannedOverhaulSavings(20, 1, 25_000, 15);
+    // currentOverhauls = 20 / (1/12) = 240
+    expect(result.currentOverhauls).toBe(240);
+  });
+
+  it('should handle negative inputs safely', () => {
+    const result = calculatePlannedOverhaulSavings(-5, 24, 25_000, 20);
+    expect(result.overhaulSavings).toBe(0);
+  });
+
+  it('should handle NaN inputs safely', () => {
+    const result = calculatePlannedOverhaulSavings(NaN, 24, 25_000, 20);
+    expect(result.overhaulSavings).toBe(0);
+  });
+});
+
+// ============================================================================
+// Story 4.5.4: isAnalysisCalculable — Strategy-aware
+// ============================================================================
+
+describe('isAnalysisCalculable — Maintenance Strategy', () => {
+  it('should consider unplanned analysis calculable with failure rate and downtime', () => {
+    const analysis = createAnalysis({ maintenanceStrategy: 'unplanned' });
+    expect(isAnalysisCalculable(analysis)).toBe(true);
+  });
+
+  it('should consider planned analysis calculable with overhaul cost', () => {
+    const analysis = createAnalysis({
+      maintenanceStrategy: 'planned',
+      pmIntervalMonths: 24,
+      overhaulCostPerPump: 25_000,
+    });
+    expect(isAnalysisCalculable(analysis)).toBe(true);
+  });
+
+  it('should consider planned analysis calculable with residual events and downtime', () => {
+    const analysis = createAnalysis({
+      maintenanceStrategy: 'planned',
+      pmIntervalMonths: 24,
+      overhaulCostPerPump: 0,
+      unplannedDespitePM: 2,
+      downtimeDuration: 6,
+      downtimeCostPerHour: 500,
+    });
+    expect(isAnalysisCalculable(analysis)).toBe(true);
+  });
+
+  it('should NOT consider planned analysis calculable without overhaul cost or residual', () => {
+    const analysis = createAnalysis({
+      maintenanceStrategy: 'planned',
+      pmIntervalMonths: 24,
+      overhaulCostPerPump: 0,
+      unplannedDespitePM: 0,
+    });
+    expect(isAnalysisCalculable(analysis)).toBe(false);
+  });
+
+  it('should NOT consider planned analysis calculable with 0 pumps', () => {
+    const analysis = createAnalysis({
+      maintenanceStrategy: 'planned',
+      pumpQuantity: 0,
+      overhaulCostPerPump: 25_000,
+    });
+    expect(isAnalysisCalculable(analysis)).toBe(false);
+  });
+
+  it('should NOT consider planned analysis calculable with 0 interval', () => {
+    const analysis = createAnalysis({
+      maintenanceStrategy: 'planned',
+      pmIntervalMonths: 0,
+      overhaulCostPerPump: 25_000,
+    });
+    expect(isAnalysisCalculable(analysis)).toBe(false);
+  });
+
+  it('should handle missing strategy field (defaults to unplanned behavior)', () => {
+    const analysis = {
+      pumpQuantity: 10,
+      failureRatePercentage: 10,
+      waferCost: 8000,
+      waferDefectEventsPerYear: 1,
+      downtimeDuration: 6,
+      downtimeCostPerHour: 500,
+    };
+    expect(isAnalysisCalculable(analysis)).toBe(true);
+  });
+});
+
+// ============================================================================
+// Story 4.5.4: calculateStrategySavings
+// ============================================================================
+
+describe('calculateStrategySavings', () => {
+  it('should calculate unplanned strategy same as legacy formula', () => {
+    const analysis = createAnalysis({ maintenanceStrategy: 'unplanned' });
+    const result = calculateStrategySavings(analysis, defaultGlobalParams);
+
+    // Legacy: failureCost = 1,003,000, savings = 1,003,000 * 0.70 - 25,000 = 677,100
+    expect(result.totalFailureCost).toBe(1_003_000);
+    expect(result.argosServiceCost).toBe(25_000);
+    expect(result.savings).toBe(677_100);
+  });
+
+  it('should calculate planned strategy with overhaul savings (AC5 example)', () => {
+    const analysis = createAnalysis({
+      maintenanceStrategy: 'planned',
+      pumpQuantity: 20,
+      pmIntervalMonths: 24,
+      overhaulCostPerPump: 25_000,
+      argosMtbfExtensionPercent: 20,
+      unplannedDespitePM: 0,
+      waferDefectEventsPerYear: 0,
+    });
+    const result = calculateStrategySavings(analysis, defaultGlobalParams);
+
+    // overhaulSavings = 41,666.67
+    // serviceCost = 20 * 2500 = 50,000
+    // savings = 41,666.67 + 0 - 50,000 = -8,333.33
+    expect(result.argosServiceCost).toBe(50_000);
+    expect(result.savings).toBeCloseTo(-8_333.33, 0);
+  });
+
+  it('should calculate planned with residual unplanned events', () => {
+    const analysis = createAnalysis({
+      maintenanceStrategy: 'planned',
+      pumpQuantity: 20,
+      pmIntervalMonths: 24,
+      overhaulCostPerPump: 25_000,
+      argosMtbfExtensionPercent: 20,
+      unplannedDespitePM: 1,
+      downtimeDuration: 6,
+      downtimeCostPerHour: 15_000,
+      waferDefectEventsPerYear: 0,
+      detectionRate: 80,
+    });
+    const result = calculateStrategySavings(analysis, defaultGlobalParams);
+
+    // overhaulSavings = ~41,666.67
+    // residualDowntimeCost = 1 * 6 * 15,000 = 90,000
+    // residualSavings = 90,000 * 0.80 = 72,000
+    // serviceCost = 50,000
+    // savings = 41,666.67 + 72,000 - 50,000 = 63,666.67
+    expect(result.savings).toBeCloseTo(63_666.67, 0);
+  });
+
+  it('should calculate planned with 0 residual as pure overhaul savings', () => {
+    const analysis = createAnalysis({
+      maintenanceStrategy: 'planned',
+      pumpQuantity: 20,
+      pmIntervalMonths: 12,
+      overhaulCostPerPump: 25_000,
+      argosMtbfExtensionPercent: 15,
+      unplannedDespitePM: 0,
+      waferDefectEventsPerYear: 0,
+    });
+    const result = calculateStrategySavings(analysis, defaultGlobalParams);
+
+    // currentOverhauls = 20 / (12/12) = 20
+    // argosOverhauls = 20 / (13.8/12) = 17.391
+    // overhaulSavings = (20 - 17.391) * 25,000 = 65,217.39
+    // serviceCost = 50,000
+    // savings = 65,217.39 - 50,000 = 15,217.39
+    expect(result.savings).toBeCloseTo(15_217.39, 0);
+  });
+
+  it('should use per-analysis detection rate in unplanned mode', () => {
+    const analysis = createAnalysis({
+      maintenanceStrategy: 'unplanned',
+      detectionRate: 90,
+    });
+    const result = calculateStrategySavings(analysis, defaultGlobalParams);
+
+    // savings = 1,003,000 * 0.90 - 25,000 = 877,700
+    expect(result.savings).toBe(877_700);
+  });
+
+  it('should use global detection rate when per-analysis is undefined', () => {
+    const analysis = createAnalysis({
+      maintenanceStrategy: 'unplanned',
+      detectionRate: undefined,
+    });
+    const result = calculateStrategySavings(analysis, defaultGlobalParams);
+
+    // savings = 1,003,000 * 0.70 - 25,000 = 677,100
+    expect(result.savings).toBe(677_100);
+  });
+});
+
+// ============================================================================
+// Story 4.5.4: calculateAnalysisRow — Strategy dispatch
+// ============================================================================
+
+describe('calculateAnalysisRow — Maintenance Strategy', () => {
+  it('should return correct data for planned strategy analysis', () => {
+    const analysis = createAnalysis({
+      maintenanceStrategy: 'planned',
+      pumpQuantity: 20,
+      pmIntervalMonths: 24,
+      overhaulCostPerPump: 25_000,
+      argosMtbfExtensionPercent: 20,
+    });
+    const result = calculateAnalysisRow(analysis, defaultGlobalParams);
+
+    expect(result).not.toBeNull();
+    expect(result!.pumpQuantity).toBe(20);
+    expect(result!.argosServiceCost).toBe(50_000);
+  });
+
+  it('should return null for incomplete planned analysis', () => {
+    const analysis = createAnalysis({
+      maintenanceStrategy: 'planned',
+      overhaulCostPerPump: 0,
+      unplannedDespitePM: 0,
+    });
+    const result = calculateAnalysisRow(analysis, defaultGlobalParams);
+
+    expect(result).toBeNull();
+  });
+});
+
+// ============================================================================
+// Story 4.5.4: calculateAggregatedMetrics — Mixed strategies
+// ============================================================================
+
+describe('calculateAggregatedMetrics — Mixed Strategies', () => {
+  it('should aggregate mixed unplanned and planned analyses', () => {
+    const analyses = [
+      createAnalysis({
+        maintenanceStrategy: 'unplanned',
+        pumpQuantity: 10,
+      }),
+      createAnalysis({
+        maintenanceStrategy: 'planned',
+        pumpQuantity: 20,
+        pmIntervalMonths: 24,
+        overhaulCostPerPump: 25_000,
+        argosMtbfExtensionPercent: 20,
+      }),
+    ];
+    const result = calculateAggregatedMetrics(analyses, defaultGlobalParams);
+
+    expect(result.processCount).toBe(2);
+    expect(result.totalPumps).toBe(30);
+    expect(result.totalServiceCost).toBe(75_000); // (10 + 20) * 2500
+    expect(result.totalSavings).not.toBe(0);
+    expect(Number.isFinite(result.overallROI)).toBe(true);
+  });
+
+  it('should handle all planned analyses', () => {
+    const analyses = [
+      createAnalysis({
+        maintenanceStrategy: 'planned',
+        pumpQuantity: 10,
+        pmIntervalMonths: 12,
+        overhaulCostPerPump: 20_000,
+        argosMtbfExtensionPercent: 15,
+      }),
+      createAnalysis({
+        maintenanceStrategy: 'planned',
+        pumpQuantity: 8,
+        pmIntervalMonths: 24,
+        overhaulCostPerPump: 30_000,
+        argosMtbfExtensionPercent: 25,
+      }),
+    ];
+    const result = calculateAggregatedMetrics(analyses, defaultGlobalParams);
+
+    expect(result.processCount).toBe(2);
+    expect(result.totalPumps).toBe(18);
+  });
+
+  it('should exclude incomplete planned analyses', () => {
+    const analyses = [
+      createAnalysis({
+        maintenanceStrategy: 'planned',
+        pumpQuantity: 10,
+        pmIntervalMonths: 12,
+        overhaulCostPerPump: 20_000,
+      }),
+      createAnalysis({
+        maintenanceStrategy: 'planned',
+        pumpQuantity: 10,
+        pmIntervalMonths: 12,
+        overhaulCostPerPump: 0, // incomplete
+        unplannedDespitePM: 0,
+      }),
+    ];
+    const result = calculateAggregatedMetrics(analyses, defaultGlobalParams);
+
+    expect(result.processCount).toBe(1);
+    expect(result.excludedCount).toBe(1);
   });
 });

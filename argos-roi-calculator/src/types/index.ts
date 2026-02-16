@@ -18,6 +18,13 @@ export type FailureRateMode = 'percentage' | 'absolute';
 export type WaferType = 'mono' | 'batch';
 
 /**
+ * Maintenance strategy for a process
+ * - 'unplanned': Run to fail / opportunistic PM — ARGOS anticipates failures
+ * - 'planned': Fixed-interval preventive maintenance — ARGOS extends PM interval
+ */
+export type MaintenanceStrategy = 'unplanned' | 'planned';
+
+/**
  * Single ROI analysis representing one process/pump configuration
  * Captures all input parameters for calculating pump failure ROI
  */
@@ -39,13 +46,25 @@ export interface Analysis {
   waferType: WaferType; // Processing mode
   waferQuantity: number; // Wafers per batch (default: 125 for batch, 1 for mono)
   waferCost: number; // Cost per wafer in EUR
+  waferDefectEventsPerYear: number; // Independent wafer defect events per year (default: 0)
 
   // Downtime Configuration
   downtimeDuration: number; // Hours of downtime per failure event
   downtimeCostPerHour: number; // EUR/hour downtime cost
 
+  // Bottleneck Configuration (Story 4.5.3)
+  isBottleneck: boolean; // Whether this tool is a production bottleneck (default: false)
+  bottleneckMultiplier: number; // Downtime cost multiplier when bottleneck is ON (default: 2.0, range: 1.5–5.0)
+
   // ARGOS detection rate percentage for this specific failure type (0-100). If undefined, uses globalParams.detectionRate (default: 70)
   detectionRate?: number;
+
+  // Maintenance Strategy (Story 4.5.4)
+  maintenanceStrategy: MaintenanceStrategy; // 'unplanned' (default) or 'planned'
+  overhaulCostPerPump: number; // Cost per overhaul in EUR (default: 0)
+  pmIntervalMonths: number; // Planned maintenance interval in months (default: 12)
+  argosMtbfExtensionPercent: number; // ARGOS MTBF extension percentage (default: 15, range: 10-30)
+  unplannedDespitePM: number; // Residual unplanned failures despite PM schedule (default: 0)
 
   // Metadata
   createdAt: string; // ISO 8601 timestamp

@@ -15,8 +15,16 @@ const createTestAnalysis = (overrides?: Partial<Analysis>): Analysis => ({
   waferType: 'mono',
   waferQuantity: 1,
   waferCost: 0,
+  waferDefectEventsPerYear: 0,
   downtimeDuration: 0,
   downtimeCostPerHour: 0,
+  isBottleneck: false,
+  bottleneckMultiplier: 2.0,
+  maintenanceStrategy: 'unplanned' as const,
+  overhaulCostPerPump: 0,
+  pmIntervalMonths: 12,
+  argosMtbfExtensionPercent: 15,
+  unplannedDespitePM: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,
@@ -450,6 +458,151 @@ describe('DowntimeInputs', () => {
       await user.type(input, '500');
 
       expect(typeof useAppStore.getState().analyses[0].downtimeCostPerHour).toBe('number');
+    });
+  });
+
+  // Story 4.5.3: Bottleneck Tool Toggle
+  describe('Bottleneck toggle (Story 4.5.3)', () => {
+    it('renders "Bottleneck tool" checkbox', () => {
+      renderComponent();
+      expect(screen.getByLabelText('Bottleneck tool')).toBeInTheDocument();
+    });
+
+    it('checkbox is unchecked by default', () => {
+      renderComponent();
+      const checkbox = screen.getByLabelText('Bottleneck tool');
+      expect(checkbox).not.toBeChecked();
+    });
+
+    it('toggles isBottleneck in store on click', async () => {
+      const user = userEvent.setup();
+      renderComponent();
+
+      const checkbox = screen.getByLabelText('Bottleneck tool');
+      await user.click(checkbox);
+
+      expect(useAppStore.getState().analyses[0].isBottleneck).toBe(true);
+    });
+
+    it('preserves existing bottleneckMultiplier when toggling ON', async () => {
+      const user = userEvent.setup();
+      // Set analysis with a custom multiplier (simulating previous selection)
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ isBottleneck: false, bottleneckMultiplier: 3.5 })],
+      });
+      renderComponent();
+
+      const checkbox = screen.getByLabelText('Bottleneck tool');
+      await user.click(checkbox);
+
+      // Should preserve the existing 3.5, not reset to 2.0
+      expect(useAppStore.getState().analyses[0].bottleneckMultiplier).toBe(3.5);
+    });
+
+    it('does NOT show multiplier select when bottleneck is OFF', () => {
+      renderComponent();
+      expect(screen.queryByLabelText('Impact multiplier')).not.toBeInTheDocument();
+    });
+
+    it('shows multiplier select when bottleneck is ON', async () => {
+      const user = userEvent.setup();
+      renderComponent();
+
+      await user.click(screen.getByLabelText('Bottleneck tool'));
+      expect(screen.getByLabelText('Impact multiplier')).toBeInTheDocument();
+    });
+
+    it('renders analysis with isBottleneck=true from store', () => {
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ isBottleneck: true, bottleneckMultiplier: 3.0 })],
+      });
+      renderComponent();
+
+      const checkbox = screen.getByLabelText('Bottleneck tool');
+      expect(checkbox).toBeChecked();
+      expect(screen.getByLabelText('Impact multiplier')).toBeInTheDocument();
+    });
+
+    it('multiplier select defaults to x2.0', async () => {
+      const user = userEvent.setup();
+      renderComponent();
+
+      await user.click(screen.getByLabelText('Bottleneck tool'));
+      const select = screen.getByLabelText('Impact multiplier') as HTMLSelectElement;
+      expect(select.value).toBe('2');
+    });
+
+    it('updates store when multiplier is changed', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ isBottleneck: true, bottleneckMultiplier: 2.0 })],
+      });
+      renderComponent();
+
+      const select = screen.getByLabelText('Impact multiplier');
+      await user.selectOptions(select, '3.5');
+
+      expect(useAppStore.getState().analyses[0].bottleneckMultiplier).toBe(3.5);
+    });
+
+    it('has all 8 multiplier options (x1.5 to x5.0)', async () => {
+      const user = userEvent.setup();
+      renderComponent();
+
+      await user.click(screen.getByLabelText('Bottleneck tool'));
+      const options = screen.getByLabelText('Impact multiplier').querySelectorAll('option');
+      expect(options).toHaveLength(8);
+      expect(options[0].textContent).toBe('x1.5');
+      expect(options[7].textContent).toBe('x5.0');
+    });
+
+    it('hides multiplier select when toggling OFF', async () => {
+      const user = userEvent.setup();
+      renderComponent();
+
+      // Toggle ON
+      await user.click(screen.getByLabelText('Bottleneck tool'));
+      expect(screen.getByLabelText('Impact multiplier')).toBeInTheDocument();
+
+      // Toggle OFF
+      await user.click(screen.getByLabelText('Bottleneck tool'));
+      expect(screen.queryByLabelText('Impact multiplier')).not.toBeInTheDocument();
+    });
+
+    it('checkbox has accessible role', () => {
+      renderComponent();
+      expect(screen.getByRole('checkbox', { name: 'Bottleneck tool' })).toBeInTheDocument();
+    });
+
+    it('checkbox has aria-expanded=false when bottleneck is OFF', () => {
+      renderComponent();
+      const checkbox = screen.getByRole('checkbox', { name: 'Bottleneck tool' });
+      expect(checkbox).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('checkbox has aria-expanded=true when bottleneck is ON', async () => {
+      const user = userEvent.setup();
+      renderComponent();
+
+      const checkbox = screen.getByRole('checkbox', { name: 'Bottleneck tool' });
+      await user.click(checkbox);
+
+      expect(checkbox).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('allows Tab from bottleneck checkbox to multiplier select when ON', async () => {
+      const user = userEvent.setup();
+      useAppStore.setState({
+        analyses: [createTestAnalysis({ isBottleneck: true, bottleneckMultiplier: 2.0 })],
+      });
+      renderComponent();
+
+      const checkbox = screen.getByLabelText('Bottleneck tool');
+      const select = screen.getByLabelText('Impact multiplier');
+
+      checkbox.focus();
+      await user.keyboard('{Tab}');
+      expect(select).toHaveFocus();
     });
   });
 });

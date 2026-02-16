@@ -26,8 +26,16 @@ function createTestAnalysis(overrides: Partial<Analysis> = {}): Analysis {
     waferType: 'batch',
     waferQuantity: 125,
     waferCost: 8000,
+    waferDefectEventsPerYear: 1,
     downtimeDuration: 6,
     downtimeCostPerHour: 500,
+    isBottleneck: false,
+    bottleneckMultiplier: 2.0,
+    maintenanceStrategy: 'unplanned' as const,
+    overhaulCostPerPump: 0,
+    pmIntervalMonths: 12,
+    argosMtbfExtensionPercent: 15,
+    unplannedDespitePM: 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides,
@@ -184,6 +192,13 @@ describe('GlobalAnalysisView', () => {
             waferType: 'mono',
             downtimeDuration: 1,
             downtimeCostPerHour: 10,
+            isBottleneck: false,
+            bottleneckMultiplier: 2.0,
+            maintenanceStrategy: 'unplanned' as const,
+            overhaulCostPerPump: 0,
+            pmIntervalMonths: 12,
+            argosMtbfExtensionPercent: 15,
+            unplannedDespitePM: 0,
           }),
         ],
       });
@@ -196,6 +211,9 @@ describe('GlobalAnalysisView', () => {
     });
 
     it('displays warning ROI in orange', () => {
+      // Decoupled: waferDefectCost = 1 × 3428 × 1 = 3,428, downtimeCost = 1 × 1 × 500 = 500
+      // totalFailureCost = 3,928, serviceCost = 2,500
+      // savings = 3,928 × 0.7 - 2,500 = 249.6 → ROI = 9.98% → orange
       useAppStore.setState({
         analyses: [
           createTestAnalysis({
@@ -204,8 +222,16 @@ describe('GlobalAnalysisView', () => {
             waferType: 'mono',
             waferQuantity: 1,
             waferCost: 3428,
+            waferDefectEventsPerYear: 1,
             downtimeDuration: 1,
             downtimeCostPerHour: 500,
+            isBottleneck: false,
+            bottleneckMultiplier: 2.0,
+            maintenanceStrategy: 'unplanned' as const,
+            overhaulCostPerPump: 0,
+            pmIntervalMonths: 12,
+            argosMtbfExtensionPercent: 15,
+            unplannedDespitePM: 0,
           }),
         ],
       });

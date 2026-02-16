@@ -33,3 +33,12 @@ export type { DetectionRateInputProps } from './DetectionRateInput';
 
 export { ResultsPanel } from './ResultsPanel';
 export type { ResultsPanelProps } from './ResultsPanel';
+
+export { MaintenanceStrategySelector } from './MaintenanceStrategySelector';
+export type { MaintenanceStrategySelectorProps } from './MaintenanceStrategySelector';
+
+export { PlannedMaintenanceInputs } from './PlannedMaintenanceInputs';
+export type { PlannedMaintenanceInputsProps } from './PlannedMaintenanceInputs';
+
+export { OverhaulCostInput } from './OverhaulCostInput';
+export type { OverhaulCostInputProps } from './OverhaulCostInput';
