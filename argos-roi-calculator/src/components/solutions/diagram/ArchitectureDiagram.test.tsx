@@ -59,7 +59,7 @@ describe('ArchitectureDiagram', () => {
   });
 
   describe('Pump data integration (AC5)', () => {
-    it('shows pump clusters from store analyses', () => {
+    it('shows one pump cluster per process (not merged by model)', () => {
       useAppStore.setState({
         analyses: [
           createTestAnalysis({ name: 'Poly Etch', pumpQuantity: 8, pumpType: 'A3004XN' }),
@@ -70,10 +70,15 @@ describe('ArchitectureDiagram', () => {
 
       render(<ArchitectureDiagram />);
 
-      // Should merge A3004XN clusters: 8 + 6 = 14
+      // 3 processes = 3 clusters (A3004XN NOT merged across processes)
       const svg = screen.getByRole('img');
       expect(svg).toHaveAttribute('aria-label', expect.stringContaining('26 pumps'));
-      expect(svg).toHaveAttribute('aria-label', expect.stringContaining('2 models'));
+      expect(svg).toHaveAttribute('aria-label', expect.stringContaining('3 processes'));
+
+      // Each process has its own cluster
+      expect(screen.getByLabelText('Poly Etch — 8 A3004XN pumps')).toBeInTheDocument();
+      expect(screen.getByLabelText('Metal Dep — 12 HiPace 300 pumps')).toBeInTheDocument();
+      expect(screen.getByLabelText('CVD — 6 A3004XN pumps')).toBeInTheDocument();
     });
 
     it('updates diagram when analyses change', () => {
@@ -93,7 +98,7 @@ describe('ArchitectureDiagram', () => {
       expect(svg).toHaveAttribute('aria-label', expect.stringContaining('12 pumps'));
     });
 
-    it('renders correct number of pump cluster groups', () => {
+    it('renders correct number of pump cluster groups with process names', () => {
       useAppStore.setState({
         analyses: [
           createTestAnalysis({ name: 'A', pumpQuantity: 8, pumpType: 'A3004XN' }),
@@ -104,15 +109,15 @@ describe('ArchitectureDiagram', () => {
 
       render(<ArchitectureDiagram />);
 
-      // Each pump cluster has aria-label
-      expect(screen.getByLabelText('8 A3004XN pumps')).toBeInTheDocument();
-      expect(screen.getByLabelText('6 A1803H pumps')).toBeInTheDocument();
-      expect(screen.getByLabelText('4 A2104LM pumps')).toBeInTheDocument();
+      // Each pump cluster has aria-label with process name
+      expect(screen.getByLabelText('A — 8 A3004XN pumps')).toBeInTheDocument();
+      expect(screen.getByLabelText('B — 6 A1803H pumps')).toBeInTheDocument();
+      expect(screen.getByLabelText('C — 4 A2104LM pumps')).toBeInTheDocument();
     });
   });
 
   describe('Pilot topology (AC2)', () => {
-    it('shows micro-PC components in pilot mode', () => {
+    it('shows micro-PC components in pilot mode with process name', () => {
       useAppStore.setState({
         analyses: [
           createTestAnalysis({ name: 'A', pumpQuantity: 8, pumpType: 'A3004XN' }),
@@ -121,7 +126,7 @@ describe('ArchitectureDiagram', () => {
 
       render(<ArchitectureDiagram />);
 
-      expect(screen.getByLabelText(/Micro-PC near tool cluster 1/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Micro-PC for A, 8 pumps connected/)).toBeInTheDocument();
     });
 
     it('shows manual sync component in pilot mode', () => {
@@ -134,7 +139,7 @@ describe('ArchitectureDiagram', () => {
       expect(screen.getByLabelText(/Manual daily data retrieval/)).toBeInTheDocument();
     });
 
-    it('shows correct pump count on micro-PC', () => {
+    it('shows correct pump count on micro-PC with process name', () => {
       useAppStore.setState({
         analyses: [
           createTestAnalysis({ name: 'A', pumpQuantity: 8, pumpType: 'A3004XN' }),
@@ -143,7 +148,7 @@ describe('ArchitectureDiagram', () => {
 
       render(<ArchitectureDiagram />);
 
-      expect(screen.getByLabelText(/8 pumps connected/)).toBeInTheDocument();
+      expect(screen.getByLabelText('Micro-PC for A, 8 pumps connected')).toBeInTheDocument();
     });
 
     it('does not show central server in pilot mode', () => {
@@ -194,7 +199,7 @@ describe('ArchitectureDiagram', () => {
       render(<ArchitectureDiagram />);
 
       // Micro-PC exists in DOM but is hidden via opacity-0 on parent group
-      const microPC = screen.getByLabelText(/Micro-PC near tool cluster/);
+      const microPC = screen.getByLabelText(/Micro-PC for A/);
       const parent = microPC.closest('g[class*="opacity-0"]');
       expect(parent).toBeTruthy();
     });
@@ -226,13 +231,13 @@ describe('ArchitectureDiagram', () => {
 
       render(<ArchitectureDiagram />);
 
-      expect(screen.getByLabelText('8 A3004XN pumps')).toBeInTheDocument();
+      expect(screen.getByLabelText('A — 8 A3004XN pumps')).toBeInTheDocument();
 
       act(() => {
         useAppStore.setState({ deploymentMode: 'production' });
       });
 
-      expect(screen.getByLabelText('8 A3004XN pumps')).toBeInTheDocument();
+      expect(screen.getByLabelText('A — 8 A3004XN pumps')).toBeInTheDocument();
     });
   });
 
@@ -276,6 +281,131 @@ describe('ArchitectureDiagram', () => {
 
       const liveRegion = container.querySelector('[aria-live="polite"]');
       expect(liveRegion).toBeInTheDocument();
+    });
+  });
+
+  describe('Process-based clustering (AC1, AC2, AC4, AC7)', () => {
+    it('same pump model on 2 different processes creates 2 separate clusters', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ name: 'Poly Etch', pumpQuantity: 8, pumpType: 'A3004XN' }),
+          createTestAnalysis({ name: 'CVD', pumpQuantity: 6, pumpType: 'A3004XN' }),
+        ],
+      });
+
+      render(<ArchitectureDiagram />);
+
+      // 2 separate clusters, NOT merged into 1
+      expect(screen.getByLabelText('Poly Etch — 8 A3004XN pumps')).toBeInTheDocument();
+      expect(screen.getByLabelText('CVD — 6 A3004XN pumps')).toBeInTheDocument();
+
+      const svg = screen.getByRole('img');
+      expect(svg).toHaveAttribute('aria-label', expect.stringContaining('2 processes'));
+    });
+
+    it('shows process name on PumpCluster component', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ name: 'Metal Dep', pumpQuantity: 12, pumpType: 'HiPace 300' }),
+        ],
+      });
+
+      render(<ArchitectureDiagram />);
+
+      expect(screen.getByText('Metal Dep')).toBeInTheDocument();
+    });
+
+    it('Micro-PC shows process name instead of generic cluster label', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ name: 'Poly Etch', pumpQuantity: 8, pumpType: 'A3004XN' }),
+        ],
+      });
+
+      render(<ArchitectureDiagram />);
+
+      // Process name displayed in uppercase on Micro-PC
+      expect(screen.getByText('POLY ETCH')).toBeInTheDocument();
+      // Old "NEAR TOOL CLUSTER" label is gone
+      expect(screen.queryByText(/NEAR TOOL CLUSTER/)).not.toBeInTheDocument();
+    });
+
+    it('5 analyses create 5 separate clusters with 5 Micro-PCs in pilot mode', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ name: 'Poly Etch', pumpQuantity: 8, pumpType: 'A3004XN' }),
+          createTestAnalysis({ name: 'Metal Dep', pumpQuantity: 12, pumpType: 'HiPace 300' }),
+          createTestAnalysis({ name: 'CVD', pumpQuantity: 6, pumpType: 'A3004XN' }),
+          createTestAnalysis({ name: 'Litho', pumpQuantity: 4, pumpType: 'HiPace 700' }),
+          createTestAnalysis({ name: 'Ion Implant', pumpQuantity: 3, pumpType: 'A1803H' }),
+        ],
+      });
+
+      render(<ArchitectureDiagram />);
+
+      // 5 clusters
+      expect(screen.getByLabelText('Poly Etch — 8 A3004XN pumps')).toBeInTheDocument();
+      expect(screen.getByLabelText('Metal Dep — 12 HiPace 300 pumps')).toBeInTheDocument();
+      expect(screen.getByLabelText('CVD — 6 A3004XN pumps')).toBeInTheDocument();
+      expect(screen.getByLabelText('Litho — 4 HiPace 700 pumps')).toBeInTheDocument();
+      expect(screen.getByLabelText('Ion Implant — 3 A1803H pumps')).toBeInTheDocument();
+
+      // 5 Micro-PCs
+      expect(screen.getByLabelText('Micro-PC for Poly Etch, 8 pumps connected')).toBeInTheDocument();
+      expect(screen.getByLabelText('Micro-PC for Metal Dep, 12 pumps connected')).toBeInTheDocument();
+      expect(screen.getByLabelText('Micro-PC for CVD, 6 pumps connected')).toBeInTheDocument();
+      expect(screen.getByLabelText('Micro-PC for Litho, 4 pumps connected')).toBeInTheDocument();
+      expect(screen.getByLabelText('Micro-PC for Ion Implant, 3 pumps connected')).toBeInTheDocument();
+
+      const svg = screen.getByRole('img');
+      expect(svg).toHaveAttribute('aria-label', expect.stringContaining('5 processes'));
+      expect(svg).toHaveAttribute('aria-label', expect.stringContaining('33 pumps'));
+    });
+
+    it('excludes analyses with empty name or pumpType from clusters', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ name: '', pumpQuantity: 5, pumpType: 'ModelX' }),
+          createTestAnalysis({ name: 'Valid', pumpQuantity: 10, pumpType: 'ModelY' }),
+          createTestAnalysis({ name: 'NoModel', pumpQuantity: 8, pumpType: '' }),
+        ],
+      });
+
+      render(<ArchitectureDiagram />);
+
+      const svg = screen.getByRole('img');
+      expect(svg).toHaveAttribute('aria-label', expect.stringContaining('1 process'));
+      expect(screen.getByLabelText('Valid — 10 ModelY pumps')).toBeInTheDocument();
+      expect(screen.queryByLabelText(/NoModel —/)).not.toBeInTheDocument();
+    });
+
+    it('filters out analyses with whitespace-only names', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ name: '   ', pumpQuantity: 8, pumpType: 'A3004XN' }),
+          createTestAnalysis({ name: 'Valid', pumpQuantity: 6, pumpType: 'HiPace' }),
+        ],
+      });
+
+      render(<ArchitectureDiagram />);
+
+      const svg = screen.getByRole('img');
+      expect(svg).toHaveAttribute('aria-label', expect.stringContaining('1 process'));
+      expect(screen.getByLabelText('Valid — 6 HiPace pumps')).toBeInTheDocument();
+    });
+
+    it('single analysis shows singular "process" in aria-label', () => {
+      useAppStore.setState({
+        analyses: [
+          createTestAnalysis({ name: 'Poly Etch', pumpQuantity: 8, pumpType: 'A3004XN' }),
+        ],
+      });
+
+      render(<ArchitectureDiagram />);
+
+      const svg = screen.getByRole('img');
+      expect(svg).toHaveAttribute('aria-label', expect.stringContaining('1 process'));
+      expect(svg).not.toHaveAttribute('aria-label', expect.stringContaining('1 processes'));
     });
   });
 });

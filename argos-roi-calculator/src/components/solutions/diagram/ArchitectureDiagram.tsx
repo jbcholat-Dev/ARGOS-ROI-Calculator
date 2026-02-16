@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useAppStore } from '@/stores/app-store';
+import type { ConnectionType } from '@/stores/app-store';
 import { PumpCluster } from './PumpCluster';
 import { MicroPC } from './MicroPC';
 import { CentralServer } from './CentralServer';
@@ -9,7 +10,9 @@ import { AutoPipeline } from './AutoPipeline';
 import { ConnectionLine } from './ConnectionLine';
 import { usePumpStats } from './usePumpStats';
 
-const CONNECTION_TYPE_LABELS: Record<string, string> = {
+const CLUSTER_HEIGHT = 150;
+
+const CONNECTION_TYPE_LABELS: Record<ConnectionType, string> = {
   rs485: 'RS-485',
   ethernet: 'Ethernet',
   wifi: 'WiFi',
@@ -19,29 +22,25 @@ export function ArchitectureDiagram() {
   const analyses = useAppStore((state) => state.analyses);
   const deploymentMode = useAppStore((state) => state.deploymentMode);
   const connectionType = useAppStore((state) => state.connectionType);
-  const { pumpModelClusters, totalPumps } = usePumpStats();
+  const { pumpClusters, totalPumps } = usePumpStats();
 
   const isPilot = deploymentMode === 'pilot';
-  const connLabel = CONNECTION_TYPE_LABELS[connectionType] || connectionType;
-  const isEmpty = pumpModelClusters.length === 0;
+  const connLabel = CONNECTION_TYPE_LABELS[connectionType];
+  const isEmpty = pumpClusters.length === 0;
 
   // Layout: compute vertical positions for pump clusters
-  const clusterPositions = useMemo(() => {
-    if (isEmpty) return [];
+  const clusterYPositions = useMemo(() => {
     const startY = 50;
     const gap = 170;
-    return pumpModelClusters.map((_, i) => ({
-      y: startY + i * gap,
-      height: 150,
-    }));
-  }, [pumpModelClusters, isEmpty]);
+    return pumpClusters.map((_, i) => startY + i * gap);
+  }, [pumpClusters]);
 
   // SVG viewBox height: dynamic based on cluster count
-  const svgHeight = isEmpty ? 200 : Math.max(590, 50 + pumpModelClusters.length * 170 + 80);
+  const svgHeight = isEmpty ? 200 : Math.max(590, 50 + pumpClusters.length * 170 + 80);
 
   const diagramAriaLabel = isEmpty
     ? 'Architecture diagram — no analyses configured'
-    : `ARGOS ${isPilot ? 'Pilot' : 'Production'} architecture with ${totalPumps} pumps across ${pumpModelClusters.length} model${pumpModelClusters.length > 1 ? 's' : ''}`;
+    : `ARGOS ${isPilot ? 'Pilot' : 'Production'} architecture with ${totalPumps} pumps across ${pumpClusters.length} process${pumpClusters.length > 1 ? 'es' : ''}`;
 
   if (isEmpty) {
     return (
@@ -110,29 +109,30 @@ export function ArchitectureDiagram() {
         </text>
 
         {/* Pump clusters */}
-        {pumpModelClusters.map((cluster, i) => (
+        {pumpClusters.map((cluster, i) => (
           <PumpCluster
-            key={cluster.model}
+            key={cluster.id}
+            processName={cluster.processName}
             model={cluster.model}
             quantity={cluster.quantity}
             x={36}
-            y={clusterPositions[i].y}
-            height={clusterPositions[i].height}
+            y={clusterYPositions[i]}
           />
         ))}
 
         {/* Connection lines: Pumps → Middleware */}
-        {clusterPositions.map((pos, i) => {
-          const pumpCenterY = pos.y + pos.height / 2;
-          const targetY = isPilot ? pos.y + 60 : 50 + 180 * ((i + 0.5) / pumpModelClusters.length);
+        {pumpClusters.map((cluster, i) => {
+          const clusterY = clusterYPositions[i];
+          const pumpCenterY = clusterY + CLUSTER_HEIGHT / 2;
+          const targetY = isPilot ? clusterY + 60 : 50 + 180 * ((i + 0.5) / pumpClusters.length);
           const targetX = isPilot ? microPcX : serverX;
 
           return (
-            <g key={`conn-${i}`}>
+            <g key={`conn-${cluster.id}`}>
               {/* Pilot connection */}
               <g className={`transition-opacity duration-500 ${isPilot ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 <ConnectionLine
-                  d={`M 286,${pumpCenterY} L ${targetX},${pos.y + 60}`}
+                  d={`M 286,${pumpCenterY} L ${targetX},${clusterY + 60}`}
                   connectionType={connectionType}
                   variant="pilot"
                   label={connLabel}
@@ -157,13 +157,13 @@ export function ArchitectureDiagram() {
 
         {/* PILOT: Micro-PCs */}
         <g className={`transition-opacity duration-500 ${isPilot ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-          {pumpModelClusters.map((cluster, i) => (
+          {pumpClusters.map((cluster, i) => (
             <MicroPC
-              key={`micropc-${cluster.model}`}
+              key={`micropc-${cluster.id}`}
               x={microPcX}
-              y={clusterPositions[i].y}
-              clusterIndex={i}
+              y={clusterYPositions[i]}
               pumpCount={cluster.quantity}
+              processName={cluster.processName}
             />
           ))}
         </g>
@@ -180,11 +180,11 @@ export function ArchitectureDiagram() {
 
         {/* PILOT: Micro-PCs → Manual Sync */}
         <g className={`transition-opacity duration-500 ${isPilot ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-          {clusterPositions.map((pos, i) => {
-            const microPcCenterY = pos.y + 60;
+          {pumpClusters.map((cluster, i) => {
+            const microPcCenterY = clusterYPositions[i] + 60;
             return (
               <ConnectionLine
-                key={`sync-conn-${i}`}
+                key={`sync-conn-${cluster.id}`}
                 d={`M 570,${microPcCenterY} C 620,${microPcCenterY} 640,${syncX > 600 ? 255 : microPcCenterY} 670,255`}
                 connectionType={connectionType}
                 variant="pilot"

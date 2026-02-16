@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { useAppStore } from '@/stores/app-store';
 
-export interface PumpModelCluster {
+export interface PumpCluster {
+  id: string;
+  processName: string;
   model: string;
   quantity: number;
 }
@@ -9,30 +11,23 @@ export interface PumpModelCluster {
 export function usePumpStats() {
   const analyses = useAppStore((state) => state.analyses);
 
-  const pumpModelClusters = useMemo(() => {
-    const clusters = new Map<string, number>();
-    analyses.forEach((a) => {
-      if (a.pumpType) {
-        clusters.set(
-          a.pumpType,
-          (clusters.get(a.pumpType) || 0) + (a.pumpQuantity || 0),
-        );
-      }
-    });
-    return Array.from(clusters.entries()).map(([model, quantity]) => ({ model, quantity }));
+  const { pumpClusters, totalPumps, modelCount, processCount } = useMemo(() => {
+    const clusters = analyses
+      .filter((a) => a.name?.trim() && a.pumpType?.trim())
+      .map((a) => ({
+        id: a.id,
+        processName: a.name,
+        model: a.pumpType,
+        quantity: a.pumpQuantity || 0,
+      }));
+
+    return {
+      pumpClusters: clusters,
+      totalPumps: analyses.reduce((sum, a) => sum + (a.pumpQuantity || 0), 0),
+      modelCount: new Set(analyses.map((a) => a.pumpType).filter(Boolean)).size,
+      processCount: clusters.length,
+    };
   }, [analyses]);
 
-  const totalPumps = useMemo(
-    () => analyses.reduce((sum, a) => sum + (a.pumpQuantity || 0), 0),
-    [analyses],
-  );
-
-  const modelCount = useMemo(
-    () => new Set(analyses.map((a) => a.pumpType).filter(Boolean)).size,
-    [analyses],
-  );
-
-  const processCount = analyses.length;
-
-  return { pumpModelClusters, totalPumps, modelCount, processCount };
+  return { pumpClusters, totalPumps, modelCount, processCount };
 }

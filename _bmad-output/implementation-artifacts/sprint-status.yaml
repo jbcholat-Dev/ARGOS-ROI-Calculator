@@ -83,7 +83,7 @@ development_status:
   # Epic 4: Global Analysis & Comparison (4 stories — added 4.4 post-retrospective)
   # UPDATED 2026-02-13: Added Story 4.4 (Process Filter & Deletion) from PO feedback.
   # Allows include/exclude of processes in Global Analysis + permanent deletion.
-  epic-4: in-progress
+  epic-4: done
   4-1-global-analysis-view-with-aggregated-metrics: done
   4-2-comparison-table-side-by-side: done
   4-3-navigation-links-and-session-stability: done
@@ -99,14 +99,17 @@ development_status:
   # UPDATED 2026-02-14: Story 6.3 CANCELLED — superseded by 6.4 DiagramControls.
   #   PreFilledContext banner (6.2) removed: redundant with DiagramControls inline stats.
   #   Cleanup: deleted PreFilledContext.tsx + tests, updated Solutions page + barrel export.
+  # UPDATED 2026-02-15: Retrospective completed. Story 6-6 added (fix clustering by process).
+  #   Discovery: clustering by pumpType is incorrect — must be by process (1 cluster = 1 analysis = 1 process).
   epic-6: in-progress
   6-1-solutions-navigation-from-global-analysis: done
   6-2-pre-filled-context-from-roi-analyses: cancelled  # 2026-02-14: PreFilledContext banner removed — stats now in DiagramControls (6.4)
   6-spike-architecture-diagram-design: done  # COMPLETED: HTML prototype in design-references/
   6-3-technical-specifications-form: cancelled  # 2026-02-14: Superseded by 6.4 DiagramControls (deployment toggle, connection type, inline stats)
   6-4-interactive-architecture-diagram: done  # Code review passed: 7 issues fixed (3H, 4M). 1137 tests.
+  6-6-fix-pump-clustering-by-process: done  # Code review passed: 12 issues found (3H, 6M, 3L), all H+M fixed. 1119 tests.
   6-5-unified-pdf-export-v10-v11: backlog  # DEPENDENCY: Execute after Epic 5 (needs PDF pipeline)
-  epic-6-retrospective: optional
+  epic-6-retrospective: done
 
   # Epic 5: PDF Export & Reporting (4 stories)
   # Executed after Epic 6 stories 6.1-6.4, before story 6.5

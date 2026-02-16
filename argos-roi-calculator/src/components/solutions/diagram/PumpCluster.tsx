@@ -1,16 +1,17 @@
 interface PumpClusterProps {
+  processName: string;
   model: string;
   quantity: number;
   x: number;
   y: number;
-  height?: number;
 }
 
-export function PumpCluster({ model, quantity, x, y, height = 150 }: PumpClusterProps) {
+export function PumpCluster({ processName, model, quantity, x, y }: PumpClusterProps) {
+  const height = 150;
   const pumpCount = Math.min(quantity, 4);
 
   return (
-    <g transform={`translate(${x}, ${y})`} aria-label={`${quantity} ${model} pumps`}>
+    <g transform={`translate(${x}, ${y})`} aria-label={`${processName} — ${quantity} ${model} pumps`}>
       <rect
         width={250}
         height={height}
@@ -18,7 +19,7 @@ export function PumpCluster({ model, quantity, x, y, height = 150 }: PumpCluster
         className="fill-[#F0F1F4] stroke-[rgba(0,0,0,0.10)]"
         strokeWidth={1}
       />
-      <g transform="translate(14, 18)">
+      <g transform="translate(14, 18)" aria-hidden="true">
         {Array.from({ length: pumpCount }).map((_, i) => (
           <g key={i} transform={`translate(${i * 54}, 0)`}>
             {/* Pump body */}
@@ -55,6 +56,11 @@ export function PumpCluster({ model, quantity, x, y, height = 150 }: PumpCluster
         style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, fontWeight: 400 }}
         className="fill-[#5A6478]">
         {model}
+      </text>
+      <text x={14} y={height - 12}
+        style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600 }}
+        className="fill-[#1A1D26]">
+        {processName}
       </text>
     </g>
   );

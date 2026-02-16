@@ -1,21 +1,21 @@
 interface MicroPCProps {
   x: number;
   y: number;
-  clusterIndex: number;
   pumpCount: number;
+  processName: string;
 }
 
-export function MicroPC({ x, y, clusterIndex, pumpCount }: MicroPCProps) {
+export function MicroPC({ x, y, pumpCount, processName }: MicroPCProps) {
   return (
     <g
       className="transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
       transform={`translate(${x}, ${y})`}
-      aria-label={`Micro-PC near tool cluster ${clusterIndex + 1}, ${pumpCount} pumps connected`}
+      aria-label={`Micro-PC for ${processName}, ${pumpCount} pumps connected`}
     >
       <rect width={200} height={120} rx={10}
         className="fill-white stroke-[rgba(0,0,0,0.12)]" strokeWidth={1.5} />
       {/* Computer icon */}
-      <g transform="translate(14, 14)">
+      <g transform="translate(14, 14)" aria-hidden="true">
         <rect x={0} y={0} width={26} height={18} rx={3}
           fill="none" stroke="#C88400" strokeWidth={1.3} />
         <line x1={5} y1={22} x2={21} y2={22}
@@ -31,7 +31,7 @@ export function MicroPC({ x, y, clusterIndex, pumpCount }: MicroPCProps) {
       <text x={50} y={38}
         style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, fontWeight: 400, letterSpacing: '0.04em' }}
         className="fill-[#8B95A8]">
-        NEAR TOOL CLUSTER {clusterIndex + 1}
+        {processName.toUpperCase()}
       </text>
       {/* MQTT badge */}
       <rect x={14} y={52} width={60} height={20} rx={4}
