@@ -1,10 +1,10 @@
 # Design Feedback & Improvement Backlog
 
-## Status: Active — Epic 4.5 Pre-Demo Sprint (mercredi 2026-02-18)
+## Status: Epics 4.5 + 5 + 6 DONE — Ready for Wednesday Demo (2026-02-18)
 
-**Strategy (updated 2026-02-16):** Internal feedback review identified HIGH-priority items impacting ROI credibility and demo safety. These are addressed in **Epic 4.5 — Pre-Demo Improvements** before continuing to Epic 5 (PDF Export). Remaining MEDIUM/LOW items stay deferred to post-Epic 6 design branch.
+**Strategy (updated 2026-02-17):** All HIGH-priority pre-demo items shipped (Epic 4.5). PDF Export pipeline complete (Epic 5). Solutions module with unified PDF complete (Epic 6). App is demo-ready. Remaining MEDIUM/LOW items deferred to post-demo design branch.
 
-**Workflow:** HIGH items → Epic 4.5 stories → implement before Wednesday demo. MEDIUM/LOW items → batch after Epic 6.
+**Workflow:** HIGH items → DONE. MEDIUM/LOW items → batch in `feature/design-polish` branch after demo feedback.
 
 ---
 
@@ -103,18 +103,18 @@ Feedback collected during internal review session (party mode). Prioritized for 
 
 ### HIGH Priority — Must ship before Wednesday
 
-#### FB-1: Wafer Defect Decoupling + Terminology Rename ⬜ → Story 4.5.2
-- **Priority:** HIGH | **Effort:** 3-4h
-- [ ] **Separate wafer defect events field** — Decouple wafer defect count from pump failure count
+#### FB-1: Wafer Defect Decoupling + Terminology Rename ✅ → Story 4.5.2 DONE
+- **Priority:** HIGH | **Effort:** 3-4h | **Completed:** 2026-02-16
+- [x] **Separate wafer defect events field** — Decouple wafer defect count from pump failure count
   - Problem: Model applies wafer cost to EVERY failure. Reality: only a fraction of failures cause wafer defects (e.g., 5 failures but only 1-2 wafer defect events)
   - Proposed: New field "Wafer defect events per year" in wafer section, independent of failure count
   - Calculation: Total wafer cost = wafer defect events × cost per wafer defect event (NOT failures × cost)
-- [ ] **Rename "wafer scrap" → "wafer defect" everywhere** (UI labels, types, store, tests)
+- [x] **Rename "wafer scrap" → "wafer defect" everywhere** (UI labels, types, store, tests)
   - Reason: Not all wafer events are scraps — some wafers can be reworked. "Defect" is the correct neutral term
 
-#### FB-2: Maintenance Strategy Model & ARGOS Value Calculation ⬜ → Story 4.5.4
-- **Priority:** HIGH | **Effort:** 1-1.5 days
-- [ ] **Maintenance strategy selector** at process level: `Unplanned` | `Planned`
+#### FB-2: Maintenance Strategy Model & ARGOS Value Calculation ✅ → Story 4.5.4 DONE
+- **Priority:** HIGH | **Effort:** 1-1.5 days | **Completed:** 2026-02-16
+- [x] **Maintenance strategy selector** at process level: `Unplanned` | `Planned`
   - **Unplanned** (Run to Fail + Opportunistic PM):
     - Input: Unplanned events/year
     - ARGOS value: Anticipate failures BEFORE they happen (detect early)
@@ -131,12 +131,12 @@ Feedback collected during internal review session (party mode). Prioritized for 
     - Gain = (current overhauls/year − ARGOS overhauls/year) × overhaul cost + residual unplanned events avoided
     - Wafer defect: typically 0 in PM mode (pumps removed before failure), but user decides
   - **Key insight:** No "hybrid" mode needed — Planned mode with optional unplanned residual covers the real-world hybrid scenario
-- [ ] **Single overhaul cost** — No distinction between RTF and PM repair cost (marginal difference in practice, client refurbishes most parts regardless)
-- [ ] **Annualization for PM** — Steady-state formula: pumps ÷ interval-in-years gives annual overhaul rate (pumps staggered over time)
+- [x] **Single overhaul cost** — No distinction between RTF and PM repair cost (marginal difference in practice, client refurbishes most parts regardless)
+- [x] **Annualization for PM** — Steady-state formula: pumps ÷ interval-in-years gives annual overhaul rate (pumps staggered over time)
 
-#### FB-3: Bottleneck Tool Toggle ⬜ → Story 4.5.3
-- **Priority:** HIGH | **Effort:** 2-3h
-- [ ] **Toggle "Bottleneck tool?"** in downtime section
+#### FB-3: Bottleneck Tool Toggle ✅ → Story 4.5.3 DONE
+- **Priority:** HIGH | **Effort:** 2-3h | **Completed:** 2026-02-16
+- [x] **Toggle "Bottleneck tool?"** in downtime section
   - When ON: reveal multiplier field
   - Default multiplier: x2
   - Step: 0.5 increments (x1.5, x2, x2.5, x3, x3.5...)
@@ -144,17 +144,17 @@ Feedback collected during internal review session (party mode). Prioritized for 
   - Rationale: Bottleneck tools block downstream production when down — cost extends beyond the tool itself
   - UX: conversational — consultant adjusts live with client ("When this tool goes down, how much of the line stops?")
 
-#### FB-4: Data Persistence (localStorage) ⬜ → Story 4.5.1
-- **Priority:** HIGH | **Effort:** 3-4h
-- [ ] **Zustand persist middleware** — Auto-save entire store to localStorage
+#### FB-4: Data Persistence (localStorage) ✅ → Story 4.5.1 DONE
+- **Priority:** HIGH | **Effort:** 3-4h | **Completed:** 2026-02-16
+- [x] **Zustand persist middleware** — Auto-save entire store to localStorage
   - Survives: page refresh, tab close, browser restart
   - Storage: ~5 Mo available, sufficient for dozens of analyses
   - Implementation: `zustand/middleware` persist with `name: 'argos-roi-data'`
-- [ ] **Session recovery modal** on app launch when previous data exists
+- [x] **Session recovery modal** on app launch when previous data exists
   - Options: "Resume previous session" | "Start new session"
   - Protects client data confidentiality between different client meetings
-- [ ] **Reset button** accessible in UI to clear all stored data
-- [ ] Handle store migration if structure changes between versions (future-proofing)
+- [x] **Reset button** accessible in UI to clear all stored data
+- [x] Handle store migration if structure changes between versions (future-proofing)
 
 ### MEDIUM Priority — If time permits before Wednesday
 
@@ -186,33 +186,49 @@ Feedback collected during internal review session (party mode). Prioritized for 
 
 ---
 
-## Epic 5 Feedback
+## Epic 5 Feedback — COMPLETED 2026-02-17
 
-_To be captured after Epic 5 retrospective_
+Epic 5 (PDF Export & Reporting) delivered 4 stories with 171 tests. Code review: 14 issues found and fixed.
 
-### Areas to Watch:
-- PDF export UI/UX
-- Progress indicators
-- Pfeiffer branding alignment
+### What Shipped:
+- [x] **PDF Export Button** — "Export PDF" on Global Analysis page + compact in NavigationBar, with loading/success/error states
+- [x] **PDF Template** — A4 Pfeiffer-branded report: cover page, headers/footers, Helvetica typography, red accent (#CC0000), table rendering with page overflow
+- [x] **PDF Content Sections** — Executive Summary (hero savings), Per-Process Breakdown (strategy-aware), Global Comparison Table, Assumptions & Methodology
+- [x] **Error Handling** — Retry logic (max 2 retries), escalated error message, toast with Retry action, unmount-safe async
 
----
-
-## Epic 6 Feedback
-
-_To be captured after Epic 6 retrospective_
-
-### Areas to Watch:
-- Solutions module layout
-- Technical specs form design
-- ARGOS architecture diagram styling
-- Unified PDF appearance
+### Areas for Future Polish:
+- [ ] PDF visual design could benefit from client logo integration (`jsPDF.addImage()` for PNG/JPEG)
+- [ ] Consider adding charts/graphs to Executive Summary (currently text-only)
+- [ ] Performance optimization if reports exceed 10 analyses (current target: <3s for 5)
 
 ---
 
-## Design Refactor Branch Plan (Post-Epic 6)
+## Epic 6 Feedback — COMPLETED 2026-02-17
+
+Epic 6 (Solutions Module) delivered 4 stories + 1 spike + 1 fix. Story 6.5 (Unified PDF) completed last, leveraging Epic 5 pipeline.
+
+### What Shipped:
+- [x] **Solutions Navigation** — CTA button from Global Analysis to Solutions page
+- [x] **Interactive Architecture Diagram** — SVG-based with Pilot/Production topologies, deployment toggle, connection type selector, inline pump stats
+- [x] **Pump Clustering Fix** — Corrected clustering from pumpType to process (1 cluster = 1 analysis)
+- [x] **Unified PDF Export** — "Export Complete Report" on Solutions page: Part 1 (ROI) + Part 2 (Architecture with SVG capture via html2canvas)
+- [x] **Shared Code** — usePDFExport hook, calculatePumpStats utility, shared constants (DEPLOYMENT_MODE_LABELS, CONNECTION_TYPE_LABELS)
+
+### Cancelled Stories (superseded):
+- ~~6.2 Pre-Filled Context~~ — superseded by DiagramControls inline stats (6.4)
+- ~~6.3 Technical Specifications Form~~ — superseded by DiagramControls (6.4)
+
+### Areas for Future Polish:
+- [ ] Architecture diagram: add animated data flow particles for visual impact
+- [ ] Solutions page: consider adding a "Technical Notes" free-text field for custom annotations
+- [ ] Unified PDF: client logo placeholder on cover page
+
+---
+
+## Design Refactor Branch Plan (Post-Demo — Ready to Start)
 
 ### Pre-Work
-1. Gather real user feedback from client demos (Epics 4-6)
+1. ~~Gather real user feedback from client demos (Epics 4-6)~~ → **Wednesday 2026-02-18 demo**
 2. Review all accumulated feedback in this file (including Epic 2/3 items still open)
 3. Audit Sally's initial mockups for design direction
 4. Prioritize remaining changes by impact and effort
@@ -254,5 +270,5 @@ Stories 4.5.1 + 4.5.2 can be developed in parallel (no dependencies).
 
 ---
 
-**Last Updated:** 2026-02-16 (Pre-Demo Improvement Sprint — Party Mode Session)
-**Next Update:** After Wednesday demo (2026-02-18) — capture client feedback
+**Last Updated:** 2026-02-17 (Epic 5 + Epic 6 completed, all HIGH items shipped)
+**Next Update:** After Wednesday demo (2026-02-18) — capture client feedback for design branch
