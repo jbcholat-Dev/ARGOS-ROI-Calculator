@@ -102,7 +102,7 @@ BMAD artifacts are the source of truth for requirements. Workflows auto-discover
 ### Commands
 - `npm test` - Watch mode
 - `npm test -- --run` - Run once (for verification)
-- Current: **603 tests** (Epic 3 Story 3.2 complete)
+- Current: **1506 tests** (Epic 6 Story 6.5 complete)
 
 ### Patterns
 - **Accessibility tests**: `getByLabelText('Analyse ${name}')` > `getByRole('button')` (robust to role changes)

@@ -122,6 +122,21 @@ development_status:
   4.5-2-wafer-defect-decoupling-and-rename: done   # FB-1: Separate wafer defect events field + scrap→defect rename. +10 tests. Code review passed: 7 issues fixed (2C, 2H, 3M).
   4.5-3-bottleneck-tool-toggle: done                # FB-3: Toggle + downtime multiplier (default x2, step 0.5). +33 tests. Code review passed: 6 issues fixed (1H, 4M, 1L).
   4.5-4-maintenance-strategy-and-argos-value: done   # FB-2: Unplanned/Planned strategy + ARGOS value calculation. +54 tests. Code review passed: 8 issues found (3H, 3M, 2L), all H+M fixed. 1257 tests.
+  epic-4.5-retrospective: done  # 2026-02-18: Bugs found (What-If + Bottleneck, What-If Planned mode). Conceptual revision: Unplanned terminology + MTBF. Epic 7 (MVP Stable) + Epic 8 (UX Redesign) planned.
+
+  # Epic 7: MVP Stable — Bug Fixes + Working Strategies (3 stories)
+  # ADDED 2026-02-18: From Epic 4.5 retrospective. Demo postponed to week of 2026-02-23.
+  # Bugs: What-If + Bottleneck toggle, What-If Planned mode support.
+  # Conceptual: Unplanned terminology revision (pump removal rate, duration per event, remove overhaul cost, add MTBF).
+  epic-7: backlog
+  7-1-whatif-bugfixes-bottleneck-and-replace: ready-for-dev  # CRITICAL: computeMetrics missing bottleneckMultiplier, handleReplaceOriginal missing fields, isDowntimeModified missing bottleneck checks
+  7-2-unplanned-terminology-revision: ready-for-dev  # Rename failure rate→pump removal rate, duration per failure→per event, remove overhaul cost from Unplanned, add MTBF
+  7-3-whatif-adaptive-maintenance-strategy: ready-for-dev  # What-If supports both Planned/Unplanned, conditional fields, computeMetrics uses calculateStrategySavings. Depends on 7.1 + 7.2.
+
+  # Epic 8: UX Redesign (separate feature branch)
+  # ADDED 2026-02-18: From Epic 4.5 retrospective. Dashboard, Focus Mode, What-If split screen.
+  # Will be developed on a dedicated feature branch to protect MVP stability.
+  epic-8: backlog
 
   # Epic 5: PDF Export & Reporting (4 stories)
   # Executed after Epic 6 stories 6.1-6.4, before story 6.5
