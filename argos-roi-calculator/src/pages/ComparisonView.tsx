@@ -24,11 +24,12 @@ import {
 } from '@/components/analysis';
 import type { Analysis } from '@/types';
 
-type MetricsInput = Pick<Analysis, 'pumpQuantity' | 'failureRatePercentage' | 'waferCost' | 'waferType' | 'waferQuantity' | 'downtimeDuration' | 'downtimeCostPerHour' | 'detectionRate' | 'waferDefectEventsPerYear'>;
+type MetricsInput = Pick<Analysis, 'pumpQuantity' | 'failureRatePercentage' | 'waferCost' | 'waferType' | 'waferQuantity' | 'downtimeDuration' | 'downtimeCostPerHour' | 'detectionRate' | 'waferDefectEventsPerYear' | 'isBottleneck' | 'bottleneckMultiplier'>;
 
 function computeMetrics(analysis: MetricsInput, serviceCostPerPump: number, globalDetectionRate: number) {
   const waferQuantity = analysis.waferType === 'mono' ? 1 : analysis.waferQuantity;
   const detectionRate = analysis.detectionRate ?? globalDetectionRate;
+  const effectiveMultiplier = analysis.isBottleneck ? analysis.bottleneckMultiplier : 1;
 
   const totalFailureCost = calculateTotalFailureCost(
     analysis.pumpQuantity,
@@ -38,6 +39,7 @@ function computeMetrics(analysis: MetricsInput, serviceCostPerPump: number, glob
     analysis.downtimeDuration,
     analysis.downtimeCostPerHour,
     analysis.waferDefectEventsPerYear,
+    effectiveMultiplier,
   );
 
   const argosServiceCost = calculateArgosServiceCost(
@@ -121,6 +123,13 @@ export function ComparisonView() {
       downtimeDuration: whatIf.downtimeDuration,
       downtimeCostPerHour: whatIf.downtimeCostPerHour,
       detectionRate: whatIf.detectionRate,
+      isBottleneck: whatIf.isBottleneck,
+      bottleneckMultiplier: whatIf.bottleneckMultiplier,
+      maintenanceStrategy: whatIf.maintenanceStrategy,
+      overhaulCostPerPump: whatIf.overhaulCostPerPump,
+      pmIntervalMonths: whatIf.pmIntervalMonths,
+      argosMtbfExtensionPercent: whatIf.argosMtbfExtensionPercent,
+      unplannedDespitePM: whatIf.unplannedDespitePM,
     });
     if (whatIfId) {
       deleteAnalysis(whatIfId);
@@ -153,7 +162,9 @@ export function ComparisonView() {
     snap.waferDefectEventsPerYear !== whatIf.waferDefectEventsPerYear;
   const isDowntimeModified =
     snap.downtimeDuration !== whatIf.downtimeDuration ||
-    snap.downtimeCostPerHour !== whatIf.downtimeCostPerHour;
+    snap.downtimeCostPerHour !== whatIf.downtimeCostPerHour ||
+    snap.isBottleneck !== whatIf.isBottleneck ||
+    snap.bottleneckMultiplier !== whatIf.bottleneckMultiplier;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">

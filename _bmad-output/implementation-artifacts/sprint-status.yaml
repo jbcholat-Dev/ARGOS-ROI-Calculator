@@ -128,8 +128,8 @@ development_status:
   # ADDED 2026-02-18: From Epic 4.5 retrospective. Demo postponed to week of 2026-02-23.
   # Bugs: What-If + Bottleneck toggle, What-If Planned mode support.
   # Conceptual: Unplanned terminology revision (pump removal rate, duration per event, remove overhaul cost, add MTBF).
-  epic-7: backlog
-  7-1-whatif-bugfixes-bottleneck-and-replace: ready-for-dev  # CRITICAL: computeMetrics missing bottleneckMultiplier, handleReplaceOriginal missing fields, isDowntimeModified missing bottleneck checks
+  epic-7: in-progress
+  7-1-whatif-bugfixes-bottleneck-and-replace: done  # Code review passed: 6 issues found (2H, 2M, 2L), all H+M fixed. Reverted responsive layout regression, strengthened test assertions. 1515 tests.
   7-2-unplanned-terminology-revision: ready-for-dev  # Rename failure rate→pump removal rate, duration per failure→per event, remove overhaul cost from Unplanned, add MTBF
   7-3-whatif-adaptive-maintenance-strategy: ready-for-dev  # What-If supports both Planned/Unplanned, conditional fields, computeMetrics uses calculateStrategySavings. Depends on 7.1 + 7.2.
 

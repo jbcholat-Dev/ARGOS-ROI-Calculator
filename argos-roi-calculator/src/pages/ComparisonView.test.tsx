@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ComparisonView } from './ComparisonView';
@@ -333,6 +333,262 @@ describe('ComparisonView', () => {
 
     expect(screen.getByLabelText('Original Scenario')).toBeInTheDocument();
     expect(screen.getByLabelText('What If Scenario')).toBeInTheDocument();
+  });
+
+  // === Story 7.1 Tests: Bug Fixes ===
+
+  describe('Bug Fix: computeMetrics with bottleneck multiplier (AC1)', () => {
+    it('bottleneck ON in what-if produces higher failure cost than original without bottleneck', () => {
+      const bottleneckWhatIf: Analysis = {
+        ...originalAnalysis,
+        id: 'whatif-1',
+        name: 'Poly Etch - Chamber 04 (What If)',
+        isBottleneck: true,
+        bottleneckMultiplier: 2.0,
+      };
+      useAppStore.setState({
+        analyses: [originalAnalysis, bottleneckWhatIf],
+        activeAnalysisId: 'original-1',
+        globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+        unsavedChanges: false,
+      });
+
+      renderComparison();
+
+      const parseCurrency = (text: string | null) => Number((text || '').replace(/[^\d-]/g, ''));
+      const originalCost = parseCurrency(screen.getByTestId('original-failure-cost').textContent);
+      const whatifCost = parseCurrency(screen.getByTestId('whatif-failure-cost').textContent);
+      // Original has isBottleneck: false → multiplier 1
+      // What-If has isBottleneck: true, multiplier 2.0 → failure cost should be higher
+      expect(whatifCost).toBeGreaterThan(originalCost);
+    });
+
+    it('delta indicator shows non-zero difference when bottleneck is toggled', () => {
+      const bottleneckWhatIf: Analysis = {
+        ...originalAnalysis,
+        id: 'whatif-1',
+        name: 'Poly Etch - Chamber 04 (What If)',
+        isBottleneck: true,
+        bottleneckMultiplier: 2.0,
+      };
+      useAppStore.setState({
+        analyses: [originalAnalysis, bottleneckWhatIf],
+        activeAnalysisId: 'original-1',
+        globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+        unsavedChanges: false,
+      });
+
+      renderComparison();
+
+      // With bottleneck toggled, there should be delta indicators showing differences
+      const deltaLabels = screen.getAllByLabelText(/Value (increased|decreased) by/);
+      expect(deltaLabels.length).toBeGreaterThan(0);
+    });
+
+    it('bottleneck OFF in both scenarios shows identical failure costs', () => {
+      // Both analyses have isBottleneck: false (default)
+      const identicalWhatIf: Analysis = {
+        ...originalAnalysis,
+        id: 'whatif-1',
+        name: 'Poly Etch - Chamber 04 (What If)',
+      };
+      useAppStore.setState({
+        analyses: [originalAnalysis, identicalWhatIf],
+        activeAnalysisId: 'original-1',
+        globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+        unsavedChanges: false,
+      });
+
+      renderComparison();
+
+      const originalCost = screen.getByTestId('original-failure-cost').textContent;
+      const whatifCost = screen.getByTestId('whatif-failure-cost').textContent;
+      expect(whatifCost).toBe(originalCost);
+    });
+  });
+
+  describe('Bug Fix: handleReplaceOriginal preserves all fields (AC2)', () => {
+    it('Replace Original copies bottleneck fields to original', async () => {
+      const user = userEvent.setup();
+      const bottleneckWhatIf: Analysis = {
+        ...originalAnalysis,
+        id: 'whatif-1',
+        name: 'Poly Etch - Chamber 04 (What If)',
+        isBottleneck: true,
+        bottleneckMultiplier: 3.5,
+      };
+      useAppStore.setState({
+        analyses: [originalAnalysis, bottleneckWhatIf],
+        activeAnalysisId: 'original-1',
+        globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+        unsavedChanges: false,
+      });
+
+      renderComparison();
+
+      // Open modal and confirm replace
+      await user.click(screen.getByRole('button', { name: /Replace Original/i }));
+      const replaceButtons = screen.getAllByRole('button', { name: /Replace/i });
+      const modalReplace = replaceButtons.find(
+        (btn) => btn.closest('[role="dialog"]') !== null,
+      );
+      await user.click(modalReplace!);
+
+      const state = useAppStore.getState();
+      const updatedOriginal = state.analyses.find((a) => a.id === 'original-1');
+      expect(updatedOriginal?.isBottleneck).toBe(true);
+      expect(updatedOriginal?.bottleneckMultiplier).toBe(3.5);
+    });
+
+    it('Replace Original copies maintenance strategy fields to original', async () => {
+      const user = userEvent.setup();
+      const strategyWhatIf: Analysis = {
+        ...originalAnalysis,
+        id: 'whatif-1',
+        name: 'Poly Etch - Chamber 04 (What If)',
+        maintenanceStrategy: 'planned' as const,
+        overhaulCostPerPump: 5000,
+        pmIntervalMonths: 6,
+        argosMtbfExtensionPercent: 25,
+        unplannedDespitePM: 2,
+      };
+      useAppStore.setState({
+        analyses: [originalAnalysis, strategyWhatIf],
+        activeAnalysisId: 'original-1',
+        globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+        unsavedChanges: false,
+      });
+
+      renderComparison();
+
+      // Open modal and confirm replace
+      await user.click(screen.getByRole('button', { name: /Replace Original/i }));
+      const replaceButtons = screen.getAllByRole('button', { name: /Replace/i });
+      const modalReplace = replaceButtons.find(
+        (btn) => btn.closest('[role="dialog"]') !== null,
+      );
+      await user.click(modalReplace!);
+
+      const state = useAppStore.getState();
+      const updatedOriginal = state.analyses.find((a) => a.id === 'original-1');
+      expect(updatedOriginal?.maintenanceStrategy).toBe('planned');
+      expect(updatedOriginal?.overhaulCostPerPump).toBe(5000);
+      expect(updatedOriginal?.pmIntervalMonths).toBe(6);
+      expect(updatedOriginal?.argosMtbfExtensionPercent).toBe(25);
+      expect(updatedOriginal?.unplannedDespitePM).toBe(2);
+    });
+
+    it('Replace Original copies ALL fields including bottleneck and strategy together', async () => {
+      const user = userEvent.setup();
+      const fullWhatIf: Analysis = {
+        ...originalAnalysis,
+        id: 'whatif-1',
+        name: 'Poly Etch - Chamber 04 (What If)',
+        pumpQuantity: 20,
+        isBottleneck: true,
+        bottleneckMultiplier: 2.5,
+        maintenanceStrategy: 'planned' as const,
+        overhaulCostPerPump: 3000,
+        pmIntervalMonths: 9,
+        argosMtbfExtensionPercent: 20,
+        unplannedDespitePM: 1,
+      };
+      useAppStore.setState({
+        analyses: [originalAnalysis, fullWhatIf],
+        activeAnalysisId: 'original-1',
+        globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+        unsavedChanges: false,
+      });
+
+      renderComparison();
+
+      // Open modal and confirm replace
+      await user.click(screen.getByRole('button', { name: /Replace Original/i }));
+      const replaceButtons = screen.getAllByRole('button', { name: /Replace/i });
+      const modalReplace = replaceButtons.find(
+        (btn) => btn.closest('[role="dialog"]') !== null,
+      );
+      await user.click(modalReplace!);
+
+      const state = useAppStore.getState();
+      const updatedOriginal = state.analyses.find((a) => a.id === 'original-1');
+      // Existing fields
+      expect(updatedOriginal?.pumpQuantity).toBe(20);
+      // Bottleneck fields
+      expect(updatedOriginal?.isBottleneck).toBe(true);
+      expect(updatedOriginal?.bottleneckMultiplier).toBe(2.5);
+      // Maintenance strategy fields
+      expect(updatedOriginal?.maintenanceStrategy).toBe('planned');
+      expect(updatedOriginal?.overhaulCostPerPump).toBe(3000);
+      expect(updatedOriginal?.pmIntervalMonths).toBe(9);
+      expect(updatedOriginal?.argosMtbfExtensionPercent).toBe(20);
+      expect(updatedOriginal?.unplannedDespitePM).toBe(1);
+    });
+  });
+
+  describe('Bug Fix: isDowntimeModified detects bottleneck changes (AC3)', () => {
+    it('shows MODIFIED badge when isBottleneck differs', () => {
+      const bottleneckWhatIf: Analysis = {
+        ...originalAnalysis,
+        id: 'whatif-1',
+        name: 'Poly Etch - Chamber 04 (What If)',
+        isBottleneck: true,
+      };
+      useAppStore.setState({
+        analyses: [originalAnalysis, bottleneckWhatIf],
+        activeAnalysisId: 'original-1',
+        globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+        unsavedChanges: false,
+      });
+
+      renderComparison();
+
+      // The downtime section should be marked MODIFIED because isBottleneck changed
+      const downtimeHighlight = screen.getByTestId('downtime-inputs').closest('[data-testid="modified-highlight"]');
+      expect(downtimeHighlight).not.toBeNull();
+      expect(within(downtimeHighlight!).getByText('MODIFIED')).toBeInTheDocument();
+    });
+
+    it('shows MODIFIED badge when bottleneckMultiplier differs', () => {
+      const multiplierWhatIf: Analysis = {
+        ...originalAnalysis,
+        id: 'whatif-1',
+        name: 'Poly Etch - Chamber 04 (What If)',
+        bottleneckMultiplier: 3.0,
+      };
+      useAppStore.setState({
+        analyses: [originalAnalysis, multiplierWhatIf],
+        activeAnalysisId: 'original-1',
+        globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+        unsavedChanges: false,
+      });
+
+      renderComparison();
+
+      // The downtime section should be marked MODIFIED because bottleneckMultiplier changed
+      const downtimeHighlight = screen.getByTestId('downtime-inputs').closest('[data-testid="modified-highlight"]');
+      expect(downtimeHighlight).not.toBeNull();
+      expect(within(downtimeHighlight!).getByText('MODIFIED')).toBeInTheDocument();
+    });
+
+    it('no MODIFIED badge when only bottleneck fields match between scenarios', () => {
+      // Both have isBottleneck: false and bottleneckMultiplier: 2.0 → no difference
+      const identicalWhatIf: Analysis = {
+        ...originalAnalysis,
+        id: 'whatif-1',
+        name: 'Poly Etch - Chamber 04 (What If)',
+      };
+      useAppStore.setState({
+        analyses: [originalAnalysis, identicalWhatIf],
+        activeAnalysisId: 'original-1',
+        globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+        unsavedChanges: false,
+      });
+
+      renderComparison();
+
+      expect(screen.queryByText('MODIFIED')).not.toBeInTheDocument();
+    });
   });
 
   it('MODIFIED badges have correct aria-label', () => {
