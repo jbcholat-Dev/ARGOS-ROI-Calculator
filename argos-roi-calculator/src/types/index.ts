@@ -65,6 +65,8 @@ export interface Analysis {
   pmIntervalMonths: number; // Planned maintenance interval in months (default: 12)
   argosMtbfExtensionPercent: number; // ARGOS MTBF extension percentage (default: 15, range: 10-30)
   unplannedDespitePM: number; // Residual unplanned failures despite PM schedule (default: 0)
+  // MTBF: informational field, not used in calculation (future: validation)
+  mtbf: number; // Mean Time Between Failures/removals in months (default: 0, Unplanned mode only)
 
   // Metadata
   createdAt: string; // ISO 8601 timestamp

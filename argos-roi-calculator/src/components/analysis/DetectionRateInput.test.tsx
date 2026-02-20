@@ -48,6 +48,7 @@ describe('DetectionRateInput', () => {
     pmIntervalMonths: 12,
     argosMtbfExtensionPercent: 15,
     unplannedDespitePM: 0,
+  mtbf: 0,
     detectionRate,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

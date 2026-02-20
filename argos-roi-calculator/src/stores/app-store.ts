@@ -129,6 +129,7 @@ const safeStorage: PersistStorage<AppState> = {
           pmIntervalMonths: typeof a.pmIntervalMonths === 'number' ? a.pmIntervalMonths : 12,
           argosMtbfExtensionPercent: typeof a.argosMtbfExtensionPercent === 'number' ? a.argosMtbfExtensionPercent : 15,
           unplannedDespitePM: typeof a.unplannedDespitePM === 'number' ? a.unplannedDespitePM : 0,
+          mtbf: typeof a.mtbf === 'number' && a.mtbf >= 0 ? a.mtbf : 0,
         }));
       }
       return parsed as unknown as StorageValue<AppState>;
@@ -337,6 +338,10 @@ export const useAppStore = create<AppState>()(
           }
           if (updates.unplannedDespitePM !== undefined && updates.unplannedDespitePM < 0) {
             console.error('Cannot update analysis: unplannedDespitePM must be non-negative');
+            return state;
+          }
+          if (updates.mtbf !== undefined && updates.mtbf < 0) {
+            console.error('Cannot update analysis: mtbf must be non-negative');
             return state;
           }
 

@@ -130,6 +130,7 @@ export function ComparisonView() {
       pmIntervalMonths: whatIf.pmIntervalMonths,
       argosMtbfExtensionPercent: whatIf.argosMtbfExtensionPercent,
       unplannedDespitePM: whatIf.unplannedDespitePM,
+      mtbf: whatIf.mtbf,
     });
     if (whatIfId) {
       deleteAnalysis(whatIfId);

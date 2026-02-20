@@ -42,3 +42,6 @@ export type { PlannedMaintenanceInputsProps } from './PlannedMaintenanceInputs';
 
 export { OverhaulCostInput } from './OverhaulCostInput';
 export type { OverhaulCostInputProps } from './OverhaulCostInput';
+
+export { MtbfInput } from './MtbfInput';
+export type { MtbfInputProps } from './MtbfInput';

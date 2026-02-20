@@ -73,6 +73,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -106,6 +107,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -140,6 +142,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -176,6 +179,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: originalTimestamp,
         updatedAt: originalTimestamp,
       };
@@ -212,6 +216,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -235,6 +240,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -271,6 +277,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         detectionRate: 70,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -305,6 +312,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         detectionRate: 70,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -344,6 +352,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -378,6 +387,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -401,6 +411,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -436,6 +447,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -471,6 +483,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -494,6 +507,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -532,6 +546,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -555,6 +570,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -591,6 +607,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
       };
@@ -628,6 +645,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -662,6 +680,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -697,6 +716,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -730,6 +750,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -753,6 +774,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -842,6 +864,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -877,6 +900,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -908,6 +932,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -939,6 +964,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -973,6 +999,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: originalTimestamp,
         updatedAt: originalTimestamp,
       };
@@ -1006,6 +1033,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -1039,6 +1067,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -1073,6 +1102,7 @@ describe('AppStore', () => {
       pmIntervalMonths: 12,
       argosMtbfExtensionPercent: 15,
       unplannedDespitePM: 0,
+  mtbf: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
@@ -1211,6 +1241,7 @@ describe('AppStore', () => {
       pmIntervalMonths: 12,
       argosMtbfExtensionPercent: 15,
       unplannedDespitePM: 0,
+  mtbf: 0,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z',
     });
@@ -1308,6 +1339,7 @@ describe('AppStore', () => {
       pmIntervalMonths: 12,
       argosMtbfExtensionPercent: 15,
       unplannedDespitePM: 0,
+  mtbf: 0,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z',
     });
@@ -1415,6 +1447,7 @@ describe('AppStore', () => {
           pmIntervalMonths: 12,
           argosMtbfExtensionPercent: 15,
           unplannedDespitePM: 0,
+  mtbf: 0,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
@@ -1486,6 +1519,7 @@ describe('AppStore', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -1523,6 +1557,7 @@ describe('AppStore', () => {
       pmIntervalMonths: 12,
       argosMtbfExtensionPercent: 15,
       unplannedDespitePM: 0,
+  mtbf: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       ...overrides,

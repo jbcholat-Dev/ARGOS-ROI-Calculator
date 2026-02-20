@@ -26,6 +26,7 @@ const createTestAnalysis = (overrides?: Partial<Analysis>): Analysis => ({
   pmIntervalMonths: 12,
   argosMtbfExtensionPercent: 15,
   unplannedDespitePM: 0,
+  mtbf: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,
@@ -51,7 +52,7 @@ describe('FailureRateInput Integration', () => {
     expect(percentageRadio).toHaveAttribute('aria-checked', 'true');
 
     // Enter "15" in percentage input
-    const input = screen.getByLabelText('Failure Rate (%)');
+    const input = screen.getByLabelText('Pump Removal Rate (%)');
     await user.type(input, '15');
 
     // Verify store updated
@@ -71,11 +72,11 @@ describe('FailureRateInput Integration', () => {
     render(<FailureRateInput analysisId="integration-failure-1" />);
 
     // Switch to count mode
-    await user.click(screen.getByText('Failures Count/year'));
+    await user.click(screen.getByText('Removals Count/year'));
 
     // Enter "3" in count input
     const input = screen.getByLabelText(
-      'Failures Count (last year)',
+      'Pumps Removed (last year)',
     );
     await user.type(input, '3');
 
@@ -97,9 +98,9 @@ describe('FailureRateInput Integration', () => {
     render(<FailureRateInput analysisId="integration-failure-1" />);
 
     // Switch to count mode and enter 3
-    await user.click(screen.getByText('Failures Count/year'));
+    await user.click(screen.getByText('Removals Count/year'));
     const countInput = screen.getByLabelText(
-      'Failures Count (last year)',
+      'Pumps Removed (last year)',
     );
     await user.type(countInput, '3');
 
@@ -113,7 +114,7 @@ describe('FailureRateInput Integration', () => {
 
     // Verify percentage field shows calculated value
     const percentageInput = screen.getByLabelText(
-      'Failure Rate (%)',
+      'Pump Removal Rate (%)',
     );
     expect(percentageInput).toHaveValue(37.5);
 
@@ -127,7 +128,7 @@ describe('FailureRateInput Integration', () => {
     const user = userEvent.setup();
     render(<FailureRateInput analysisId="integration-failure-1" />);
 
-    const input = screen.getByLabelText('Failure Rate (%)');
+    const input = screen.getByLabelText('Pump Removal Rate (%)');
 
     // Enter invalid value "-5"
     await user.type(input, '-5');
@@ -179,7 +180,7 @@ describe('FailureRateInput Integration', () => {
 
     // Percentage input should still be available
     expect(
-      screen.getByLabelText('Failure Rate (%)'),
+      screen.getByLabelText('Pump Removal Rate (%)'),
     ).toBeInTheDocument();
   });
 
@@ -190,7 +191,7 @@ describe('FailureRateInput Integration', () => {
     );
 
     // Enter percentage
-    const input = screen.getByLabelText('Failure Rate (%)');
+    const input = screen.getByLabelText('Pump Removal Rate (%)');
     await user.type(input, '25');
 
     // Verify store
@@ -204,7 +205,7 @@ describe('FailureRateInput Integration', () => {
 
     // Value should persist from store
     expect(
-      screen.getByLabelText('Failure Rate (%)'),
+      screen.getByLabelText('Pump Removal Rate (%)'),
     ).toHaveValue(25);
   });
 
@@ -221,7 +222,7 @@ describe('FailureRateInput Integration', () => {
     render(<FailureRateInput analysisId="integration-failure-1" />);
 
     const input = screen.getByLabelText(
-      'Failures Count (last year)',
+      'Pumps Removed (last year)',
     );
     await user.type(input, '3.5');
 

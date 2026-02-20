@@ -37,7 +37,7 @@ describe('ComparisonTable', () => {
 
       expect(screen.getByText('Process Name')).toBeInTheDocument();
       expect(screen.getByText('Pumps')).toBeInTheDocument();
-      expect(screen.getByText('Failure Rate')).toBeInTheDocument();
+      expect(screen.getByText('Removal Rate')).toBeInTheDocument();
       expect(screen.getByText('Failure Cost')).toBeInTheDocument();
       expect(screen.getByText('ARGOS Cost')).toBeInTheDocument();
       expect(screen.getByText('Savings')).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('ComparisonTable', () => {
       expect(screen.getByText('10')).toBeInTheDocument();
     });
 
-    it('renders Failure Rate with % format', () => {
+    it('renders Removal Rate with % format', () => {
       render(<ComparisonTable rows={[createRow({ failureRate: 10 })]} onNavigateToAnalysis={mockNavigate} />);
 
       // French format: "10,0 %"
@@ -568,7 +568,7 @@ describe('ComparisonTable', () => {
         />,
       );
 
-      expect(screen.getByLabelText('Supprimer Poly Etch')).toBeInTheDocument();
+      expect(screen.getByLabelText('Delete Poly Etch')).toBeInTheDocument();
     });
 
     it('does not show delete button on active (checked) rows', () => {
@@ -583,8 +583,8 @@ describe('ComparisonTable', () => {
         />,
       );
 
-      expect(screen.queryByLabelText('Supprimer Metal Dep')).not.toBeInTheDocument();
-      expect(screen.queryByLabelText('Supprimer CMP Batch')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Delete Metal Dep')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Delete CMP Batch')).not.toBeInTheDocument();
     });
 
     it('clicking delete button calls onDeleteAnalysis with correct ID', async () => {
@@ -600,7 +600,7 @@ describe('ComparisonTable', () => {
         />,
       );
 
-      await user.click(screen.getByLabelText('Supprimer Poly Etch'));
+      await user.click(screen.getByLabelText('Delete Poly Etch'));
 
       expect(mockDeleteAnalysis).toHaveBeenCalledWith('a1');
     });
@@ -619,7 +619,7 @@ describe('ComparisonTable', () => {
         />,
       );
 
-      expect(screen.queryByLabelText('Supprimer Last One')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Delete Last One')).not.toBeInTheDocument();
     });
 
     it('delete button disappears when row is re-checked (AC3)', () => {
@@ -634,7 +634,7 @@ describe('ComparisonTable', () => {
         />,
       );
 
-      expect(screen.getByLabelText('Supprimer Poly Etch')).toBeInTheDocument();
+      expect(screen.getByLabelText('Delete Poly Etch')).toBeInTheDocument();
 
       // Re-render with a1 no longer excluded (simulating re-check)
       rerender(
@@ -648,7 +648,7 @@ describe('ComparisonTable', () => {
         />,
       );
 
-      expect(screen.queryByLabelText('Supprimer Poly Etch')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Delete Poly Etch')).not.toBeInTheDocument();
     });
   });
 });

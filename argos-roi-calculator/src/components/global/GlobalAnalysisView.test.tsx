@@ -36,6 +36,7 @@ function createTestAnalysis(overrides: Partial<Analysis> = {}): Analysis {
     pmIntervalMonths: 12,
     argosMtbfExtensionPercent: 15,
     unplannedDespitePM: 0,
+  mtbf: 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides,
@@ -199,6 +200,7 @@ describe('GlobalAnalysisView', () => {
             pmIntervalMonths: 12,
             argosMtbfExtensionPercent: 15,
             unplannedDespitePM: 0,
+  mtbf: 0,
           }),
         ],
       });
@@ -232,6 +234,7 @@ describe('GlobalAnalysisView', () => {
             pmIntervalMonths: 12,
             argosMtbfExtensionPercent: 15,
             unplannedDespitePM: 0,
+  mtbf: 0,
           }),
         ],
       });
@@ -689,7 +692,7 @@ describe('GlobalAnalysisView', () => {
 
       renderView();
 
-      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByLabelText('Delete Process A'));
 
       // Modal should appear with French text
       expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -708,7 +711,7 @@ describe('GlobalAnalysisView', () => {
 
       renderView();
 
-      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByLabelText('Delete Process A'));
 
       expect(screen.getByText(/Cette action supprimera/)).toBeInTheDocument();
       expect(screen.getByText(/irr/)).toBeInTheDocument();
@@ -726,7 +729,7 @@ describe('GlobalAnalysisView', () => {
 
       renderView();
 
-      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByLabelText('Delete Process A'));
 
       expect(screen.getByRole('button', { name: 'Annuler' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Supprimer' })).toBeInTheDocument();
@@ -744,7 +747,7 @@ describe('GlobalAnalysisView', () => {
 
       renderView();
 
-      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByLabelText('Delete Process A'));
       await user.click(screen.getByRole('button', { name: 'Annuler' }));
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -763,7 +766,7 @@ describe('GlobalAnalysisView', () => {
 
       renderView();
 
-      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByLabelText('Delete Process A'));
       await user.click(screen.getByRole('button', { name: 'Supprimer' }));
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -783,7 +786,7 @@ describe('GlobalAnalysisView', () => {
 
       renderView();
 
-      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByLabelText('Delete Process A'));
       await user.click(screen.getByRole('button', { name: 'Supprimer' }));
 
       expect(useAppStore.getState().excludedFromGlobal.has('a1')).toBe(false);
@@ -804,7 +807,7 @@ describe('GlobalAnalysisView', () => {
       const pumpsHeading = screen.getByText('Total Pumps Monitored');
       expect(within(pumpsHeading.parentElement!).getByText('8')).toBeInTheDocument();
 
-      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByLabelText('Delete Process A'));
       await user.click(screen.getByRole('button', { name: 'Supprimer' }));
 
       // After deletion: still 8 pumps (Process A was already excluded)
@@ -823,7 +826,7 @@ describe('GlobalAnalysisView', () => {
 
       renderView();
 
-      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByLabelText('Delete Process A'));
       expect(screen.getByRole('dialog')).toBeInTheDocument();
 
       await user.keyboard('{Escape}');
@@ -844,7 +847,7 @@ describe('GlobalAnalysisView', () => {
 
       renderView();
 
-      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByLabelText('Delete Process A'));
 
       const dialog = screen.getByRole('dialog');
       expect(dialog).toHaveAttribute('aria-describedby');
@@ -863,7 +866,7 @@ describe('GlobalAnalysisView', () => {
 
       renderView();
 
-      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByLabelText('Delete Process A'));
       expect(screen.getByRole('dialog')).toBeInTheDocument();
 
       const closeButton = screen.getByLabelText('Close modal');
@@ -900,7 +903,7 @@ describe('GlobalAnalysisView', () => {
       expect(useAppStore.getState().analyses).toHaveLength(2);
 
       // Delete excluded analysis
-      await user.click(screen.getByLabelText('Supprimer Process A'));
+      await user.click(screen.getByLabelText('Delete Process A'));
       await user.click(screen.getByRole('button', { name: 'Supprimer' }));
 
       // Solutions module reads from analyses array — verify the deleted analysis

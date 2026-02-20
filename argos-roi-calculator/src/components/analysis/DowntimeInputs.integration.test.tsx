@@ -26,6 +26,7 @@ const createTestAnalysis = (overrides?: Partial<Analysis>): Analysis => ({
   pmIntervalMonths: 12,
   argosMtbfExtensionPercent: 15,
   unplannedDespitePM: 0,
+  mtbf: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,
@@ -48,7 +49,7 @@ describe('DowntimeInputs Integration', () => {
       render(<DowntimeInputs analysisId="test-analysis-1" />);
 
       // Step 1: Enter downtime hours
-      const durationInput = screen.getByLabelText(/Duration per Failure \(hours\)/);
+      const durationInput = screen.getByLabelText(/Duration per Event \(hours\)/);
       await user.type(durationInput, '6');
 
       let state = useAppStore.getState();
@@ -84,7 +85,7 @@ describe('DowntimeInputs Integration', () => {
       const user = userEvent.setup();
       render(<DowntimeInputs analysisId="test-analysis-1" />);
 
-      const durationInput = screen.getByLabelText(/Duration per Failure \(hours\)/);
+      const durationInput = screen.getByLabelText(/Duration per Event \(hours\)/);
 
       // Step 1: Enter invalid (negative)
       await user.type(durationInput, '-5');
@@ -134,7 +135,7 @@ describe('DowntimeInputs Integration', () => {
       expect(initialCost).toBe(90000);
 
       // Change duration from 6 to 12
-      const durationInput = screen.getByLabelText(/Duration per Failure \(hours\)/);
+      const durationInput = screen.getByLabelText(/Duration per Event \(hours\)/);
       await user.clear(durationInput);
       await user.type(durationInput, '12');
 

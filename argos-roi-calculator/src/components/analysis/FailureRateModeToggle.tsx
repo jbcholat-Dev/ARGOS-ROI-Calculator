@@ -3,7 +3,7 @@ import type { FailureRateMode } from '@/types';
 
 const TOGGLE_OPTIONS = [
   { value: 'percentage', label: 'Rate (%)' },
-  { value: 'absolute', label: 'Failures Count/year' },
+  { value: 'absolute', label: 'Removals Count/year' },
 ] as const;
 
 export interface FailureRateModeToggleProps {
@@ -29,7 +29,7 @@ export function FailureRateModeToggle({
         options={TOGGLE_OPTIONS}
         value={mode}
         onChange={handleChange}
-        label="Failure Rate Input Mode"
+        label="Pump Removal Rate Input Mode"
         disabled={disabled}
       />
       {disabled && disabledMessage && (

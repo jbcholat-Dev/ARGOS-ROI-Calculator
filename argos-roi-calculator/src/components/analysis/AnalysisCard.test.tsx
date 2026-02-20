@@ -37,6 +37,7 @@ describe('AnalysisCard', () => {
     pmIntervalMonths: 12,
     argosMtbfExtensionPercent: 15,
     unplannedDespitePM: 0,
+  mtbf: 0,
     detectionRate: 70,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
@@ -113,6 +114,7 @@ describe('AnalysisCard', () => {
       pmIntervalMonths: 12,
       argosMtbfExtensionPercent: 15,
       unplannedDespitePM: 0,
+  mtbf: 0,
       detectionRate: 25, // Low detection rate to get ROI ~10%
     };
 

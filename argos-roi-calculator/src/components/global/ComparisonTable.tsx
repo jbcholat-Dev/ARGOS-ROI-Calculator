@@ -22,7 +22,7 @@ const COLUMNS: ReadonlyArray<{
 }> = [
   { key: 'name', label: 'Process Name', align: 'left' },
   { key: 'pumpQuantity', label: 'Pumps', align: 'right' },
-  { key: 'failureRate', label: 'Failure Rate', align: 'right' },
+  { key: 'failureRate', label: 'Removal Rate', align: 'right' },
   { key: 'totalFailureCost', label: 'Failure Cost', align: 'right' },
   { key: 'argosServiceCost', label: 'ARGOS Cost', align: 'right' },
   { key: 'savings', label: 'Savings', align: 'right' },
@@ -219,7 +219,7 @@ export function ComparisonTable({
                         <button
                           type="button"
                           onClick={() => onDeleteAnalysis(row.id)}
-                          aria-label={`Supprimer ${row.name}`}
+                          aria-label={`Delete ${row.name}`}
                           className="inline-flex items-center justify-center rounded p-1 text-red-500 hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors"
                         >
                           <svg

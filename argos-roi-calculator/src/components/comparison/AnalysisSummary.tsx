@@ -32,12 +32,12 @@ export function AnalysisSummary({ analysis, globalParams }: AnalysisSummaryProps
         </div>
       </div>
 
-      {/* Failure Rate Section */}
+      {/* Pump Removal Rate Section */}
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-4 text-lg font-semibold text-gray-900">Failure Rate</h3>
+        <h3 className="mb-4 text-lg font-semibold text-gray-900">Pump Removal Rate</h3>
         <div>
           <span className="text-sm text-gray-500">
-            {analysis.failureRateMode === 'absolute' ? 'Failures' : 'Failure Rate'}
+            {analysis.failureRateMode === 'absolute' ? 'Pumps Removed' : 'Pump Removal Rate'}
           </span>
           <p className="text-base font-medium text-gray-900">
             {analysis.failureRateMode === 'absolute' && analysis.absoluteFailureCount !== undefined

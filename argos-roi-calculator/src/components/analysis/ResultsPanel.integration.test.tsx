@@ -24,6 +24,7 @@ const createTestAnalysis = (overrides?: Partial<Analysis>): Analysis => ({
   pmIntervalMonths: 12,
   argosMtbfExtensionPercent: 15,
   unplannedDespitePM: 0,
+  mtbf: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,
@@ -70,6 +71,7 @@ describe('ResultsPanel Integration', () => {
         pmIntervalMonths: 12,
         argosMtbfExtensionPercent: 15,
         unplannedDespitePM: 0,
+  mtbf: 0,
       });
     });
 
@@ -102,6 +104,7 @@ describe('ResultsPanel Integration', () => {
           pmIntervalMonths: 12,
           argosMtbfExtensionPercent: 15,
           unplannedDespitePM: 0,
+  mtbf: 0,
         }),
       ],
     });
@@ -142,6 +145,7 @@ describe('ResultsPanel Integration', () => {
           pmIntervalMonths: 12,
           argosMtbfExtensionPercent: 15,
           unplannedDespitePM: 0,
+  mtbf: 0,
         }),
       ],
     });
@@ -175,6 +179,7 @@ describe('ResultsPanel Integration', () => {
           pmIntervalMonths: 12,
           argosMtbfExtensionPercent: 15,
           unplannedDespitePM: 0,
+  mtbf: 0,
         }),
       ],
     });

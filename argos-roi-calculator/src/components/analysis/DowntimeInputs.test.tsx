@@ -25,6 +25,7 @@ const createTestAnalysis = (overrides?: Partial<Analysis>): Analysis => ({
   pmIntervalMonths: 12,
   argosMtbfExtensionPercent: 15,
   unplannedDespitePM: 0,
+  mtbf: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,
@@ -51,9 +52,9 @@ describe('DowntimeInputs', () => {
       expect(screen.getByRole('heading', { name: 'Downtime' })).toBeInTheDocument();
     });
 
-    it('renders duration label "Duration per Failure (hours)"', () => {
+    it('renders duration label "Duration per Event (hours)"', () => {
       renderComponent();
-      expect(screen.getByLabelText(/Duration per Failure/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Duration per Event/)).toBeInTheDocument();
     });
 
     it('renders cost label "Cost per Hour of Downtime"', () => {
@@ -83,13 +84,13 @@ describe('DowntimeInputs', () => {
 
     it('renders duration input with type="number"', () => {
       renderComponent();
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       expect(input).toHaveAttribute('type', 'number');
     });
 
     it('renders duration input with step="0.1"', () => {
       renderComponent();
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       expect(input).toHaveAttribute('step', '0.1');
     });
   });
@@ -97,7 +98,7 @@ describe('DowntimeInputs', () => {
   describe('Initial values from store', () => {
     it('shows empty duration when default is 0', () => {
       renderComponent();
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       expect(input).toHaveValue(null);
     });
 
@@ -112,7 +113,7 @@ describe('DowntimeInputs', () => {
         analyses: [createTestAnalysis({ downtimeDuration: 6 })],
       });
       renderComponent();
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       expect(input).toHaveValue(6);
     });
 
@@ -132,7 +133,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.type(input, '6');
 
       const state = useAppStore.getState();
@@ -143,7 +144,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.type(input, '-5');
 
       expect(screen.getByText('Must be a positive number')).toBeInTheDocument();
@@ -153,7 +154,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.type(input, '6');
       expect(useAppStore.getState().analyses[0].downtimeDuration).toBe(6);
 
@@ -167,7 +168,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.type(input, '-1');
       expect(screen.getByText('Must be a positive number')).toBeInTheDocument();
 
@@ -225,7 +226,7 @@ describe('DowntimeInputs', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.clear(input);
 
       expect(screen.getByText('Required for ROI calculation')).toBeInTheDocument();
@@ -252,7 +253,7 @@ describe('DowntimeInputs', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.clear(input);
 
       const warning = screen.getByText('Required for ROI calculation');
@@ -263,7 +264,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       // First clear to trigger warning
       await user.type(input, '6');
       await user.clear(input);
@@ -280,7 +281,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.type(input, '-1');
 
       const error = screen.getByText('Must be a positive number');
@@ -291,7 +292,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.type(input, '-1');
 
       expect(screen.getByRole('alert')).toBeInTheDocument();
@@ -301,7 +302,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.type(input, '-1');
 
       expect(input).toHaveAttribute('aria-invalid', 'true');
@@ -311,7 +312,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.type(input, '-1');
 
       expect(input).toHaveClass('border-red-600');
@@ -324,7 +325,7 @@ describe('DowntimeInputs', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.clear(input);
 
       expect(input).toHaveClass('border-amber-500');
@@ -348,7 +349,7 @@ describe('DowntimeInputs', () => {
 
     it('duration input has accessible label', () => {
       renderComponent();
-      expect(screen.getByLabelText(/Duration per Failure/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Duration per Event/)).toBeInTheDocument();
     });
 
     it('cost input has accessible label', () => {
@@ -360,7 +361,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.type(input, '-1');
 
       expect(input).toHaveAttribute('aria-describedby');
@@ -377,7 +378,7 @@ describe('DowntimeInputs', () => {
       });
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.clear(input);
 
       const warning = screen.getByText('Required for ROI calculation');
@@ -389,7 +390,7 @@ describe('DowntimeInputs', () => {
     it('allows Tab to move from duration to cost', async () => {
       const user = userEvent.setup();
       renderComponent();
-      const durationInput = screen.getByLabelText(/Duration per Failure/);
+      const durationInput = screen.getByLabelText(/Duration per Event/);
       const costInput = screen.getByLabelText(/Cost per Hour of Downtime/);
 
       durationInput.focus();
@@ -400,7 +401,7 @@ describe('DowntimeInputs', () => {
     it('allows Shift+Tab to move from cost to duration', async () => {
       const user = userEvent.setup();
       renderComponent();
-      const durationInput = screen.getByLabelText(/Duration per Failure/);
+      const durationInput = screen.getByLabelText(/Duration per Event/);
       const costInput = screen.getByLabelText(/Cost per Hour of Downtime/);
 
       costInput.focus();
@@ -422,7 +423,7 @@ describe('DowntimeInputs', () => {
 
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.type(input, '6');
 
       const newUpdatedAt = useAppStore.getState().analyses[0].updatedAt;
@@ -443,7 +444,7 @@ describe('DowntimeInputs', () => {
       const user = userEvent.setup();
       renderComponent();
 
-      const input = screen.getByLabelText(/Duration per Failure/);
+      const input = screen.getByLabelText(/Duration per Event/);
       await user.type(input, '6');
 
       expect(typeof useAppStore.getState().analyses[0].downtimeDuration).toBe('number');

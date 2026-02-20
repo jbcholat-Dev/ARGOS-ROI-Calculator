@@ -3,7 +3,7 @@ import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { ROUTES, buildComparisonRoute } from '@/lib/constants';
 import { isAnalysisCalculable } from '@/lib/calculations';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { EditableAnalysisName, EquipmentInputs, FailureRateInput, DetectionRateInput, WaferInputs, DowntimeInputs, ResultsPanel, MaintenanceStrategySelector, PlannedMaintenanceInputs, OverhaulCostInput } from '@/components/analysis';
+import { EditableAnalysisName, EquipmentInputs, FailureRateInput, DetectionRateInput, WaferInputs, DowntimeInputs, ResultsPanel, MaintenanceStrategySelector, PlannedMaintenanceInputs, OverhaulCostInput, MtbfInput } from '@/components/analysis';
 import { useAppStore } from '@/stores/app-store';
 
 // Validate analysis ID format (alphanumeric, dashes, max 100 chars)
@@ -30,6 +30,23 @@ export function FocusMode() {
 
   const analysisExists = !!analysis;
 
+  const handleNameUpdate = useCallback(
+    (newName: string) => {
+      if (id) updateAnalysis(id, { name: newName });
+    },
+    [id, updateAnalysis]
+  );
+
+  const handleWhatIf = useCallback(() => {
+    if (!id || !analysis) return;
+    duplicateAnalysis(id);
+    const newId = useAppStore.getState().activeAnalysisId;
+    if (newId) {
+      updateAnalysis(newId, { name: `${analysis.name} (What If)` });
+      navigate(buildComparisonRoute(id, newId));
+    }
+  }, [id, analysis, duplicateAnalysis, updateAnalysis, navigate]);
+
   // Set active analysis on mount (only if analysis exists in store)
   useEffect(() => {
     if (id && analysisExists) {
@@ -54,22 +71,6 @@ export function FocusMode() {
   if (!analysis) {
     return <Navigate to={ROUTES.DASHBOARD} replace />;
   }
-
-  const handleNameUpdate = useCallback(
-    (newName: string) => {
-      updateAnalysis(analysis.id, { name: newName });
-    },
-    [analysis.id, updateAnalysis]
-  );
-
-  const handleWhatIf = useCallback(() => {
-    duplicateAnalysis(analysis.id);
-    const newId = useAppStore.getState().activeAnalysisId;
-    if (newId) {
-      updateAnalysis(newId, { name: `${analysis.name} (What If)` });
-      navigate(buildComparisonRoute(analysis.id, newId));
-    }
-  }, [analysis.id, analysis.name, duplicateAnalysis, updateAnalysis, navigate]);
 
   const canWhatIf = isAnalysisCalculable(analysis);
   const isPlanned = analysis.maintenanceStrategy === 'planned';
@@ -121,9 +122,16 @@ export function FocusMode() {
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <DowntimeInputs analysisId={id} />
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <OverhaulCostInput analysisId={id} />
-          </div>
+          {!isPlanned && (
+            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+              <MtbfInput analysisId={id} />
+            </div>
+          )}
+          {isPlanned && (
+            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+              <OverhaulCostInput analysisId={id} />
+            </div>
+          )}
           <div className="mt-2 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <ResultsPanel analysisId={id} />
           </div>

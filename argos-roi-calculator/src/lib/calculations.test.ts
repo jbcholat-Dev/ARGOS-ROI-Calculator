@@ -522,6 +522,7 @@ function createAnalysis(overrides: Partial<Analysis> = {}): Analysis {
     pmIntervalMonths: 12,
     argosMtbfExtensionPercent: 15,
     unplannedDespitePM: 0,
+  mtbf: 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides,
@@ -652,6 +653,7 @@ describe('calculateAggregatedMetrics', () => {
       pmIntervalMonths: 12,
       argosMtbfExtensionPercent: 15,
       unplannedDespitePM: 0,
+  mtbf: 0,
     });
     const result = calculateAggregatedMetrics([analysis], defaultGlobalParams);
 
@@ -932,6 +934,7 @@ describe('isAnalysisCalculable — Maintenance Strategy', () => {
       pmIntervalMonths: 24,
       overhaulCostPerPump: 0,
       unplannedDespitePM: 2,
+  mtbf: 0,
       downtimeDuration: 6,
       downtimeCostPerHour: 500,
     });
@@ -944,6 +947,7 @@ describe('isAnalysisCalculable — Maintenance Strategy', () => {
       pmIntervalMonths: 24,
       overhaulCostPerPump: 0,
       unplannedDespitePM: 0,
+  mtbf: 0,
     });
     expect(isAnalysisCalculable(analysis)).toBe(false);
   });
@@ -1002,6 +1006,7 @@ describe('calculateStrategySavings', () => {
       overhaulCostPerPump: 25_000,
       argosMtbfExtensionPercent: 20,
       unplannedDespitePM: 0,
+  mtbf: 0,
       waferDefectEventsPerYear: 0,
     });
     const result = calculateStrategySavings(analysis, defaultGlobalParams);
@@ -1021,6 +1026,7 @@ describe('calculateStrategySavings', () => {
       overhaulCostPerPump: 25_000,
       argosMtbfExtensionPercent: 20,
       unplannedDespitePM: 1,
+  mtbf: 0,
       downtimeDuration: 6,
       downtimeCostPerHour: 15_000,
       waferDefectEventsPerYear: 0,
@@ -1044,6 +1050,7 @@ describe('calculateStrategySavings', () => {
       overhaulCostPerPump: 25_000,
       argosMtbfExtensionPercent: 15,
       unplannedDespitePM: 0,
+  mtbf: 0,
       waferDefectEventsPerYear: 0,
     });
     const result = calculateStrategySavings(analysis, defaultGlobalParams);
@@ -1104,6 +1111,7 @@ describe('calculateAnalysisRow — Maintenance Strategy', () => {
       maintenanceStrategy: 'planned',
       overhaulCostPerPump: 0,
       unplannedDespitePM: 0,
+  mtbf: 0,
     });
     const result = calculateAnalysisRow(analysis, defaultGlobalParams);
 
@@ -1176,6 +1184,7 @@ describe('calculateAggregatedMetrics — Mixed Strategies', () => {
         pmIntervalMonths: 12,
         overhaulCostPerPump: 0, // incomplete
         unplannedDespitePM: 0,
+  mtbf: 0,
       }),
     ];
     const result = calculateAggregatedMetrics(analyses, defaultGlobalParams);

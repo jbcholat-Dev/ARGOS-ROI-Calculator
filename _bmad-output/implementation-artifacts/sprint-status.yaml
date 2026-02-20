@@ -130,7 +130,7 @@ development_status:
   # Conceptual: Unplanned terminology revision (pump removal rate, duration per event, remove overhaul cost, add MTBF).
   epic-7: in-progress
   7-1-whatif-bugfixes-bottleneck-and-replace: done  # Code review passed: 6 issues found (2H, 2M, 2L), all H+M fixed. Reverted responsive layout regression, strengthened test assertions. 1515 tests.
-  7-2-unplanned-terminology-revision: ready-for-dev  # Rename failure rate→pump removal rate, duration per failure→per event, remove overhaul cost from Unplanned, add MTBF
+  7-2-unplanned-terminology-revision: done  # Code review passed: 15 issues found (6H, 2M), all fixed. Extracted MtbfInput, fixed PDF "Run to Fail"→"Unplanned", fixed French aria-label. 1536 tests.
   7-3-whatif-adaptive-maintenance-strategy: ready-for-dev  # What-If supports both Planned/Unplanned, conditional fields, computeMetrics uses calculateStrategySavings. Depends on 7.1 + 7.2.
 
   # Epic 8: UX Redesign (separate feature branch)

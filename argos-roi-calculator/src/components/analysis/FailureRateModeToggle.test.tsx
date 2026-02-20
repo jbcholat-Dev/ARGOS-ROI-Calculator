@@ -13,13 +13,13 @@ describe('FailureRateModeToggle', () => {
     it('renders both mode options', () => {
       render(<FailureRateModeToggle {...defaultProps} />);
       expect(screen.getByText('Rate (%)')).toBeInTheDocument();
-      expect(screen.getByText('Failures Count/year')).toBeInTheDocument();
+      expect(screen.getByText('Removals Count/year')).toBeInTheDocument();
     });
 
     it('renders with radiogroup role', () => {
       render(<FailureRateModeToggle {...defaultProps} />);
       expect(
-        screen.getByRole('radiogroup', { name: 'Failure Rate Input Mode' }),
+        screen.getByRole('radiogroup', { name: 'Pump Removal Rate Input Mode' }),
       ).toBeInTheDocument();
     });
 
@@ -34,7 +34,7 @@ describe('FailureRateModeToggle', () => {
         <FailureRateModeToggle {...defaultProps} mode="absolute" />,
       );
       const countRadio = screen.getByRole('radio', {
-        name: 'Failures Count/year',
+        name: 'Removals Count/year',
       });
       expect(countRadio).toHaveAttribute('aria-checked', 'true');
     });
@@ -48,7 +48,7 @@ describe('FailureRateModeToggle', () => {
         <FailureRateModeToggle {...defaultProps} onChange={onChange} />,
       );
 
-      await user.click(screen.getByText('Failures Count/year'));
+      await user.click(screen.getByText('Removals Count/year'));
       expect(onChange).toHaveBeenCalledWith('absolute');
     });
 
@@ -129,7 +129,7 @@ describe('FailureRateModeToggle', () => {
       );
 
       const countRadio = screen.getByRole('radio', {
-        name: 'Failures Count/year',
+        name: 'Removals Count/year',
       });
       countRadio.focus();
       await user.keyboard('{ArrowLeft}');

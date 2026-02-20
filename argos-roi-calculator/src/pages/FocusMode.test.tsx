@@ -56,6 +56,13 @@ vi.mock('@/components/analysis/OverhaulCostInput', () => ({
   ),
 }));
 
+// Mock MtbfInput
+vi.mock('@/components/analysis/MtbfInput', () => ({
+  MtbfInput: ({ analysisId }: { analysisId: string }) => (
+    <div data-testid="mtbf-input">{analysisId}</div>
+  ),
+}));
+
 const createTestAnalysis = (overrides: Partial<Analysis> = {}): Analysis => ({
   id: 'test-id-1',
   name: 'Poly Etch - Chamber 04',
@@ -76,6 +83,7 @@ const createTestAnalysis = (overrides: Partial<Analysis> = {}): Analysis => ({
   pmIntervalMonths: 12,
   argosMtbfExtensionPercent: 15,
   unplannedDespitePM: 0,
+  mtbf: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,
@@ -160,7 +168,7 @@ describe('FocusMode - WaferInputs Integration', () => {
     expect(screen.getByTestId('wafer-inputs')).toHaveTextContent('test-id-1');
   });
 
-  it('renders components in correct order: Equipment → Failure Rate → Wafer', () => {
+  it('renders components in correct order in Unplanned mode: Equipment → Failure Rate → Wafer', () => {
     renderFocusMode('test-id-1');
     const equipment = screen.getByTestId('equipment-inputs');
     const failureRate = screen.getByTestId('failure-rate-input');
@@ -254,6 +262,61 @@ describe('FocusMode - What If Button (Story 3.10)', () => {
     // Should navigate to comparison route
     const newId = analyses[1].id;
     expect(mockNavigate).toHaveBeenCalledWith(`/compare/test-id-1/${newId}`);
+  });
+});
+
+describe('FocusMode - MTBF Field Visibility (Story 7.2)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAppStore.setState({
+      analyses: [createTestAnalysis()],
+      activeAnalysisId: null,
+      globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+      unsavedChanges: false,
+    });
+  });
+
+  it('shows MtbfInput in Unplanned mode', () => {
+    renderFocusMode('test-id-1');
+    expect(screen.getByTestId('mtbf-input')).toBeInTheDocument();
+  });
+
+  it('hides MtbfInput in Planned mode', () => {
+    useAppStore.setState({
+      analyses: [createTestAnalysis({ maintenanceStrategy: 'planned' })],
+    });
+    renderFocusMode('test-id-1');
+    expect(screen.queryByTestId('mtbf-input')).not.toBeInTheDocument();
+  });
+
+  it('passes analysisId to MtbfInput', () => {
+    renderFocusMode('test-id-1');
+    expect(screen.getByTestId('mtbf-input')).toHaveTextContent('test-id-1');
+  });
+});
+
+describe('FocusMode - OverhaulCostInput Conditional Visibility (Story 7.2)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAppStore.setState({
+      analyses: [createTestAnalysis()],
+      activeAnalysisId: null,
+      globalParams: { detectionRate: 70, serviceCostPerPump: 2500 },
+      unsavedChanges: false,
+    });
+  });
+
+  it('hides OverhaulCostInput in Unplanned mode', () => {
+    renderFocusMode('test-id-1');
+    expect(screen.queryByTestId('overhaul-cost-input')).not.toBeInTheDocument();
+  });
+
+  it('shows OverhaulCostInput in Planned mode', () => {
+    useAppStore.setState({
+      analyses: [createTestAnalysis({ maintenanceStrategy: 'planned' })],
+    });
+    renderFocusMode('test-id-1');
+    expect(screen.getByTestId('overhaul-cost-input')).toBeInTheDocument();
   });
 });
 

@@ -702,7 +702,7 @@ export function renderProcessBreakdown(
 
   ctx.currentY = addKeyValue(doc, 'Pump Model:', analysis.pumpType || 'N/A', x, ctx.currentY);
   ctx.currentY = addKeyValue(doc, 'Number of Pumps:', String(analysis.pumpQuantity), x, ctx.currentY);
-  ctx.currentY = addKeyValue(doc, 'Failure Rate:', `${pdfPercentage(analysis.failureRatePercentage, 1)} (${analysis.failureRateMode})`, x, ctx.currentY);
+  ctx.currentY = addKeyValue(doc, 'Pump Removal Rate:', `${pdfPercentage(analysis.failureRatePercentage, 1)} (${analysis.failureRateMode})`, x, ctx.currentY);
 
   const waferTypeLabel = analysis.waferType === 'mono' ? 'Mono' : 'Batch';
   ctx.currentY = addKeyValue(doc, 'Wafer Type:', `${waferTypeLabel} (${analysis.waferQuantity} wafers)`, x, ctx.currentY);
@@ -710,7 +710,7 @@ export function renderProcessBreakdown(
   ctx.currentY = addKeyValue(doc, 'Wafer Defects/Year:', String(analysis.waferDefectEventsPerYear), x, ctx.currentY);
 
   ctx = ensureSpace(doc, ctx, 20, date);
-  ctx.currentY = addKeyValue(doc, 'Downtime/Failure:', `${analysis.downtimeDuration}h`, x, ctx.currentY);
+  ctx.currentY = addKeyValue(doc, 'Downtime/Event:', `${analysis.downtimeDuration}h`, x, ctx.currentY);
   ctx.currentY = addKeyValue(doc, 'Downtime Cost/Hour:', pdfCurrency(analysis.downtimeCostPerHour), x, ctx.currentY);
 
   // Bottleneck
@@ -721,7 +721,7 @@ export function renderProcessBreakdown(
   }
 
   // Maintenance strategy
-  const strategyLabel = analysis.maintenanceStrategy === 'planned' ? 'Preventive Maintenance' : 'Run to Fail';
+  const strategyLabel = analysis.maintenanceStrategy === 'planned' ? 'Preventive Maintenance' : 'Unplanned';
   ctx.currentY = addKeyValue(doc, 'Strategy:', strategyLabel, x, ctx.currentY);
 
   // Planned strategy extra fields
@@ -835,7 +835,7 @@ export function renderGlobalSummary(
   const columns: TableColumn[] = [
     { header: 'Process', width: 38, align: 'left' },
     { header: 'Pumps', width: 16, align: 'right' },
-    { header: 'Failure Rate', width: 22, align: 'right' },
+    { header: 'Removal Rate', width: 22, align: 'right' },
     { header: 'Failure Cost', width: 26, align: 'right' },
     { header: 'ARGOS Cost', width: 24, align: 'right' },
     { header: 'Savings', width: 24, align: 'right' },

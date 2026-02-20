@@ -100,9 +100,9 @@ export function FailureRateInput({ analysisId }: FailureRateInputProps) {
   const calculatedPercentageId = `${analysisId}-calculated-percentage`;
 
   return (
-    <section aria-label="Failure Rate">
+    <section aria-label="Pump Removal Rate">
       <h2 className="mb-4 text-lg font-semibold text-gray-900">
-        Failure Rate
+        Pump Removal Rate
       </h2>
       <div className="flex flex-col gap-4">
         <FailureRateModeToggle
@@ -118,7 +118,7 @@ export function FailureRateInput({ analysisId }: FailureRateInputProps) {
 
         {mode === 'percentage' && (
           <Input
-            label="Failure Rate (%)"
+            label="Pump Removal Rate (%)"
             type="number"
             placeholder="ex: 10"
             value={
@@ -137,7 +137,7 @@ export function FailureRateInput({ analysisId }: FailureRateInputProps) {
         {mode === 'absolute' && (
           <div className="flex flex-col gap-2">
             <Input
-              label="Failures Count (last year)"
+              label="Pumps Removed (last year)"
               type="number"
               placeholder="ex: 3"
               value={

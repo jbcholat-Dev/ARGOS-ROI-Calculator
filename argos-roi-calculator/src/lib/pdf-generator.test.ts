@@ -85,6 +85,7 @@ function createMockAnalysis(overrides: Partial<Analysis> = {}): Analysis {
     pmIntervalMonths: 12,
     argosMtbfExtensionPercent: 15,
     unplannedDespitePM: 0,
+  mtbf: 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides,
@@ -913,11 +914,11 @@ describe('renderProcessBreakdown', () => {
     expect(texts).toContain('10');
   });
 
-  it('renders "Run to Fail" strategy label for unplanned', () => {
+  it('renders "Unplanned" strategy label for unplanned', () => {
     const ctx: PageContext = { currentY: 40, pageNumber: 2 };
     renderProcessBreakdown(doc, createMockAnalysis({ maintenanceStrategy: 'unplanned' }), createMockGlobalParams(), false, ctx);
     const texts = getTextCalls(textSpy);
-    expect(texts).toContain('Run to Fail');
+    expect(texts).toContain('Unplanned');
   });
 
   it('renders "Preventive Maintenance" strategy label for planned', () => {
@@ -1093,7 +1094,7 @@ describe('renderGlobalSummary', () => {
     const texts = getTextCalls(textSpy);
     expect(texts).toContain('Process');
     expect(texts).toContain('Pumps');
-    expect(texts).toContain('Failure Rate');
+    expect(texts).toContain('Removal Rate');
     expect(texts).toContain('Failure Cost');
     expect(texts).toContain('ARGOS Cost');
     expect(texts).toContain('Savings');
@@ -1341,7 +1342,7 @@ describe('generatePDF - content sections', () => {
       new Set(),
     );
     const pdfText = await extractPDFText(blob);
-    expect(pdfText).toContain('Run to Fail');
+    expect(pdfText).toContain('Unplanned');
     expect(pdfText).toContain('Preventive Maintenance');
   });
 

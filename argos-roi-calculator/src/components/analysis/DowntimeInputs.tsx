@@ -162,7 +162,7 @@ export function DowntimeInputs({ analysisId }: DowntimeInputsProps) {
         {/* Downtime Duration Field */}
         <div className="flex flex-col gap-1">
           <label htmlFor={durationInputId} className="text-base font-medium text-gray-900">
-            Duration per Failure (hours)
+            Duration per Event (hours)
           </label>
           <div className="relative">
             <input
