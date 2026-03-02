@@ -198,6 +198,65 @@ export function calculateROI(
 }
 
 /**
+ * Calculates the Payback Time in months for ARGOS predictive maintenance.
+ *
+ * Formula: (argosServiceCost / grossAnnualSavings) × 12
+ *
+ * Where grossAnnualSavings = net savings + argosServiceCost
+ * (i.e., total failure cost avoided before subtracting service cost)
+ *
+ * @param argosServiceCost - Annual ARGOS service cost from calculateArgosServiceCost (EUR)
+ * @param netSavings - Net annual savings from calculateSavings (EUR, can be negative)
+ * @returns Payback time in months, or null if gross savings <= 0 (payback never achieved)
+ *
+ * @example
+ * calculatePaybackTime(25000, 677100) // → 0.43 months (gross = 702100)
+ * calculatePaybackTime(25000, 0)      // → 12 months (gross = 25000, breaks even at year end)
+ * calculatePaybackTime(25000, -30000) // → null (gross savings negative)
+ */
+export function calculatePaybackTime(
+  argosServiceCost: number,
+  netSavings: number,
+): number | null {
+  if (!isValidInput(argosServiceCost) || !isFiniteNumber(netSavings)) {
+    return null;
+  }
+
+  if (argosServiceCost === 0) {
+    return 0;
+  }
+
+  const grossAnnualSavings = netSavings + argosServiceCost;
+
+  if (grossAnnualSavings <= 0) {
+    return null;
+  }
+
+  return (argosServiceCost / grossAnnualSavings) * 12;
+}
+
+/**
+ * Returns a Tailwind CSS color class based on the Payback Time in months.
+ *
+ * Traffic light system for instant visual feedback during client meetings:
+ * - Green (<= 6 months): Fast payback — strong business case
+ * - Orange (6–12 months): Moderate payback — solid case
+ * - Red (> 12 months): Slow payback — marginal case
+ *
+ * @param paybackMonths - Payback time in months from calculatePaybackTime
+ * @returns Tailwind CSS class name: 'text-green-600', 'text-orange-500', or 'text-red-600'
+ */
+export function getPaybackColorClass(paybackMonths: number): string {
+  if (!Number.isFinite(paybackMonths) || paybackMonths > 12) {
+    return 'text-red-600';
+  }
+  if (paybackMonths > 6) {
+    return 'text-orange-500';
+  }
+  return 'text-green-600';
+}
+
+/**
  * Returns a Tailwind CSS color class based on the ROI percentage.
  *
  * Traffic light system for instant visual feedback during client meetings:

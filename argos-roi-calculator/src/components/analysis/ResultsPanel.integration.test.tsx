@@ -45,7 +45,7 @@ describe('ResultsPanel Integration', () => {
     render(<ResultsPanel analysisId="test-analysis-1" />);
 
     // Initially all "--"
-    expect(screen.getAllByText('--').length).toBe(4);
+    expect(screen.getAllByText('--').length).toBe(5);
 
     // Step 1: Add pump quantity → ARGOS service cost appears
     act(() => {
@@ -207,6 +207,6 @@ describe('ResultsPanel Integration', () => {
     render(<ResultsPanel analysisId="test-analysis-1" />);
 
     // All metrics should be "--" since pumpQuantity is 0
-    expect(screen.getAllByText('--').length).toBe(4);
+    expect(screen.getAllByText('--').length).toBe(5);
   });
 });

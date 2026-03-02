@@ -82,18 +82,19 @@ describe('ResultsPanel', () => {
       expect(screen.getByRole('heading', { level: 2, name: 'Results' })).toBeInTheDocument();
     });
 
-    it('renders all 4 metric labels', () => {
+    it('renders all 5 metric labels', () => {
       renderComponent();
       expect(screen.getByText('Total Failure Cost')).toBeInTheDocument();
       expect(screen.getByText('ARGOS Service Cost')).toBeInTheDocument();
       expect(screen.getByText('Savings Realized')).toBeInTheDocument();
       expect(screen.getByText('ROI')).toBeInTheDocument();
+      expect(screen.getByText('Payback Time')).toBeInTheDocument();
     });
 
     it('renders metric labels as h3 headings', () => {
       renderComponent();
       const headings = screen.getAllByRole('heading', { level: 3 });
-      expect(headings.length).toBe(4);
+      expect(headings.length).toBe(5);
     });
 
     it('renders null when analysis not found', () => {
@@ -113,7 +114,7 @@ describe('ResultsPanel', () => {
     it('shows "--" placeholder for all metrics when no data entered (all zeros)', () => {
       renderComponent();
       const placeholders = screen.getAllByText('--');
-      expect(placeholders.length).toBe(4);
+      expect(placeholders.length).toBe(5);
     });
 
     it('shows "--" for total failure cost and savings/ROI with only pumpQuantity', () => {
@@ -478,7 +479,7 @@ describe('ResultsPanel', () => {
     it('uses semantic heading hierarchy (h2 for section, h3 for metrics)', () => {
       renderComponent();
       expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument();
-      expect(screen.getAllByRole('heading', { level: 3 }).length).toBe(4);
+      expect(screen.getAllByRole('heading', { level: 3 }).length).toBe(5);
     });
   });
 
@@ -599,7 +600,7 @@ describe('ResultsPanel', () => {
     it('renders info icon next to each metric label', () => {
       renderComponent();
       const infoButtons = screen.getAllByLabelText('View calculation formula');
-      expect(infoButtons.length).toBe(4);
+      expect(infoButtons.length).toBe(5);
     });
 
     it('shows tooltip on hover', async () => {

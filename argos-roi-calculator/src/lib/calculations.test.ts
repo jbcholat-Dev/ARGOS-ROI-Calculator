@@ -6,6 +6,8 @@ import {
   calculateSavings,
   calculateROI,
   getROIColorClass,
+  calculatePaybackTime,
+  getPaybackColorClass,
   calculateAggregatedMetrics,
   calculateAnalysisRow,
   calculateAllAnalysisRows,
@@ -314,6 +316,114 @@ describe('getROIColorClass', () => {
 
   it('should return green for high ROI (2708%)', () => {
     expect(getROIColorClass(2708)).toBe('text-green-600');
+  });
+});
+
+// ============================================================================
+// calculatePaybackTime
+// ============================================================================
+
+describe('calculatePaybackTime', () => {
+  it('should calculate payback time correctly for positive savings', () => {
+    // serviceCost=25000, netSavings=677100
+    // gross = 677100 + 25000 = 702100
+    // payback = (25000 / 702100) * 12 ≈ 0.427 months
+    const result = calculatePaybackTime(25000, 677100);
+    expect(result).not.toBeNull();
+    expect(result).toBeCloseTo(0.427, 2);
+  });
+
+  it('should return 12 months when net savings is zero (break even at year end)', () => {
+    // serviceCost=25000, netSavings=0
+    // gross = 0 + 25000 = 25000
+    // payback = (25000 / 25000) * 12 = 12
+    expect(calculatePaybackTime(25000, 0)).toBe(12);
+  });
+
+  it('should return null when gross savings are negative', () => {
+    // serviceCost=25000, netSavings=-30000
+    // gross = -30000 + 25000 = -5000 (negative)
+    expect(calculatePaybackTime(25000, -30000)).toBeNull();
+  });
+
+  it('should return null when gross savings are exactly zero', () => {
+    // serviceCost=25000, netSavings=-25000
+    // gross = -25000 + 25000 = 0
+    expect(calculatePaybackTime(25000, -25000)).toBeNull();
+  });
+
+  it('should return 0 when service cost is 0 (free service)', () => {
+    expect(calculatePaybackTime(0, 50000)).toBe(0);
+  });
+
+  it('should return 6 months when ROI is 100%', () => {
+    // ROI 100% means netSavings = serviceCost
+    // serviceCost=25000, netSavings=25000
+    // gross = 25000 + 25000 = 50000
+    // payback = (25000 / 50000) * 12 = 6
+    expect(calculatePaybackTime(25000, 25000)).toBe(6);
+  });
+
+  it('should return 3 months when ROI is 300%', () => {
+    // ROI 300% means netSavings = 3 * serviceCost
+    // serviceCost=25000, netSavings=75000
+    // gross = 75000 + 25000 = 100000
+    // payback = (25000 / 100000) * 12 = 3
+    expect(calculatePaybackTime(25000, 75000)).toBe(3);
+  });
+
+  it('should handle small service cost with large savings', () => {
+    // serviceCost=1000, netSavings=999000
+    // gross = 1000000
+    // payback = (1000 / 1000000) * 12 = 0.012
+    const result = calculatePaybackTime(1000, 999000);
+    expect(result).toBeCloseTo(0.012, 3);
+  });
+
+  it('should return null for NaN inputs', () => {
+    expect(calculatePaybackTime(NaN, 50000)).toBeNull();
+    expect(calculatePaybackTime(25000, NaN)).toBeNull();
+  });
+
+  it('should return null for Infinity inputs', () => {
+    expect(calculatePaybackTime(Infinity, 50000)).toBeNull();
+    expect(calculatePaybackTime(25000, Infinity)).toBeNull();
+  });
+
+  it('should return null for negative service cost', () => {
+    expect(calculatePaybackTime(-25000, 50000)).toBeNull();
+  });
+});
+
+// ============================================================================
+// getPaybackColorClass
+// ============================================================================
+
+describe('getPaybackColorClass', () => {
+  it('should return green for payback <= 6 months', () => {
+    expect(getPaybackColorClass(0)).toBe('text-green-600');
+    expect(getPaybackColorClass(3)).toBe('text-green-600');
+    expect(getPaybackColorClass(6)).toBe('text-green-600');
+  });
+
+  it('should return orange for payback 6-12 months', () => {
+    expect(getPaybackColorClass(6.1)).toBe('text-orange-500');
+    expect(getPaybackColorClass(9)).toBe('text-orange-500');
+    expect(getPaybackColorClass(12)).toBe('text-orange-500');
+  });
+
+  it('should return red for payback > 12 months', () => {
+    expect(getPaybackColorClass(12.1)).toBe('text-red-600');
+    expect(getPaybackColorClass(24)).toBe('text-red-600');
+    expect(getPaybackColorClass(100)).toBe('text-red-600');
+  });
+
+  it('should return red for NaN', () => {
+    expect(getPaybackColorClass(NaN)).toBe('text-red-600');
+  });
+
+  it('should return red for Infinity', () => {
+    expect(getPaybackColorClass(Infinity)).toBe('text-red-600');
   });
 });
 

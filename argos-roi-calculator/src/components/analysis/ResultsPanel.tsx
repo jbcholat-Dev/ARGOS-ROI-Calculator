@@ -8,6 +8,8 @@ import {
   calculateArgosServiceCost,
   calculateROI,
   getROIColorClass,
+  calculatePaybackTime,
+  getPaybackColorClass,
 } from '@/lib/calculations';
 
 export interface ResultsPanelProps {
@@ -56,6 +58,7 @@ const FORMULAS_UNPLANNED = {
   argosServiceCost: 'pumps × service cost per pump/year',
   savings: 'failure cost × detection rate % − service cost',
   roi: '(savings ÷ service cost) × 100',
+  payback: '(service cost ÷ gross annual savings) × 12 months',
 } as const;
 
 const FORMULAS_PLANNED = {
@@ -63,6 +66,7 @@ const FORMULAS_PLANNED = {
   argosServiceCost: 'pumps × service cost per pump/year',
   savings: 'overhaul savings + residual savings − service cost',
   roi: '(savings ÷ service cost) × 100',
+  payback: '(service cost ÷ gross annual savings) × 12 months',
 } as const;
 
 function formatCurrency(value: number): string {
@@ -74,6 +78,16 @@ function formatCurrency(value: number): string {
 
 function formatROIValue(roi: number): string {
   return `${roi.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`;
+}
+
+function formatPaybackValue(paybackMonths: number | null): string {
+  if (paybackMonths === null) return 'N/A';
+  if (paybackMonths < 1) return '< 1 month';
+  if (paybackMonths >= 24) {
+    const years = paybackMonths / 12;
+    return `${years.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} years`;
+  }
+  return `${paybackMonths.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} months`;
 }
 
 export function ResultsPanel({ analysisId }: ResultsPanelProps) {
@@ -109,6 +123,14 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
       : null;
 
   const roiColorClass = roiValue !== null ? getROIColorClass(roiValue) : '';
+
+  const paybackValue =
+    savingsValue !== null && argosServiceCost !== null
+      ? calculatePaybackTime(argosServiceCost, savingsValue)
+      : null;
+
+  const paybackColorClass =
+    paybackValue !== null ? getPaybackColorClass(paybackValue) : '';
 
   const savingsColorClass =
     savingsValue !== null
@@ -248,6 +270,28 @@ export function ResultsPanel({ analysisId }: ResultsPanelProps) {
             data-testid="roi-value"
           >
             {roiValue !== null ? formatROIValue(roiValue) : '--'}
+          </p>
+        </div>
+
+        {/* Act 4 — The Timeline: Payback Time */}
+        <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+          <h3 className="text-sm font-medium text-gray-600">
+            <FormulaTooltip formula={formulas.payback} tooltipId={`${tooltipBaseId}-payback`}>
+              Payback Time
+            </FormulaTooltip>
+          </h3>
+          <p
+            className={clsx(
+              'mt-1 text-4xl font-bold',
+              isFullyCalculable
+                ? paybackValue !== null
+                  ? paybackColorClass
+                  : 'text-gray-400'
+                : 'text-gray-900',
+            )}
+            data-testid="payback-value"
+          >
+            {isFullyCalculable ? formatPaybackValue(paybackValue) : '--'}
           </p>
         </div>
       </div>
