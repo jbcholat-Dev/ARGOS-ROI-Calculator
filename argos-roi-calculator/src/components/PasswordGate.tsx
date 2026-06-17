@@ -1,4 +1,5 @@
-import { useState, FormEvent, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import type { FormEvent } from 'react';
 
 const PASSWORD = 'argos2026';
 const STORAGE_KEY = 'argos-auth';

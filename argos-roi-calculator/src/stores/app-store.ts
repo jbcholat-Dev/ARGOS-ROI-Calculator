@@ -505,7 +505,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'argos-roi-data',
       version: 1,
-      storage: safeStorage,
+      storage: safeStorage as PersistStorage<Partial<AppState>>,
       partialize: (state) =>
         ({
           analyses: state.analyses,

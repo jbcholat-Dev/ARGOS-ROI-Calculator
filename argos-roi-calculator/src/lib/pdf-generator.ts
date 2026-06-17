@@ -1040,7 +1040,7 @@ async function buildPartOneContent(
  * Overwrites initial "Page N" with "Page N / Total" format.
  */
 function finalizePageNumbers(doc: JsPDFDoc): void {
-  const totalPages = doc.internal.getNumberOfPages();
+  const totalPages = doc.getNumberOfPages();
   for (let i = 2; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFont('helvetica', 'normal');

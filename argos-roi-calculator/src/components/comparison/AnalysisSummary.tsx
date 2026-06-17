@@ -1,5 +1,5 @@
 import { formatCurrency } from '@/lib/utils';
-import { DEFAULT_DETECTION_RATE, DEFAULT_SERVICE_COST_PER_PUMP } from '@/lib/constants';
+import { DEFAULT_DETECTION_RATE } from '@/lib/constants';
 import type { Analysis, GlobalParams } from '@/types';
 
 export interface AnalysisSummaryProps {

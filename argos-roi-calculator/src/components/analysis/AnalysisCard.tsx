@@ -52,13 +52,11 @@ export function AnalysisCard({ analysis, isActive, onClick }: AnalysisCardProps)
   const navigate = useNavigate();
 
   // Strategy-aware calculation (supports unplanned, planned, bottleneck)
-  const { totalFailureCost, argosServiceCost, savings, roi } = useMemo(() => {
+  const { savings, roi } = useMemo(() => {
     const result = calculateStrategySavings(analysis, globalParams);
     const calculatedROI = calculateROI(result.savings, result.argosServiceCost);
 
     return {
-      totalFailureCost: result.totalFailureCost,
-      argosServiceCost: result.argosServiceCost,
       savings: result.savings,
       roi: calculatedROI,
     };
