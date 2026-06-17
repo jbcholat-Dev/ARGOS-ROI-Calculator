@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { SessionRecoveryModal } from '@/components/session/SessionRecoveryModal';
+import { PasswordGate } from '@/components/PasswordGate';
 import { useAppStore } from '@/stores/app-store';
 import { AppRoutes } from './AppRoutes';
 
@@ -35,16 +36,18 @@ export function App() {
 
   return (
     <ErrorBoundary>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <AppRoutes />
-          <SessionRecoveryModal
-            isOpen={showRecoveryModal}
-            onResume={handleResume}
-            onStartNew={handleStartNew}
-          />
-        </div>
-      </Router>
+      <PasswordGate>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <AppRoutes />
+            <SessionRecoveryModal
+              isOpen={showRecoveryModal}
+              onResume={handleResume}
+              onStartNew={handleStartNew}
+            />
+          </div>
+        </Router>
+      </PasswordGate>
     </ErrorBoundary>
   );
 }
